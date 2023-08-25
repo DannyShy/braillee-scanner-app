@@ -1,6 +1,7 @@
-import { Image, Button, FileButton, Group, Text } from '@mantine/core';
+import { Image, Button, FileButton, Group, Text, Box } from '@mantine/core';
 import React, { useState } from 'react';
-import { getDevicesInfo } from './utils/getDevicesInfo';
+
+import USBdevices from './utils/USBdevices';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
@@ -9,17 +10,17 @@ export default function App() {
 
   return (
     <div>
-      <Button
-        radius="xl"
-        size="xl"
-        uppercase
-        variant="gradient"
-        gradient={{ from: 'orange', to: 'red' }}
-        onClick={getDevicesInfo}
-      >
-        Scan
-      </Button>
       <Group position="center">
+        <Button
+          radius="xl"
+          size="xl"
+          uppercase
+          variant="gradient"
+          gradient={{ from: 'orange', to: 'red' }}
+          onClick={USBdevices}
+        >
+          Scan
+        </Button>
         <FileButton
           radius="xl"
           size="xl"
@@ -35,10 +36,17 @@ export default function App() {
 
       {file && (
         <Group position="center">
-          <Text size="sm" align="center" mt="sm">
-            Picked file: {file.name}
-          </Text>
-          <Image maw={240} mx="auto" radius="md" src={file} alt="Random image" />
+          <Box maw={240} mah={1000} mx="auto">
+            <Text size="sm" align="center" mt="sm">
+              Picked file: {file.name}
+            </Text>
+            <Image
+              width={500}
+              height={100}
+              src={URL.createObjectURL(file)}
+              imageProps={{ onLoad: () => URL.revokeObjectURL(URL.createObjectURL(file)) }}
+            />
+          </Box>
         </Group>
       )}
     </div>
