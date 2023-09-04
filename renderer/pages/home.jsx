@@ -1,10 +1,8 @@
 import { Image, Button, FileButton, Group, Text, Box } from '@mantine/core';
 import React, { useState } from 'react';
 
-import USBdevices from './utils/USBdevices';
-
-export default function App() {
-  const [file, setFile] = useState<File | null>(null);
+const App = () => {
+  const [file, setFile] = useState(null);
   console.log(file);
   console.log(typeof file);
 
@@ -17,7 +15,6 @@ export default function App() {
           uppercase
           variant="gradient"
           gradient={{ from: 'orange', to: 'red' }}
-          onClick={USBdevices}
         >
           Scan
         </Button>
@@ -51,4 +48,6 @@ export default function App() {
       )}
     </div>
   );
-}
+};
+
+export default App;
