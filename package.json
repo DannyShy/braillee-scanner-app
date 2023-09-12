@@ -14,21 +14,32 @@
     "@emotion/react": "^11.11.1",
     "@mantine/core": "^6.0.19",
     "@mantine/hooks": "^6.0.19",
+    "@types/bindings": "^1.5.1",
     "electron-serve": "^1.1.0",
     "electron-store": "^8.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "electron": "^21.3.3",
-    "electron-builder": "^23.6.0",
-    "next": "^12.3.4",
-    "nextron": "^8.5.0",
+    "fs-finder": "^1.8.1",
+    "node-twain": "^0.0.16",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "typescript": "^5.2.2",
+    "tmp": "^0.2.1"
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.10",
     "@types/react": "18.0.21",
+    "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^5.30.0",
-    "@typescript-eslint/parser": "^5.30.0"
+    "@typescript-eslint/parser": "^5.30.0",
+    "electron": "^26.2.0",
+    "electron-builder": "^24.6.4",
+    "eslint-plugin-electron": "^7.0.0",
+    "next": "^12.3.4",
+    "nextron": "^8.5.0",
+    "prettier": "^3.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "ts-loader": "^9.4.4",
+    "typescript": "^5.2.2",
+    "webpack": "^5.88.2",
+    "webpack-cli": "^5.1.4"
   }
 }

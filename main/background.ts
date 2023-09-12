@@ -1,6 +1,10 @@
 import { app } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
+import { performScan } from './utils/perform-scan';
+import { ipcMain } from 'electron';
+import { performCancelPreview } from './utils/perform-cancel-preview';
+import url from 'url';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -25,6 +29,11 @@ if (isProd) {
     await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
   }
+
+  ipcMain.handle('dialog:scanFile', performScan);
+  ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
+    performCancelPreview(scannedOutputURI);
+  });
 })();
 
 app.on('window-all-closed', () => {

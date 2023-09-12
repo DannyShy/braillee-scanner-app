@@ -1,15 +1,9 @@
-import {
-  screen,
-  BrowserWindow,
-  BrowserWindowConstructorOptions,
-} from "electron";
-import Store from "electron-store";
+import { screen, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
+import Store from 'electron-store';
+import path from 'path';
 
-export default (
-  windowName: string,
-  options: BrowserWindowConstructorOptions
-): BrowserWindow => {
-  const key = "window-state";
+export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
+  const key = 'window-state';
   const name = `window-state-${windowName}`;
   const store = new Store({ name });
   const defaultSize = {
@@ -17,6 +11,7 @@ export default (
     height: options.height,
   };
   let state = {};
+
   let win: BrowserWindow;
 
   const restore = () => store.get(key, defaultSize);
@@ -34,7 +29,7 @@ export default (
 
   const windowWithinBounds = (
     windowState: { x: number; y: number; width: any; height: any },
-    bounds: { x: number; y: number; width: any; height: any }
+    bounds: { x: number; y: number; width: any; height: any },
   ) => {
     return (
       windowState.x >= bounds.x &&
@@ -77,9 +72,12 @@ export default (
     ...options,
     ...state,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
       ...options.webPreferences,
+      preload: path.join(__dirname, '../App/preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: false,
+      webSecurity: false,
     },
     frame: true,
     autoHideMenuBar: true,
@@ -87,8 +85,8 @@ export default (
 
   win = new BrowserWindow(browserOptions);
 
-  win.on("close", saveState);
-  win.setAlwaysOnTop(false, "normal");
+  win.on('close', saveState);
+  win.setAlwaysOnTop(false, 'normal');
 
   return win;
 };

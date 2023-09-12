@@ -1,0 +1,9 @@
+.closeButton {
+    display: flex;
+    object-position: right top;
+}
+
+.confirmButton {
+    width: 100px;
+    height: 100px;
+}

@@ -24,5 +24,6 @@
     "renderer/next.config.js",
     "app",
     "dist"
-  ]
+  ],
+  "include": ["main/**/*"]
 }
