@@ -5,4 +5,8 @@ window.global = window;
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('dialog:scanFile'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
+  readBraille: (brailleInput) => {
+    ipcRenderer.send('send-file-to-main', brailleInput);
+    console.log('you are preloaded');
+  },
 });

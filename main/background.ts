@@ -4,7 +4,8 @@ import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
-import url from 'url';
+import { performCheckDiskSpace } from './utils/perform-check-disk-space';
+import { performReadBraille } from './utils/perform-read-braille';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -34,6 +35,12 @@ if (isProd) {
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
     performCancelPreview(scannedOutputURI);
   });
+  ipcMain.on('send-file-to-main', (event, brailleInput) => {
+    console.log('you are in background');
+    performReadBraille(brailleInput);
+    console.log('job should be done');
+  });
+  performCheckDiskSpace(); // to consider if this is correct place to put this
 })();
 
 app.on('window-all-closed', () => {

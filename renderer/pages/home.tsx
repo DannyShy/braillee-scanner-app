@@ -1,5 +1,5 @@
 import { Image, Button, FileButton, Group, Text, Box, CloseButton } from '@mantine/core';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
@@ -29,6 +29,20 @@ const App = () => {
       console.error(error);
     }
   };
+
+  const handleReadBraille = async (brailleInput) => {
+    await window.electronAPI.readBraille(brailleInput);
+  };
+
+  useEffect(() => {
+    if (file) {
+      const brailleInput = file.path;
+      // Transfering whole file object to background ends up with error.
+      // It is probably due to size of file so only file.path is transfered.
+      handleReadBraille(brailleInput);
+      console.log('you are home');
+    }
+  }, [file]);
 
   return (
     <div>
@@ -70,7 +84,9 @@ const App = () => {
               height={100}
               src={URL.createObjectURL(file)}
               imageProps={{
-                onLoad: () => URL.revokeObjectURL(URL.createObjectURL(file)),
+                onLoad: () => {
+                  URL.revokeObjectURL(URL.createObjectURL(file));
+                },
               }}
             />
           </Box>
