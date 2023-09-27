@@ -10,6 +10,7 @@ declare global {
 const App = () => {
   const [file, setFile] = useState<File | null>(null);
   const [scannedOutputURI, setScannedOutputURI] = useState<string | null>(null);
+  const [braille, setBraille] = useState(null);
 
   const handleScan = async () => {
     try {
@@ -34,13 +35,19 @@ const App = () => {
     await window.electronAPI.readBraille(brailleInput);
   };
 
+  const handleViewBraille = async () => {
+    await window.electronAPI.handleBrailleData((brailleOutput) => {
+      setBraille(brailleOutput);
+    });
+  };
+
   useEffect(() => {
     if (file) {
       const brailleInput = file.path;
       // Transfering whole file object to background ends up with error.
       // It is probably due to size of file so only file.path is transfered.
       handleReadBraille(brailleInput);
-      console.log('you are home');
+      handleViewBraille();
     }
   }, [file]);
 
@@ -92,7 +99,6 @@ const App = () => {
           </Box>
         </Group>
       )}
-
       {scannedOutputURI && (
         <Group position="center">
           <Box maw={240} mah={1000} mx="auto">
@@ -104,6 +110,7 @@ const App = () => {
           </Box>
         </Group>
       )}
+      {braille && <Text>{braille.stdout}</Text>}
     </div>
   );
 };

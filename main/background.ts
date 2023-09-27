@@ -1,4 +1,4 @@
-import { app } from 'electron';
+import { app, ipcRenderer, webContents } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
@@ -35,12 +35,10 @@ if (isProd) {
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
     performCancelPreview(scannedOutputURI);
   });
-  ipcMain.on('send-file-to-main', (event, brailleInput) => {
-    console.log('you are in background');
-    performReadBraille(brailleInput);
-    console.log('job should be done');
+  ipcMain.on('send-file-to-main', async (event, brailleInput) => {
+    const brailleOutput = await performReadBraille(brailleInput);
+    mainWindow.webContents.send('braille', brailleOutput);
   });
-  performCheckDiskSpace(); // to consider if this is correct place to put this
 })();
 
 app.on('window-all-closed', () => {
