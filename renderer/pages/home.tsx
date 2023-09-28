@@ -37,18 +37,24 @@ const App = () => {
 
   const handleViewBraille = async () => {
     await window.electronAPI.handleBrailleData((brailleOutput) => {
+      // console.log(`this is brailleOutput in home yeah: ${brailleOutput}`);
       setBraille(brailleOutput);
     });
   };
 
   useEffect(() => {
+    let brailleInput: string;
     if (file) {
-      const brailleInput = file.path;
+      brailleInput = file.path;
       // Transfering whole file object to background ends up with error.
       // It is probably due to size of file so only file.path is transfered.
-      handleReadBraille(brailleInput);
-      handleViewBraille();
+    } else if (scannedOutputURI) {
+      brailleInput = scannedOutputURI; //need to handle if both file and scannedOutputURI exists!
     }
+    if (brailleInput) {
+      handleReadBraille(brailleInput);
+    }
+    handleViewBraille();
   }, [file]);
 
   return (
@@ -110,7 +116,7 @@ const App = () => {
           </Box>
         </Group>
       )}
-      {braille && <Text>{braille.stdout}</Text>}
+      {braille && <Text>{braille}</Text>}
     </div>
   );
 };

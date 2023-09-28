@@ -4,7 +4,6 @@ import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
-import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadBraille } from './utils/perform-read-braille';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
@@ -37,6 +36,7 @@ if (isProd) {
   });
   ipcMain.on('send-file-to-main', async (event, brailleInput) => {
     const brailleOutput = await performReadBraille(brailleInput);
+    // console.log(`this is brailleOutput in background yeah: ${brailleOutput}`);
     mainWindow.webContents.send('braille', brailleOutput);
   });
 })();
