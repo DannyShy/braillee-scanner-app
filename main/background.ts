@@ -5,6 +5,7 @@ import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
+import { performInstallationAndCheck } from './utils/perform-installation-and-check';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -29,14 +30,13 @@ if (isProd) {
     await mainWindow.loadURL(`http://localhost:${port}/home`);
     mainWindow.webContents.openDevTools();
   }
-
+  performInstallationAndCheck();
   ipcMain.handle('dialog:scanFile', performScan);
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
     performCancelPreview(scannedOutputURI);
   });
   ipcMain.on('send-file-to-main', async (event, brailleInput) => {
     const brailleOutput = await performReadBraille(brailleInput);
-    // console.log(`this is brailleOutput in background yeah: ${brailleOutput}`);
     mainWindow.webContents.send('braille', brailleOutput);
   });
 })();

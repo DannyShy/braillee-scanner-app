@@ -37,7 +37,6 @@ const App = () => {
 
   const handleViewBraille = async () => {
     await window.electronAPI.handleBrailleData((brailleOutput) => {
-      // console.log(`this is brailleOutput in home yeah: ${brailleOutput}`);
       setBraille(brailleOutput);
     });
   };
@@ -94,7 +93,7 @@ const App = () => {
             </Text>
             <Image
               width={500}
-              height={100}
+              height={500}
               src={URL.createObjectURL(file)}
               imageProps={{
                 onLoad: () => {
