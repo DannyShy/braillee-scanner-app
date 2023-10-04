@@ -1,5 +1,6 @@
 import { Image, Button, FileButton, Group, Text, Box, CloseButton } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 declare global {
   interface Window {
@@ -116,6 +117,11 @@ const App = () => {
         </Group>
       )}
       {braille && <Text>{braille}</Text>}
+      <div>
+        <Button>
+          <Link href="/download-model">Download model</Link>
+        </Button>
+      </div>
     </div>
   );
 };

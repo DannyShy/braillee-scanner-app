@@ -73,7 +73,7 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     ...state,
     webPreferences: {
       ...options.webPreferences,
-      preload: path.join(__dirname, '../App/preload.js'),
+      preload: path.join(__dirname, '../app/preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: false,
