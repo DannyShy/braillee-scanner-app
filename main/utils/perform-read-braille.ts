@@ -4,11 +4,13 @@ import fs from 'fs';
 import path from 'path';
 
 const performReadBraille = async (brailleInput, app) => {
+  // to be updated in future to match any directory
   const pythonScriptPath = 'C:/Users/hotovo/AngelinaReader/run_local.py';
   const exec = util.promisify(execAsync);
   const userDataPath = app.getPath('userData');
   const pathModel = path.resolve(userDataPath, '.braille-scanner', 'model.t7');
   try {
+    // to add output directory in temp
     await exec(`python ${pythonScriptPath} ${brailleInput} -l EN ${pathModel}`);
     const filePath = brailleInput.replace(/\.[^.]+$/, '.marked.brl');
     const brailleOutput = await fs.promises.readFile(filePath, 'utf8');

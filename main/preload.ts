@@ -19,5 +19,4 @@ contextBridge.exposeInMainWorld('electronAPI', {
       listener(downloadModelProgress);
     });
   },
-  goToHomePage: () => ipcRenderer.invoke('go-home'),
 });

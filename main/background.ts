@@ -5,7 +5,9 @@ import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
-import { downloadModelWithProgress } from './utils/perform-model-download';
+import { perfomModelDownload } from './utils/perform-model-download';
+import path from 'path';
+import fs from 'fs';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -23,15 +25,28 @@ if (isProd) {
     height: 600,
   });
 
+  const pathToModel = path.resolve(app.getPath('userData'), '.braille-scanner', 'model.t7');
+  let firstPageHtml: string;
+  let firstPage: string;
+
+  if (!fs.existsSync(pathToModel)) {
+    firstPageHtml = 'download-model.html';
+    firstPage = 'download-model';
+  } else {
+    firstPageHtml = 'home.html';
+    firstPage = 'home';
+  }
+
   if (isProd) {
-    await mainWindow.loadURL('app://./home.html');
+    await mainWindow.loadURL(`app://./${firstPageHtml}`);
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
     mainWindow.webContents.openDevTools();
   }
+
   ipcMain.handle('download-model', async () => {
-    await downloadModelWithProgress(mainWindow, app);
+    await perfomModelDownload(mainWindow, app);
   });
   ipcMain.handle('scan-file', performScan);
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
@@ -40,9 +55,6 @@ if (isProd) {
   ipcMain.on('send-file-to-main', async (event, brailleInput) => {
     const brailleOutput = await performReadBraille(brailleInput, app);
     mainWindow.webContents.send('braille', brailleOutput);
-  });
-  ipcMain.on('go-home', () => {
-    mainWindow.loadURL('app://./home.html');
   });
 })();
 
