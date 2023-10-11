@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { App } from 'electron';
 import isDev from 'electron-is-dev';
+import { PATH_TO_MODEL } from './constants';
 
 const performReadBraille = async (brailleInput, app: App) => {
   let angelinaReaderPath: string;
@@ -15,11 +16,9 @@ const performReadBraille = async (brailleInput, app: App) => {
     angelinaReaderPath = path.join(pathToResources, 'AngelinaReader', 'run_local.py');
   }
   const exec = util.promisify(execAsync);
-  const userDataPath = app.getPath('userData');
-  const pathModel = path.resolve(userDataPath, '.braille-scanner', 'model.t7');
   try {
     // to add output directory in temp
-    await exec(`python ${angelinaReaderPath} ${brailleInput} -l EN ${pathModel}`);
+    await exec(`python ${angelinaReaderPath} ${brailleInput} -l EN ${PATH_TO_MODEL}`);
     const filePath = brailleInput.replace(/\.[^.]+$/, '.marked.brl');
     const brailleOutput = await fs.promises.readFile(filePath, 'utf8');
     return brailleOutput;

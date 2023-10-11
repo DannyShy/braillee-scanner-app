@@ -6,8 +6,8 @@ import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
 import { perfomModelDownload } from './utils/perform-model-download';
-import path from 'path';
 import fs from 'fs';
+import { PATH_TO_MODEL } from './utils/constants';
 
 const isProd: boolean = process.env.NODE_ENV === 'production';
 
@@ -25,11 +25,10 @@ if (isProd) {
     height: 600,
   });
 
-  const pathToModel = path.resolve(app.getPath('userData'), '.braille-scanner', 'model.t7');
   let firstPageHtml: string;
   let firstPage: string;
 
-  if (!fs.existsSync(pathToModel)) {
+  if (!fs.existsSync(PATH_TO_MODEL)) {
     firstPageHtml = 'download-model.html';
     firstPage = 'download-model';
   } else {
@@ -46,7 +45,7 @@ if (isProd) {
   }
 
   ipcMain.handle('download-model', async () => {
-    await perfomModelDownload(mainWindow, app);
+    await perfomModelDownload(mainWindow);
   });
   ipcMain.handle('scan-file', performScan);
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
