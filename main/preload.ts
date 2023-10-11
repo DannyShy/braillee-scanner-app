@@ -11,7 +11,6 @@ const addDownloadProgressListener = (listener) => {
 const removeDownloadProgressListener = (listener) => {
   ipcRenderer.removeListener('download-model-progress', listener);
   listener = null;
-  console.log('listener removed');
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -24,6 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('braille', (event, brailleData) => {
       listener(brailleData);
     });
+    ipcRenderer.removeListener('braille', listener);
   },
   downloadModel: () => ipcRenderer.invoke('download-model'),
   addDownloadProgressListener: addDownloadProgressListener,
