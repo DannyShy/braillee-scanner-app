@@ -2,16 +2,24 @@ import util from 'util';
 import { exec as execAsync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
+import { App } from 'electron';
+import isDev from 'electron-is-dev';
 
-const performReadBraille = async (brailleInput, app) => {
-  // to be updated in future to match any directory
-  const pythonScriptPath = 'C:/Users/hotovo/AngelinaReader/run_local.py';
+const performReadBraille = async (brailleInput, app: App) => {
+  let angelinaReaderPath: string;
+  if (isDev) {
+    const parentDir = path.join(__dirname, '..');
+    angelinaReaderPath = path.join(parentDir, 'resources', 'AngelinaReader', 'run_local.py');
+  } else {
+    const pathToResources = process.resourcesPath;
+    angelinaReaderPath = path.join(pathToResources, 'AngelinaReader', 'run_local.py');
+  }
   const exec = util.promisify(execAsync);
   const userDataPath = app.getPath('userData');
   const pathModel = path.resolve(userDataPath, '.braille-scanner', 'model.t7');
   try {
     // to add output directory in temp
-    await exec(`python ${pythonScriptPath} ${brailleInput} -l EN ${pathModel}`);
+    await exec(`python ${angelinaReaderPath} ${brailleInput} -l EN ${pathModel}`);
     const filePath = brailleInput.replace(/\.[^.]+$/, '.marked.brl');
     const brailleOutput = await fs.promises.readFile(filePath, 'utf8');
     return brailleOutput;

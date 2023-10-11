@@ -5,7 +5,7 @@ import { mkdirSync } from 'original-fs';
 
 const perfomModelDownload = async (mainWindow, app) => {
   const pathFolder = path.resolve(app.getPath('userData'), '.braille-scanner');
-  const pathToModel = path.resolve(app.getPath('userData'), '.braille-scanner', 'model.t7');
+  const pathToModel = path.resolve(pathFolder, 'model.t7');
   const modelUrl = 'http://ovdv.ru/files/retina_chars_eced60.clr.008';
   const chunkSize = 1024 * 1414;
   const modelSizeInBytes = 144771584;
