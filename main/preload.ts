@@ -2,6 +2,18 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 window.global = window;
 
+const addDownloadProgressListener = (listener) => {
+  ipcRenderer.on('download-model-progress', (event, brailleData) => {
+    listener(brailleData);
+  });
+};
+
+const removeDownloadProgressListener = (listener) => {
+  ipcRenderer.removeListener('download-model-progress', listener);
+  listener = null;
+  console.log('listener removed');
+};
+
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
@@ -14,9 +26,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
     });
   },
   downloadModel: () => ipcRenderer.invoke('download-model'),
-  handleModelDownloadProgressData: (listener) => {
-    ipcRenderer.on('download-model-progress', (event, downloadModelProgress) => {
-      listener(downloadModelProgress);
-    });
-  },
+  addDownloadProgressListener: addDownloadProgressListener,
+  removeDownloadProgressListener: removeDownloadProgressListener,
 });

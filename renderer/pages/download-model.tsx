@@ -1,9 +1,9 @@
 import { ActionIcon, Button, Center, RingProgress, rem, Text, Group, Title } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-export default function downloadModel() {
+export default function DownloadModel() {
   const [downloadModelProgress, setDownloadModelProgress] = useState<string>(null);
   const router = useRouter();
 
@@ -11,17 +11,17 @@ export default function downloadModel() {
     //setting value to 0 to view RingProgress sooner.
     //without it it takes 2seconds to appear RingProgress, so user may click on Download twice leading to error
     setDownloadModelProgress('0');
+    handleViewModelDownloadProgress();
     await window.electronAPI.downloadModel();
   };
   const handleViewModelDownloadProgress = async () => {
-    await window.electronAPI.handleModelDownloadProgressData((Progress) => {
-      setDownloadModelProgress(Progress);
+    await window.electronAPI.addDownloadProgressListener((progress) => {
+      setDownloadModelProgress(progress);
+      if (Number(downloadModelProgress) === 100) {
+        window.electronAPI.removeDownloadProgressListener();
+      }
     });
   };
-
-  useEffect(() => {
-    handleViewModelDownloadProgress();
-  }, [downloadModelProgress]);
 
   if (Number(downloadModelProgress) === 100) {
     setTimeout(() => {
