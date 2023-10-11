@@ -2,11 +2,10 @@ import util from 'util';
 import { exec as execAsync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import { App } from 'electron';
 import isDev from 'electron-is-dev';
 import { PATH_TO_MODEL } from './constants';
 
-const performReadBraille = async (brailleInput, app: App) => {
+const performReadBraille = async (brailleInput) => {
   let angelinaReaderPath: string;
   if (isDev) {
     const parentDir = path.join(__dirname, '..');

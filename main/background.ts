@@ -7,11 +7,9 @@ import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
 import { perfomModelDownload } from './utils/perform-model-download';
 import fs from 'fs';
-import { PATH_TO_MODEL } from './utils/constants';
+import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 
-const isProd: boolean = process.env.NODE_ENV === 'production';
-
-if (isProd) {
+if (IS_PROD) {
   serve({ directory: 'app' });
 } else {
   app.setPath('userData', `${app.getPath('userData')}(development)`);
@@ -36,7 +34,7 @@ if (isProd) {
     firstPage = 'home';
   }
 
-  if (isProd) {
+  if (IS_PROD) {
     await mainWindow.loadURL(`app://./${firstPageHtml}`);
   } else {
     const port = process.argv[2];
@@ -52,7 +50,7 @@ if (isProd) {
     performCancelPreview(scannedOutputURI);
   });
   ipcMain.on('send-file-to-main', async (event, brailleInput) => {
-    const brailleOutput = await performReadBraille(brailleInput, app);
+    const brailleOutput = await performReadBraille(brailleInput);
     mainWindow.webContents.send('braille', brailleOutput);
   });
 })();
