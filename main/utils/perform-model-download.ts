@@ -20,13 +20,14 @@ const perfomModelDownload = async (mainWindow, app) => {
         },
       });
       const chunk = Buffer.from(response.data, 'binary');
-      if (chunk.length === 0) {
-        break;
-      }
       fs.appendFileSync(pathToModel, chunk);
       offset += chunk.length;
       const progressPercentage = Math.round((offset / modelSizeInBytes) * 100);
       mainWindow.webContents.send('download-model-progress', progressPercentage);
+      //1447936 is size of regular chunk. if its less than 1447936 it was last one.
+      if (chunk.length < 1447936) {
+        break;
+      }
     } catch (error) {
       console.error('Error downloading chunk:', error);
       break;
