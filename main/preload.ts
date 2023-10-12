@@ -2,15 +2,21 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 window.global = window;
 
+let downloadProgressListener: any;
+
 const addDownloadProgressListener = (listener) => {
-  ipcRenderer.on('download-model-progress', (event, brailleData) => {
-    listener(brailleData);
-  });
+  downloadProgressListener = (event, brailleData, isFinished) => {
+    listener(brailleData, isFinished);
+  };
+  ipcRenderer.on('download-model-progress', downloadProgressListener);
 };
 
-const removeDownloadProgressListener = (listener) => {
-  ipcRenderer.removeListener('download-model-progress', listener);
-  listener = null;
+const removeDownloadProgressListener = () => {
+  if (!downloadProgressListener) {
+    return;
+  }
+  ipcRenderer.removeListener('download-model-progress', downloadProgressListener);
+  downloadProgressListener = null;
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {

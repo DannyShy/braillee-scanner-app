@@ -3,7 +3,7 @@ import axios from 'axios';
 import { mkdirSync } from 'original-fs';
 import { APP_DATA_PATH, PATH_TO_MODEL, MODEL_URL, CHUNK_SIZE, MODEL_SIZE } from './constants';
 
-const perfomModelDownload = async (mainWindow) => {
+const performModelDownload = async (mainWindow: Electron.CrossProcessExports.BrowserWindow) => {
   let offset = 0;
   mkdirSync(APP_DATA_PATH);
   while (true) {
@@ -18,9 +18,9 @@ const perfomModelDownload = async (mainWindow) => {
       fs.appendFileSync(PATH_TO_MODEL, chunk);
       offset += chunk.length;
       const progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-      mainWindow.webContents.send('download-model-progress', progressPercentage);
-      if (chunk.length < CHUNK_SIZE) {
-        console.log('download is finished!');
+      const isFinished: boolean = chunk.length < CHUNK_SIZE;
+      mainWindow.webContents.send('download-model-progress', progressPercentage, isFinished);
+      if (isFinished) {
         break;
       }
     } catch (error) {
@@ -30,4 +30,4 @@ const perfomModelDownload = async (mainWindow) => {
   }
 };
 
-export { perfomModelDownload };
+export { performModelDownload };

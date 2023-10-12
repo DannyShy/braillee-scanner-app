@@ -2,17 +2,17 @@ import util from 'util';
 import { exec as execAsync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import isDev from 'electron-is-dev';
-import { PATH_TO_MODEL } from './constants';
+import { IS_PROD, PATH_TO_MODEL } from './constants';
+import { PythonShell } from 'python-shell';
 
-const performReadBraille = async (brailleInput) => {
+const performReadBraille = async (brailleInput: string): Promise<string> => {
   let angelinaReaderPath: string;
-  if (isDev) {
-    const parentDir = path.join(__dirname, '..');
-    angelinaReaderPath = path.join(parentDir, 'resources', 'AngelinaReader', 'run_local.py');
-  } else {
+  if (IS_PROD) {
     const pathToResources = process.resourcesPath;
     angelinaReaderPath = path.join(pathToResources, 'AngelinaReader', 'run_local.py');
+  } else {
+    const parentDir = path.join(__dirname, '..');
+    angelinaReaderPath = path.join(parentDir, 'resources', 'AngelinaReader', 'run_local.py');
   }
   const exec = util.promisify(execAsync);
   try {

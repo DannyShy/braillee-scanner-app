@@ -15,19 +15,16 @@ export default function DownloadModel() {
     await window.electronAPI.downloadModel();
   };
   const handleViewModelDownloadProgress = async () => {
-    await window.electronAPI.addDownloadProgressListener((progress) => {
+    await window.electronAPI.addDownloadProgressListener((progress, isFinished) => {
       setDownloadModelProgress(progress);
-      if (Number(downloadModelProgress) === 100) {
+      if (isFinished) {
         window.electronAPI.removeDownloadProgressListener();
+        setTimeout(() => {
+          router.push('/home');
+        }, 1000);
       }
     });
   };
-
-  if (Number(downloadModelProgress) === 100) {
-    setTimeout(() => {
-      router.push('/home');
-    }, 1000);
-  }
 
   return (
     <main>
