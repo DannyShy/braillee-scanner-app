@@ -8,6 +8,7 @@ import { performReadBraille } from './utils/perform-read-braille';
 import { performModelDownload } from './utils/perform-model-download';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
+import { performSetPython } from './utils/perform-set-python';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -43,6 +44,7 @@ if (IS_PROD) {
   }
 
   ipcMain.handle('download-model', async () => {
+    // await performSetPython();
     await performModelDownload(mainWindow);
   });
   ipcMain.handle('scan-file', performScan);
