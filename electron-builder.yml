@@ -14,4 +14,8 @@ extraResources:
     to: AngelinaReader
     filter:
       - '**/*'
+  - from: ./resources/python-3.11.6-embed-amd64
+    to: python-3.11.6-embed-amd64
+    filter:
+      - '**/*'
 publish: null

@@ -1,10 +1,11 @@
-import { ActionIcon, Button, Center, RingProgress, rem, Text, Group, Title } from '@mantine/core';
+import { ActionIcon, Button, Center, RingProgress, rem, Text, Group, Title, Loader } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 
 export default function DownloadModel() {
   const [downloadModelProgress, setDownloadModelProgress] = useState<string>(null);
+  const [requirementsLoading, setRequirementsLoading] = useState<number>(null);
   const router = useRouter();
 
   const handleDownloadModel = async () => {
@@ -19,6 +20,15 @@ export default function DownloadModel() {
       setDownloadModelProgress(progress);
       if (isFinished) {
         window.electronAPI.removeDownloadProgressListener();
+      }
+    });
+  };
+
+  const handleViewRequirementsStatus = async () => {
+    await window.electronAPI.addRequirementsStatusListener((status) => {
+      setRequirementsLoading(status);
+      if (status === 1) {
+        window.electronAPI.removeRequirementsStatusListener();
         setTimeout(() => {
           router.push('/home');
         }, 1000);
@@ -31,10 +41,18 @@ export default function DownloadModel() {
       <Group position="center">
         <Title>Model Download</Title>
         <Text>
-          Before you start using Braille dots recognition, you need to download braille neural net model (150MB). Click
-          on download if you agree.
+          Before you start using Braille dots recognition, you need to download braille neural net model (150MB) and
+          project dependencies (X GB). Click on download if you agree.
         </Text>
-        {!downloadModelProgress && <Button onClick={handleDownloadModel}>Download</Button>}
+        {!downloadModelProgress && (
+          <Button
+            onClick={() => {
+              handleDownloadModel(), handleViewRequirementsStatus();
+            }}
+          >
+            Download
+          </Button>
+        )}
         {downloadModelProgress && (
           <RingProgress
             sections={[{ value: Number(downloadModelProgress), color: 'teal' }]}
@@ -50,7 +68,8 @@ export default function DownloadModel() {
             }
           />
         )}
-        {Number(downloadModelProgress) === 100 && <Text>Download Suceccessful!</Text>}
+        {Number(downloadModelProgress) === 100 && <Text>Download Successful!</Text>}
+        {requirementsLoading && <Loader color="blue" />}
       </Group>
     </main>
   );

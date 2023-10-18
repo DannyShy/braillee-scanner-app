@@ -19,6 +19,23 @@ const removeDownloadProgressListener = () => {
   downloadProgressListener = null;
 };
 
+let requirementsStatusListener: any;
+
+const addRequirementsStatusListener = (listener) => {
+  requirementsStatusListener = (event, status) => {
+    listener(status);
+  };
+  ipcRenderer.on('requirements-status', requirementsStatusListener);
+};
+
+const removeRequirementsStatusListener = () => {
+  if (!requirementsStatusListener) {
+    return;
+  }
+  ipcRenderer.removeListener('requirements-status', requirementsStatusListener);
+  requirementsStatusListener = null;
+};
+
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
@@ -34,4 +51,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadModel: () => ipcRenderer.invoke('download-model'),
   addDownloadProgressListener: addDownloadProgressListener,
   removeDownloadProgressListener: removeDownloadProgressListener,
+  addRequirementsStatusListener: addRequirementsStatusListener,
+  removeRequirementsStatusListener: removeRequirementsStatusListener,
 });

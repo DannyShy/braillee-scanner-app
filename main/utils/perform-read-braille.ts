@@ -1,38 +1,17 @@
-import util from 'util';
-import { exec as execAsync } from 'child_process';
 import fs from 'fs';
-import path from 'path';
-import { IS_PROD, PATH_TO_MODEL } from './constants';
+import { ANGELINA_READER_PATH, PATH_TO_MODEL, PYTHON_EXE, PYTHON_HOME } from './constants';
 import { PythonShell } from 'python-shell';
 import { Options } from 'electron';
 
 const performReadBraille = async (brailleInput: string): Promise<string> => {
-  let angelinaReaderPath: string;
-  if (IS_PROD) {
-    const pathToResources = process.resourcesPath;
-    angelinaReaderPath = path.join(pathToResources, 'AngelinaReader');
-  } else {
-    const parentDir = path.join(__dirname, '..');
-    angelinaReaderPath = path.join(parentDir, 'resources', 'AngelinaReader');
-  }
-  const exec = util.promisify(execAsync);
-  const pythonHome = 'C:/Users/hotovo/braille-scanner/resources/python-3.12.0-embed-amd64';
-  const pythonExe = path.join(pythonHome, 'python.exe');
-  // const pythonLib = path.join(pythonHome, 'Lib');
-  const requirements = path.join(angelinaReaderPath, 'requirements.txt');
   try {
-    // to add output directory in temp
-
-    await exec(`pip install --upgrade pip`);
-    await exec(`${pythonExe} -m pip install -r ${requirements}`);
-    // code below is irelevant for now as requirements dont work yet
     const options: Options = {
-      pythonPath: pythonExe,
-      scriptPath: angelinaReaderPath,
-      args: [brailleInput, '-l EN', PATH_TO_MODEL],
+      pythonPath: PYTHON_EXE,
+      scriptPath: ANGELINA_READER_PATH,
+      args: [brailleInput, PATH_TO_MODEL], // to add output directory in temp
       env: {
-        PYTHONPATH: pythonExe,
-        PYTHONHOME: pythonHome,
+        PYTHONPATH: PYTHON_EXE,
+        PYTHONHOME: PYTHON_HOME,
       },
     };
     await PythonShell.run('run_local.py', options);

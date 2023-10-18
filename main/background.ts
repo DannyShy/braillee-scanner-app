@@ -5,10 +5,9 @@ import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
-import { performModelDownload } from './utils/perform-model-download';
+import { performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
-import { performSetPython } from './utils/perform-set-python';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -44,8 +43,7 @@ if (IS_PROD) {
   }
 
   ipcMain.handle('download-model', async () => {
-    // await performSetPython();
-    await performModelDownload(mainWindow);
+    await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', performScan);
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
