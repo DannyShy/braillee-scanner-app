@@ -9,24 +9,23 @@ import {
   MODEL_SIZE,
   PYTHON_EXE,
   REQUIREMENTS_PATH,
-  PYTHON_HOME,
-  PYTHON_MODULES,
 } from './constants';
 import util from 'util';
 import { exec as execAsync } from 'child_process';
+import { BrowserWindow } from 'electron';
 
-const performInitialSetup = async (mainWindow: Electron.CrossProcessExports.BrowserWindow) => {
-  // process.env.PYTHONPATH = `${PYTHON_EXE}`;
-  // process.env.PYTHONHOME = `${PYTHON_HOME}`;
-  // process.env.PYTHONPATH = null;
-  // process.env.PYTHONHOME = null;
+const performInitialSetup = async (mainWindow: BrowserWindow) => {
+  let progressPercentage;
+  let isFinished;
+  let requirementsStatus = 1;
   const exec = util.promisify(execAsync);
-  mainWindow.webContents.send('requirements-status', 0);
-  // await exec(`setx PYTHONHOME "${PYTHON_HOME}"`);
-  // await exec(`setx PYTHONPATH "${PYTHON_MODULES}"`);
+
+  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
   await exec(`${PYTHON_EXE} -m pip install --upgrade pip`);
   await exec(`${PYTHON_EXE} -m pip install -r ${REQUIREMENTS_PATH}`);
-  mainWindow.webContents.send('requirements-status', 1);
+  requirementsStatus = 0;
+  progressPercentage = '1';
+  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
 
   let offset = 0;
   mkdirSync(APP_DATA_PATH);
@@ -41,9 +40,9 @@ const performInitialSetup = async (mainWindow: Electron.CrossProcessExports.Brow
       const chunk = Buffer.from(response.data, 'binary');
       fs.appendFileSync(PATH_TO_MODEL, chunk);
       offset += chunk.length;
-      const progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-      const isFinished: boolean = chunk.length < CHUNK_SIZE;
-      mainWindow.webContents.send('download-model-progress', progressPercentage, isFinished);
+      progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
+      isFinished = chunk.length < CHUNK_SIZE;
+      mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
       if (isFinished) {
         break;
       }

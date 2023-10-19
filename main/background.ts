@@ -8,6 +8,7 @@ import { performReadBraille } from './utils/perform-read-braille';
 import { performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
+import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -27,8 +28,8 @@ if (IS_PROD) {
   let firstPage: string;
 
   if (!fs.existsSync(PATH_TO_MODEL)) {
-    firstPageHtml = 'download-model.html';
-    firstPage = 'download-model';
+    firstPageHtml = 'initial-setup.html';
+    firstPage = 'initial-setup';
   } else {
     firstPageHtml = 'home.html';
     firstPage = 'home';
@@ -42,7 +43,11 @@ if (IS_PROD) {
     mainWindow.webContents.openDevTools();
   }
 
-  ipcMain.handle('download-model', async () => {
+  ipcMain.handle('check-disk-space', async () => {
+    await performCheckDiskSpace(mainWindow);
+  });
+
+  ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', performScan);

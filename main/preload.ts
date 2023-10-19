@@ -2,38 +2,38 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 window.global = window;
 
-let downloadProgressListener: any;
+let InitialSetupProgressListener: any;
 
-const addDownloadProgressListener = (listener) => {
-  downloadProgressListener = (event, brailleData, isFinished) => {
-    listener(brailleData, isFinished);
+const addInitialSetupProgressListener = (listener) => {
+  InitialSetupProgressListener = (event, progress, isFinished, requirementsStatus) => {
+    listener(progress, isFinished, requirementsStatus);
   };
-  ipcRenderer.on('download-model-progress', downloadProgressListener);
+  ipcRenderer.on('initial-setup-progress', InitialSetupProgressListener);
 };
 
-const removeDownloadProgressListener = () => {
-  if (!downloadProgressListener) {
+const removeInitialSetupProgressListener = () => {
+  if (!InitialSetupProgressListener) {
     return;
   }
-  ipcRenderer.removeListener('download-model-progress', downloadProgressListener);
-  downloadProgressListener = null;
+  ipcRenderer.removeListener('initial-setup-progress', InitialSetupProgressListener);
+  InitialSetupProgressListener = null;
 };
 
-let requirementsStatusListener: any;
+let checkDiskSpaceListener;
 
-const addRequirementsStatusListener = (listener) => {
-  requirementsStatusListener = (event, status) => {
-    listener(status);
+const addCheckDiskSpaceListener = (listener) => {
+  checkDiskSpaceListener = (event, checkDiskSpaceOutput) => {
+    listener(checkDiskSpaceOutput);
   };
-  ipcRenderer.on('requirements-status', requirementsStatusListener);
+  ipcRenderer.on('disk-space-output', checkDiskSpaceListener);
 };
 
-const removeRequirementsStatusListener = () => {
-  if (!requirementsStatusListener) {
+const removeCheckDiskSpaceListener = () => {
+  if (!checkDiskSpaceListener) {
     return;
   }
-  ipcRenderer.removeListener('requirements-status', requirementsStatusListener);
-  requirementsStatusListener = null;
+  ipcRenderer.removeListener('disk-space-output', InitialSetupProgressListener);
+  InitialSetupProgressListener = null;
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -48,9 +48,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     });
     ipcRenderer.removeListener('braille', listener);
   },
-  downloadModel: () => ipcRenderer.invoke('download-model'),
-  addDownloadProgressListener: addDownloadProgressListener,
-  removeDownloadProgressListener: removeDownloadProgressListener,
-  addRequirementsStatusListener: addRequirementsStatusListener,
-  removeRequirementsStatusListener: removeRequirementsStatusListener,
+  initialSetup: () => ipcRenderer.invoke('initial-setup'),
+  addInitialSetupProgressListener: addInitialSetupProgressListener,
+  removeInitialSetupProgressListener: removeInitialSetupProgressListener,
+  checkDiskSpace: () => ipcRenderer.invoke('check-disk-space'),
+  addCheckDiskSpaceListener: addCheckDiskSpaceListener,
+  removeCheckDiskSpaceListener: removeCheckDiskSpaceListener,
 });

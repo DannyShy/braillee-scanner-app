@@ -26,7 +26,6 @@ const performScan = async (): Promise<string> => {
   await app.openDataSource(defaultSource);
 
   app.setCallback();
-  const options = {};
   // runs scanner and create unique name of file
   return new Promise<string>((resolve, reject) => {
     const options = {};
