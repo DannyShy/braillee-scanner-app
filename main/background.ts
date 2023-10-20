@@ -4,14 +4,16 @@ import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
-import url from 'url';
+import { performReadBraille } from './utils/perform-read-braille';
+import { performInitialSetup } from './utils/perform-initial-setup';
+import fs from 'fs';
+import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
+import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 
-const isProd: boolean = process.env.NODE_ENV === 'production';
-
-if (isProd) {
+if (IS_PROD) {
   serve({ directory: 'app' });
 } else {
-  app.setPath('userData', `${app.getPath('userData')} (development)`);
+  app.setPath('userData', `${app.getPath('userData')}(development)`);
 }
 
 (async () => {
@@ -22,17 +24,39 @@ if (isProd) {
     height: 600,
   });
 
-  if (isProd) {
-    await mainWindow.loadURL('app://./home.html');
+  let firstPageHtml: string;
+  let firstPage: string;
+
+  if (!fs.existsSync(PATH_TO_MODEL)) {
+    firstPageHtml = 'initial-setup.html';
+    firstPage = 'initial-setup';
+  } else {
+    firstPageHtml = 'home.html';
+    firstPage = 'home';
+  }
+
+  if (IS_PROD) {
+    await mainWindow.loadURL(`app://./${firstPageHtml}`);
   } else {
     const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/home`);
+    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
     mainWindow.webContents.openDevTools();
   }
 
-  ipcMain.handle('dialog:scanFile', performScan);
+  ipcMain.handle('check-disk-space', async () => {
+    await performCheckDiskSpace(mainWindow);
+  });
+
+  ipcMain.handle('initial-setup', async () => {
+    await performInitialSetup(mainWindow);
+  });
+  ipcMain.handle('scan-file', performScan);
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
     performCancelPreview(scannedOutputURI);
+  });
+  ipcMain.on('send-file-to-main', async (event, brailleInput) => {
+    const brailleOutput = await performReadBraille(brailleInput);
+    mainWindow.webContents.send('braille', brailleOutput);
   });
 })();
 
