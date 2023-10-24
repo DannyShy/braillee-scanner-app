@@ -5,7 +5,7 @@ import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
 import { performReadBraille } from './utils/perform-read-braille';
-import { performInitialSetup } from './utils/perform-initial-setup';
+import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
@@ -28,8 +28,8 @@ if (IS_PROD) {
   let firstPage: string;
 
   if (!fs.existsSync(PATH_TO_MODEL)) {
-    firstPageHtml = 'initial-setup.html';
-    firstPage = 'initial-setup';
+    firstPageHtml = 'welcome-screen.html';
+    firstPage = 'welcome-screen';
   } else {
     firstPageHtml = 'home.html';
     firstPage = 'home';
@@ -57,6 +57,13 @@ if (IS_PROD) {
   ipcMain.on('send-file-to-main', async (event, brailleInput) => {
     const brailleOutput = await performReadBraille(brailleInput);
     mainWindow.webContents.send('braille', brailleOutput);
+  });
+  ipcMain.handle('cancel-setup', () => {
+    performCancelInitialSetup();
+  });
+
+  ipcMain.handle('close-app', () => {
+    app.quit();
   });
 })();
 

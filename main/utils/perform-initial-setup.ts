@@ -10,19 +10,27 @@ import {
   PYTHON_EXE,
   REQUIREMENTS_PATH,
 } from './constants';
-import util from 'util';
-import { exec as execAsync } from 'child_process';
+import { spawn } from 'child_process';
 import { BrowserWindow } from 'electron';
+import treeKill from 'tree-kill';
+
+const controller = new AbortController();
+
+let pipUpgrade;
+let installRequirements;
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   let progressPercentage;
   let isFinished;
   let requirementsStatus = 1;
-  const exec = util.promisify(execAsync);
 
   mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
-  await exec(`${PYTHON_EXE} -m pip install --upgrade pip`);
-  await exec(`${PYTHON_EXE} -m pip install -r ${REQUIREMENTS_PATH}`);
+  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
+    detached: false,
+  });
+  installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+    detached: false,
+  });
   requirementsStatus = 0;
   progressPercentage = '1';
   mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
@@ -36,6 +44,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         headers: {
           Range: `bytes=${offset}-${offset + CHUNK_SIZE - 1}`,
         },
+        signal: controller.signal,
       });
       const chunk = Buffer.from(response.data, 'binary');
       fs.appendFileSync(PATH_TO_MODEL, chunk);
@@ -47,10 +56,26 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         break;
       }
     } catch (error) {
-      console.error('Error downloading chunk:', error);
+      if (error.code === 'ERR_CANCELED') {
+        console.log('Download cancelled by user.');
+      } else {
+        console.error('Error downloading chunk:', error);
+      }
       break;
     }
   }
 };
 
-export { performInitialSetup };
+const performCancelInitialSetup = async () => {
+  if (pipUpgrade.exitCode === null) {
+    treeKill(pipUpgrade.pid, 9);
+    controller.abort();
+  } else if (typeof pipUpgrade.exitCode === 'number' && installRequirements.exitCode === null) {
+    treeKill(installRequirements.pid, 9);
+    controller.abort();
+  } else if (typeof pipUpgrade.exitCode === 'number' && typeof installRequirements.exitCode === 'number') {
+    controller.abort();
+  }
+};
+
+export { performInitialSetup, performCancelInitialSetup };

@@ -54,4 +54,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkDiskSpace: () => ipcRenderer.invoke('check-disk-space'),
   addCheckDiskSpaceListener: addCheckDiskSpaceListener,
   removeCheckDiskSpaceListener: removeCheckDiskSpaceListener,
+  closeApp: () => {
+    ipcRenderer.invoke('close-app');
+  },
+  cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
 });
