@@ -19,18 +19,28 @@ const controller = new AbortController();
 let pipUpgrade;
 let installRequirements;
 
+const waitUntilFinished = async (process) => {
+  return new Promise((resolve, reject) => {
+    process.on('close', (code) => {
+      resolve(code);
+    });
+  });
+};
+
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   let progressPercentage;
   let isFinished;
-  let requirementsStatus = 1;
+  let requirementsStatus;
 
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
     detached: false,
   });
+  await waitUntilFinished(pipUpgrade);
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
+  await waitUntilFinished(installRequirements);
+
   requirementsStatus = 0;
   progressPercentage = '1';
   mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);

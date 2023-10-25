@@ -1,3 +1,5 @@
+import '@mantine/core/styles.css';
+import classes from '../public/images/WelcomeScreen.module.css';
 import {
   ActionIcon,
   Button,
@@ -15,7 +17,6 @@ import {
 import { IconCheck } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
-import classes from '../public/images/WelcomeScreen.module.css';
 import { useDisclosure } from '@mantine/hooks';
 
 export default function WelcomeScreen() {
@@ -25,6 +26,7 @@ export default function WelcomeScreen() {
   const router = useRouter();
 
   const handleViewInitialSetupProgress = async () => {
+    setRequirementsLoading(1);
     await window.electronAPI.addInitialSetupProgressListener((progress, isFinished, requirementsStatus) => {
       setRequirementsLoading(requirementsStatus);
       setDownloadModelProgress(Number(progress));
@@ -64,9 +66,9 @@ export default function WelcomeScreen() {
   };
 
   return (
-    <main>
+    <Container className={classes.wrapper} size={1400}>
       {!downloadModelProgress && !requirementsLoading && (
-        <Container className={classes.wrapper} size={1400}>
+        <Container>
           <div className={classes.inner}>
             <Title className={classes.title}>Welcome to Braille Scanner</Title>
             <Container p={0} size={600}>
@@ -86,74 +88,85 @@ export default function WelcomeScreen() {
           </div>
         </Container>
       )}
-      <Container className={classes.wrapper} size={800}>
-        <SimpleGrid cols={1}>
-          {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+
+      <SimpleGrid cols={1}>
+        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+          <Text size="lg" c="dimmed" className={classes.description}>
+            Data download in progress.
+          </Text>
+        )}
+        {requirementsLoading === 1 && (
+          <Text size="lg" c="dimmed" className={classes.description}>
+            Data download in progress.
+          </Text>
+        )}
+        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+          <Container>
+            <RingProgress
+              sections={[{ value: downloadModelProgress, color: 'teal' }]}
+              label={
+                <Center>
+                  {downloadModelProgress === 100 && (
+                    <ActionIcon color="teal" variant="light" radius="xl" size="xl">
+                      <IconCheck style={{ width: rem(20), height: rem(20) }} />
+                    </ActionIcon>
+                  )}
+                  <Text> {downloadModelProgress}% </Text>
+                </Center>
+              }
+            />
+          </Container>
+        )}
+        {requirementsLoading === 1 && (
+          <Center>
+            <Loader color="blue" />
+          </Center>
+        )}
+        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+          <Container size={200}>
+            <Button className={classes.control} size="lg" color="gray" onClick={open}>
+              Cancel
+            </Button>
+          </Container>
+        )}
+        {requirementsLoading === 1 && (
+          <Container size={200}>
+            <Button className={classes.control} size="lg" color="gray" onClick={open}>
+              Cancel
+            </Button>
+          </Container>
+        )}
+        {downloadModelProgress === 100 && (
+          <SimpleGrid>
             <Text size="lg" c="dimmed" className={classes.description}>
-              Data download in progress.
+              Additional data has been successfully downloaded and application is ready to use.
             </Text>
-          )}
-          {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
-            <Center>
-              <RingProgress
-                sections={[{ value: downloadModelProgress, color: 'teal' }]}
-                label={
-                  <Center>
-                    {downloadModelProgress === 100 && (
-                      <ActionIcon color="teal" variant="light" radius="xl" size="xl">
-                        <IconCheck style={{ width: rem(20), height: rem(20) }} />
-                      </ActionIcon>
-                    )}
-                    <Text> {downloadModelProgress}% </Text>
-                  </Center>
-                }
-              />
-            </Center>
-          )}
-          {requirementsLoading === 1 && (
-            <Center>
-              <Loader color="blue" />
-            </Center>
-          )}
-          {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
-            <Container className={classes.wrapper} size={200}>
-              <Button className={classes.control} size="lg" color="gray" onClick={open}>
-                Cancel
+            <Container size={200}>
+              <Button className={classes.control} size={'lg'} onClick={handleGoHome}>
+                Continue
               </Button>
             </Container>
-          )}
-          {downloadModelProgress === 100 && (
-            <SimpleGrid>
-              <Text size="lg" c="dimmed" className={classes.description}>
-                Additional data has been successfully downloaded and application is ready to use
-              </Text>
-              <Container className={classes.wrapper} size={200}>
-                <Button className={classes.control} size={'lg'} onClick={handleGoHome}>
-                  Continue
-                </Button>
-              </Container>
-            </SimpleGrid>
-          )}
-        </SimpleGrid>
-        <Modal opened={opened} onClose={close} withCloseButton={true} centered>
-          <SimpleGrid>
-            <Center>
-              <Text>Are you sure you want to cancel the data download?</Text>
-            </Center>
-            <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
-              <Button
-                onClick={() => {
-                  handleCancelSetup();
-                  close();
-                }}
-              >
-                Yes
-              </Button>
-              <Button onClick={close}>No </Button>
-            </Flex>
           </SimpleGrid>
-        </Modal>
-      </Container>
-    </main>
+        )}
+      </SimpleGrid>
+      <Modal opened={opened} onClose={close} withCloseButton={true} centered>
+        <SimpleGrid>
+          <Center>
+            <Text>Are you sure you want to cancel the data download?</Text>
+          </Center>
+          <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
+            <Button
+              onClick={() => {
+                handleCancelSetup();
+                close();
+              }}
+            >
+              Yes
+            </Button>
+            <Button onClick={close}>No </Button>
+          </Flex>
+        </SimpleGrid>
+      </Modal>
+    </Container>
   );
 }

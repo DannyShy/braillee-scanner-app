@@ -1,5 +1,8 @@
-import { Image, Button, FileButton, Group, Text, Box, CloseButton } from '@mantine/core';
+import '@mantine/core/styles.css';
+import { Image, Button, FileButton, Group, Text, Box, CloseButton, MantineProvider, Container } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
+import { NextPage } from 'next';
+import classes from '../public/images/WelcomeScreen.module.css';
 
 declare global {
   interface Window {
@@ -7,7 +10,7 @@ declare global {
   }
 }
 
-const App = () => {
+const App: NextPage = () => {
   const [file, setFile] = useState<File | null>(null);
   const [scannedOutputURI, setScannedOutputURI] = useState<string | null>(null);
   const [braille, setBraille] = useState(null);
@@ -58,54 +61,40 @@ const App = () => {
 
   return (
     <div>
-      <Group position="center">
-        <Button
-          radius="xl"
-          size="xl"
-          uppercase
-          variant="gradient"
-          gradient={{ from: 'orange', to: 'red' }}
-          onClick={handleScan}
-        >
+      <Container className={classes.wrapper}>
+        <Button radius="xl" size="xl" variant="gradient" gradient={{ from: 'orange', to: 'red' }} onClick={handleScan}>
           Scan
         </Button>
         <FileButton onChange={setFile} accept="image/png,image/jpeg">
           {(props) => (
-            <Button
-              variant="gradient"
-              gradient={{ from: 'orange', to: 'red' }}
-              radius="xl"
-              size="xl"
-              uppercase
-              {...props}
-            >
+            <Button variant="gradient" gradient={{ from: 'orange', to: 'red' }} radius="xl" size="xl" {...props}>
               Upload image
             </Button>
           )}
         </FileButton>
-      </Group>
+      </Container>
 
       {file && (
-        <Group position="center">
+        <Container className={classes.wrapper}>
           <Box maw={240} mah={1000} mx="auto">
-            <Text size="sm" align="center" mt="sm">
+            <Text size="lg" c="dimmed" className={classes.description}>
               Picked file: {file.name}
             </Text>
             <Image
               width={500}
               height={500}
               src={URL.createObjectURL(file)}
-              imageProps={{
-                onLoad: () => {
-                  URL.revokeObjectURL(URL.createObjectURL(file));
-                },
-              }}
+              // imageProps={{
+              //   onLoad: () => {
+              //     URL.revokeObjectURL(URL.createObjectURL(file));
+              //   },
+              // }} after update of Mantine styles, Image component no longer accept this imageProps, to be fixed in future
             />
           </Box>
-        </Group>
+        </Container>
       )}
       {scannedOutputURI && (
-        <Group position="center">
+        <Container className={classes.wrapper}>
           <Box maw={240} mah={1000} mx="auto">
             <Image width={500} height={500} src={scannedOutputURI} />
             <Button variant="subtle" color="gray" radius="xl" size="xl" id="confirmButton" title="Keep Image">
@@ -113,7 +102,7 @@ const App = () => {
             </Button>
             <CloseButton title="Delete Image" size="xl" iconSize={100} onClick={handleCancelPreview} />
           </Box>
-        </Group>
+        </Container>
       )}
       {braille && <Text>{braille}</Text>}
     </div>
