@@ -1,36 +1,28 @@
 import '@mantine/core/styles.css';
 import classes from '../public/images/WelcomeScreen.module.css';
-import {
-  ActionIcon,
-  Button,
-  Center,
-  RingProgress,
-  rem,
-  Text,
-  Title,
-  Loader,
-  Container,
-  SimpleGrid,
-  Modal,
-  Flex,
-} from '@mantine/core';
-import { IconCheck } from '@tabler/icons-react';
+import { Button, Center, RingProgress, Text, Title, Loader, Container, SimpleGrid, Modal, Flex } from '@mantine/core';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { useDisclosure } from '@mantine/hooks';
+import { NextPage } from 'next';
 
-export default function WelcomeScreen() {
+const WelcomeScreen: NextPage = () => {
+  const [initialSetupProgress, setInitialSetupProgress] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
-  const [requirementsLoading, setRequirementsLoading] = useState<number>(null);
+  const [requirementsLoading, setRequirementsLoading] = useState<boolean>(false);
   const [opened, { open, close }] = useDisclosure(false);
   const router = useRouter();
 
   const handleViewInitialSetupProgress = async () => {
-    setRequirementsLoading(1);
-    await window.electronAPI.addInitialSetupProgressListener((progress, isFinished, requirementsStatus) => {
+    await window.electronAPI.addInitialSetupProgressListener((progress, requirementsStatus, initialSetupState) => {
+      setInitialSetupProgress(initialSetupState);
       setRequirementsLoading(requirementsStatus);
-      setDownloadModelProgress(Number(progress));
-      if (isFinished) {
+      if (typeof progress === 'string') {
+        setDownloadModelProgress(Number(progress));
+      } else {
+        setDownloadModelProgress(progress);
+      }
+      if (initialSetupState === 'done') {
         window.electronAPI.removeInitialSetupProgressListener();
       }
     });
@@ -53,7 +45,7 @@ export default function WelcomeScreen() {
 
   const handleCancelSetup = () => {
     setDownloadModelProgress(null);
-    setRequirementsLoading(null); //delete model/packages as well?
+    setRequirementsLoading(false); //delete model/packages as well?
     window.electronAPI.cancelSetup();
   };
 
@@ -67,7 +59,7 @@ export default function WelcomeScreen() {
 
   return (
     <Container className={classes.wrapper} size={1400}>
-      {!downloadModelProgress && !requirementsLoading && (
+      {downloadModelProgress === null && requirementsLoading === false && initialSetupProgress !== 'done' && (
         <Container>
           <div className={classes.inner}>
             <Title className={classes.title}>Welcome to Braille Scanner</Title>
@@ -90,53 +82,48 @@ export default function WelcomeScreen() {
       )}
 
       <SimpleGrid cols={1}>
-        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+        {downloadModelProgress !== null && (
           <Text size="lg" c="dimmed" className={classes.description}>
-            Data download in progress.
+            {initialSetupProgress} in progress.
           </Text>
         )}
-        {requirementsLoading === 1 && (
+        {requirementsLoading === true && (
           <Text size="lg" c="dimmed" className={classes.description}>
-            Data download in progress.
+            {initialSetupProgress} in progress.
           </Text>
         )}
-        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+        {downloadModelProgress !== null && (
           <Container>
             <RingProgress
               sections={[{ value: downloadModelProgress, color: 'teal' }]}
               label={
                 <Center>
-                  {downloadModelProgress === 100 && (
-                    <ActionIcon color="teal" variant="light" radius="xl" size="xl">
-                      <IconCheck style={{ width: rem(20), height: rem(20) }} />
-                    </ActionIcon>
-                  )}
                   <Text> {downloadModelProgress}% </Text>
                 </Center>
               }
             />
           </Container>
         )}
-        {requirementsLoading === 1 && (
+        {requirementsLoading === true && (
           <Center>
             <Loader color="blue" />
           </Center>
         )}
-        {downloadModelProgress >= 1 && downloadModelProgress < 100 && (
+        {downloadModelProgress !== null && (
           <Container size={200}>
             <Button className={classes.control} size="lg" color="gray" onClick={open}>
               Cancel
             </Button>
           </Container>
         )}
-        {requirementsLoading === 1 && (
+        {requirementsLoading === true && (
           <Container size={200}>
             <Button className={classes.control} size="lg" color="gray" onClick={open}>
               Cancel
             </Button>
           </Container>
         )}
-        {downloadModelProgress === 100 && (
+        {initialSetupProgress === 'done' && (
           <SimpleGrid>
             <Text size="lg" c="dimmed" className={classes.description}>
               Additional data has been successfully downloaded and application is ready to use.
@@ -169,4 +156,6 @@ export default function WelcomeScreen() {
       </Modal>
     </Container>
   );
-}
+};
+
+export default WelcomeScreen;

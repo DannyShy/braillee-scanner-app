@@ -76,20 +76,11 @@ const App: NextPage = () => {
 
       {file && (
         <Container className={classes.wrapper}>
-          <Box maw={240} mah={1000} mx="auto">
+          <Box maw={1000} mah={1000} mx="auto">
             <Text size="lg" c="dimmed" className={classes.description}>
               Picked file: {file.name}
             </Text>
-            <Image
-              width={500}
-              height={500}
-              src={URL.createObjectURL(file)}
-              // imageProps={{
-              //   onLoad: () => {
-              //     URL.revokeObjectURL(URL.createObjectURL(file));
-              //   },
-              // }} after update of Mantine styles, Image component no longer accept this imageProps, to be fixed in future
-            />
+            <Image width={1000} height={1000} src={URL.createObjectURL(file)} />
           </Box>
         </Container>
       )}

@@ -28,22 +28,29 @@ const waitUntilFinished = async (process) => {
 };
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  let progressPercentage;
-  let isFinished;
-  let requirementsStatus;
+  let progressPercentage = null;
+  let requirementsStatus = true;
+  let initialSetupProgress = 'Pip upgrade';
+  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
 
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
     detached: false,
   });
   await waitUntilFinished(pipUpgrade);
+  pipUpgrade = null;
+
+  initialSetupProgress = 'Requirements installation';
+  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
   await waitUntilFinished(installRequirements);
+  installRequirements = null;
 
-  requirementsStatus = 0;
-  progressPercentage = '1';
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
+  initialSetupProgress = 'Model download';
+  requirementsStatus = false;
+  progressPercentage = '0';
+  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
 
   let offset = 0;
   mkdirSync(APP_DATA_PATH);
@@ -60,11 +67,25 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
       fs.appendFileSync(PATH_TO_MODEL, chunk);
       offset += chunk.length;
       progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-      isFinished = chunk.length < CHUNK_SIZE;
-      mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
+      const isFinished = chunk.length < CHUNK_SIZE;
+
       if (isFinished) {
+        progressPercentage = null;
+        initialSetupProgress = 'done';
+        mainWindow.webContents.send(
+          'initial-setup-progress',
+          progressPercentage,
+          requirementsStatus,
+          initialSetupProgress,
+        );
         break;
       }
+      mainWindow.webContents.send(
+        'initial-setup-progress',
+        progressPercentage,
+        requirementsStatus,
+        initialSetupProgress,
+      );
     } catch (error) {
       if (error.code === 'ERR_CANCELED') {
         console.log('Download cancelled by user.');
@@ -77,13 +98,11 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
 };
 
 const performCancelInitialSetup = async () => {
-  if (pipUpgrade.exitCode === null) {
+  if (pipUpgrade !== null) {
     treeKill(pipUpgrade.pid, 9);
-    controller.abort();
-  } else if (typeof pipUpgrade.exitCode === 'number' && installRequirements.exitCode === null) {
+  } else if (installRequirements !== null) {
     treeKill(installRequirements.pid, 9);
-    controller.abort();
-  } else if (typeof pipUpgrade.exitCode === 'number' && typeof installRequirements.exitCode === 'number') {
+  } else {
     controller.abort();
   }
 };

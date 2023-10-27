@@ -5,8 +5,8 @@ window.global = window;
 let InitialSetupProgressListener: any;
 
 const addInitialSetupProgressListener = (listener) => {
-  InitialSetupProgressListener = (event, progress, isFinished, requirementsStatus) => {
-    listener(progress, isFinished, requirementsStatus);
+  InitialSetupProgressListener = (event, progress, requirementsStatus, initialSetupProgress) => {
+    listener(progress, requirementsStatus, initialSetupProgress);
   };
   ipcRenderer.on('initial-setup-progress', InitialSetupProgressListener);
 };

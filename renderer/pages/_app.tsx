@@ -5,8 +5,9 @@ import type { AppProps } from 'next/app';
 
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
+import { NextPage } from 'next';
 
-function MyApp({ Component, pageProps }: AppProps) {
+const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
   return (
     <MantineProvider>
       <Head>
@@ -19,6 +20,6 @@ function MyApp({ Component, pageProps }: AppProps) {
       <Component {...pageProps} />
     </MantineProvider>
   );
-}
+};
 
 export default MyApp;
