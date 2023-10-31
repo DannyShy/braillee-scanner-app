@@ -28,10 +28,7 @@ const waitUntilFinished = async (process) => {
 };
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  let progressPercentage = null;
-  let requirementsStatus = true;
-  let initialSetupProgress = 'Pip upgrade';
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
+  mainWindow.webContents.send('initial-setup-progress', 'Installing Python library...', null, false);
 
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
     detached: false,
@@ -39,18 +36,15 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   await waitUntilFinished(pipUpgrade);
   pipUpgrade = null;
 
-  initialSetupProgress = 'Requirements installation';
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
+  mainWindow.webContents.send('initial-setup-progress', 'Installing requirements...', null, false);
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
   await waitUntilFinished(installRequirements);
   installRequirements = null;
 
-  initialSetupProgress = 'Model download';
-  requirementsStatus = false;
-  progressPercentage = '0';
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, requirementsStatus, initialSetupProgress);
+  let progressPercentage = 0;
+  mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
 
   let offset = 0;
   mkdirSync(APP_DATA_PATH);
@@ -71,21 +65,10 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
 
       if (isFinished) {
         progressPercentage = null;
-        initialSetupProgress = 'done';
-        mainWindow.webContents.send(
-          'initial-setup-progress',
-          progressPercentage,
-          requirementsStatus,
-          initialSetupProgress,
-        );
+        mainWindow.webContents.send('initial-setup-progress', null, progressPercentage, true);
         break;
       }
-      mainWindow.webContents.send(
-        'initial-setup-progress',
-        progressPercentage,
-        requirementsStatus,
-        initialSetupProgress,
-      );
+      mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
     } catch (error) {
       if (error.code === 'ERR_CANCELED') {
         console.log('Download cancelled by user.');

@@ -1,8 +1,8 @@
 import '@mantine/core/styles.css';
-import { Image, Button, FileButton, Group, Text, Box, CloseButton, MantineProvider, Container } from '@mantine/core';
+import { Image, Button, FileButton, Text, Box, CloseButton, Container } from '@mantine/core';
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
-import classes from '../public/images/WelcomeScreen.module.css';
+import classes from '../pages/WelcomeScreen.module.css';
 
 declare global {
   interface Window {
