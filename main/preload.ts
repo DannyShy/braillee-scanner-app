@@ -2,21 +2,21 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 window.global = window;
 
-let InitialSetupProgressListener: any;
+let initialSetupProgressListener: any;
 
 const addInitialSetupProgressListener = (listener) => {
-  InitialSetupProgressListener = (event, progress, isFinished, requirementsStatus) => {
-    listener(progress, isFinished, requirementsStatus);
+  initialSetupProgressListener = (event, progressMessage, downloadModelProgressPercentage, isFinished) => {
+    listener(progressMessage, downloadModelProgressPercentage, isFinished);
   };
-  ipcRenderer.on('initial-setup-progress', InitialSetupProgressListener);
+  ipcRenderer.on('initial-setup-progress', initialSetupProgressListener);
 };
 
 const removeInitialSetupProgressListener = () => {
-  if (!InitialSetupProgressListener) {
+  if (!initialSetupProgressListener) {
     return;
   }
-  ipcRenderer.removeListener('initial-setup-progress', InitialSetupProgressListener);
-  InitialSetupProgressListener = null;
+  ipcRenderer.removeListener('initial-setup-progress', initialSetupProgressListener);
+  initialSetupProgressListener = null;
 };
 
 let checkDiskSpaceListener;
@@ -32,8 +32,8 @@ const removeCheckDiskSpaceListener = () => {
   if (!checkDiskSpaceListener) {
     return;
   }
-  ipcRenderer.removeListener('disk-space-output', InitialSetupProgressListener);
-  InitialSetupProgressListener = null;
+  ipcRenderer.removeListener('disk-space-output', checkDiskSpaceListener);
+  checkDiskSpaceListener = null;
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -54,4 +54,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   checkDiskSpace: () => ipcRenderer.invoke('check-disk-space'),
   addCheckDiskSpaceListener: addCheckDiskSpaceListener,
   removeCheckDiskSpaceListener: removeCheckDiskSpaceListener,
+  closeApp: () => {
+    ipcRenderer.invoke('close-app');
+  },
+  cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
 });

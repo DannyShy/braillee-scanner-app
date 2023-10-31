@@ -10,22 +10,41 @@ import {
   PYTHON_EXE,
   REQUIREMENTS_PATH,
 } from './constants';
-import util from 'util';
-import { exec as execAsync } from 'child_process';
+import { spawn } from 'child_process';
 import { BrowserWindow } from 'electron';
+import treeKill from 'tree-kill';
+
+const controller = new AbortController();
+
+let pipUpgrade;
+let installRequirements;
+
+const waitUntilFinished = async (process) => {
+  return new Promise((resolve, reject) => {
+    process.on('close', (code) => {
+      resolve(code);
+    });
+  });
+};
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  let progressPercentage;
-  let isFinished;
-  let requirementsStatus = 1;
-  const exec = util.promisify(execAsync);
+  mainWindow.webContents.send('initial-setup-progress', 'Installing Python library...', null, false);
 
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
-  await exec(`${PYTHON_EXE} -m pip install --upgrade pip`);
-  await exec(`${PYTHON_EXE} -m pip install -r ${REQUIREMENTS_PATH}`);
-  requirementsStatus = 0;
-  progressPercentage = '1';
-  mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
+  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
+    detached: false,
+  });
+  await waitUntilFinished(pipUpgrade);
+  pipUpgrade = null;
+
+  mainWindow.webContents.send('initial-setup-progress', 'Installing requirements...', null, false);
+  installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+    detached: false,
+  });
+  await waitUntilFinished(installRequirements);
+  installRequirements = null;
+
+  let progressPercentage = 0;
+  mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
 
   let offset = 0;
   mkdirSync(APP_DATA_PATH);
@@ -36,21 +55,39 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         headers: {
           Range: `bytes=${offset}-${offset + CHUNK_SIZE - 1}`,
         },
+        signal: controller.signal,
       });
       const chunk = Buffer.from(response.data, 'binary');
       fs.appendFileSync(PATH_TO_MODEL, chunk);
       offset += chunk.length;
       progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-      isFinished = chunk.length < CHUNK_SIZE;
-      mainWindow.webContents.send('initial-setup-progress', progressPercentage, isFinished, requirementsStatus);
+      const isFinished = chunk.length < CHUNK_SIZE;
+
       if (isFinished) {
+        progressPercentage = null;
+        mainWindow.webContents.send('initial-setup-progress', null, progressPercentage, true);
         break;
       }
+      mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
     } catch (error) {
-      console.error('Error downloading chunk:', error);
+      if (error.code === 'ERR_CANCELED') {
+        console.log('Download cancelled by user.');
+      } else {
+        console.error('Error downloading chunk:', error);
+      }
       break;
     }
   }
 };
 
-export { performInitialSetup };
+const performCancelInitialSetup = async () => {
+  if (pipUpgrade !== null) {
+    treeKill(pipUpgrade.pid, 9);
+  } else if (installRequirements !== null) {
+    treeKill(installRequirements.pid, 9);
+  } else {
+    controller.abort();
+  }
+};
+
+export { performInitialSetup, performCancelInitialSetup };
