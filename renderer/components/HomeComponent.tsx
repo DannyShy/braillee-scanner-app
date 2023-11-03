@@ -1,6 +1,6 @@
 import classes from '../components/HomeComponent.module.css';
 import { useState } from 'react';
-import { Container, Image, Text, Flex, Grid, Center, Code } from '@mantine/core';
+import { Container, Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 
 const Home: React.FC = () => {
