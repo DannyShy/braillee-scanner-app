@@ -31,8 +31,8 @@ if (IS_PROD) {
     firstPageHtml = 'welcome-screen.html';
     firstPage = 'welcome-screen';
   } else {
-    firstPageHtml = 'home.html';
-    firstPage = 'home';
+    firstPageHtml = 'home-screen.html';
+    firstPage = 'home-screen';
   }
 
   if (IS_PROD) {

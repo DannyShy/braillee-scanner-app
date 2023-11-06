@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ANGELINA_READER_PATH, DISK_NAME, PATH_TO_MODEL, PYTHON_EXE, PYTHON_HOME, TEMP_OUTPUT } from './constants';
+import { ANGELINA_READER_PATH, PATH_TO_MODEL, PYTHON_EXE, PYTHON_HOME, TEMP_OUTPUT } from './constants';
 import { PythonShell } from 'python-shell';
 import { Options } from 'electron';
 import path from 'path';

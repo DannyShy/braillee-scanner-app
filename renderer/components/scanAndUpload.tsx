@@ -10,8 +10,8 @@ declare global {
   }
 }
 
-const App: NextPage = () => {
-  const [file, setFile] = useState<File | null>(null);
+const Home: NextPage = () => {
+  const [file, setFile] = useState(null);
   const [scannedOutputURI, setScannedOutputURI] = useState<string | null>(null);
   const [braille, setBraille] = useState(null);
 
@@ -100,4 +100,4 @@ const App: NextPage = () => {
   );
 };
 
-export default App;
+export default Home;
