@@ -1,12 +1,17 @@
 import classes from '../components/HomeComponent.module.css';
+import MyDocumentsComponent from './main/MyDocumentsComponent';
 import { useState } from 'react';
-import { Container, Image, Text, Flex, Grid, Center, Code } from '@mantine/core';
+import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 
-const Home: React.FC = () => {
-  const [active, setActive] = useState('Billing');
+const Page = {
+  1: 'My Documents',
+};
 
-  const data = [{ link: '', label: 'My Documents', icon: IconFolderOpen }];
+const data = [{ link: '', label: Page[1], icon: IconFolderOpen }];
+
+const Home: React.FC = () => {
+  const [active, setActive] = useState(Page[1]);
 
   const links = data.map((item) => (
     <a
@@ -24,13 +29,23 @@ const Home: React.FC = () => {
     </a>
   ));
 
+  const renderComponent = () => {
+    switch (active) {
+      case Page[1]:
+        return <MyDocumentsComponent />;
+      // More cases to be added
+      default:
+        return null;
+    }
+  };
+
   const handleCloseApp = () => {
     window.electronAPI.closeApp();
   };
 
   return (
-    <Container>
-      <nav className={classes.navbar}>
+    <div className={classes.parent}>
+      <div className={classes.navbar}>
         <div className={classes.navbarMain}>
           <div className={classes.header}>
             <div className={classes.appLogoAndAppName}>
@@ -50,8 +65,9 @@ const Home: React.FC = () => {
             <span>Exit</span>
           </a>
         </div>
-      </nav>
-    </Container>
+      </div>
+      <div className={classes.mainContent}>{renderComponent()}</div>
+    </div>
   );
 };
 
