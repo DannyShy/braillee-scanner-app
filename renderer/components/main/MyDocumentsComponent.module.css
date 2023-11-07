@@ -1,0 +1,38 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  margin: 50px 100px 50px 100px;
+}
+
+.topLine {
+  display: flex;
+  justify-content: space-between;
+}
+
+.centeredDiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.title {
+  align-self: flex-start;
+  font-weight: 600;
+}
+
+.createDocButton {
+  align-self: flex-end;
+}
+
+.createDocButtonCentered {
+  margin: 10px;
+  margin-bottom: 65px;
+}
+
+.centeredText {
+  text-align: center;
+  margin: 10px;
+}
