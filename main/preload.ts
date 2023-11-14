@@ -58,4 +58,20 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('close-app');
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
+  createDocument: () => {
+    ipcRenderer.send('create-document');
+  },
+  readPages: (documentUnixTimeStamp) => {
+    console.log(documentUnixTimeStamp);
+    ipcRenderer.send('read-pages', documentUnixTimeStamp);
+  },
+  handlePagesData: (listener) => {
+    ipcRenderer.on('read-pages-output', (event, readPagesOutput) => {
+      listener(readPagesOutput);
+    });
+    ipcRenderer.removeListener('read-pages-output', listener);
+  },
+  updateDocument: (documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
+    ipcRenderer.send('update-document', documentUnixTimeStamp, action, data, pageUnixTimeStamp);
+  },
 });

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "name": "braille-scanner",
+  "name": "DotSight",
   "description": "app-for-scanning-documents-in-braille",
   "version": "0.1.0",
   "author": "Hotovo s.r.o",

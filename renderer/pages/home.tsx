@@ -47,7 +47,8 @@ const App: NextPage = () => {
   useEffect(() => {
     let brailleInput: string;
     if (file) {
-      brailleInput = file.path;
+      // commented out line below due to error ---> this needs to be fixed
+      // brailleInput = file.path;
       // Transfering whole file object to background ends up with error.
       // It is probably due to size of file so only file.path is transfered.
     } else if (scannedOutputURI) {

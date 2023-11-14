@@ -1,16 +1,21 @@
 import { Button, Title } from '@mantine/core';
-import classes from '../main/MyDocumentsComponent.module.css';
+import classes from '../main/MyDocumentsEmptyComponent.module.css';
 import { Text } from '@mantine/core';
 import React from 'react';
 
-const MyDocumentsComponent = () => {
+const MyDocumentsEmptyComponent = ({ updateDocsState }) => {
+  const handleCreateDocButtonClick = () => {
+    updateDocsState(true);
+    window.electronAPI.createDocument();
+  };
+
   return (
     <div className={classes.main}>
       <div className={classes.topLine}>
         <Title className={classes.title} size="h2">
           My Documents
         </Title>
-        <Button className={classes.createDocButton} radius="xs">
+        <Button className={classes.createDocButton} radius="xs" onClick={handleCreateDocButtonClick}>
           + Create Document
         </Button>
       </div>
@@ -18,7 +23,12 @@ const MyDocumentsComponent = () => {
         <Text className={classes.centeredText}>
           You have no documents. Use the button bellow to create your first document.
         </Text>
-        <Button className={classes.createDocButtonCentered} variant="outline" radius="xs">
+        <Button
+          className={classes.createDocButtonCentered}
+          variant="outline"
+          radius="xs"
+          onClick={handleCreateDocButtonClick}
+        >
           + Create Document
         </Button>
       </div>
@@ -26,4 +36,4 @@ const MyDocumentsComponent = () => {
   );
 };
 
-export default MyDocumentsComponent;
+export default MyDocumentsEmptyComponent;

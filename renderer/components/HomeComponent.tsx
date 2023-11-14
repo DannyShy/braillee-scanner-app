@@ -1,8 +1,9 @@
 import classes from '../components/HomeComponent.module.css';
-import MyDocumentsComponent from './main/MyDocumentsComponent';
+import MyPagesComponent from './main/MyPagesComponent';
 import { useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
+import MyDocumentsEmptyComponent from './main/MyDocumentsEmptyComponent';
 
 const Page = {
   1: 'My Documents',
@@ -12,6 +13,12 @@ const data = [{ link: '', label: Page[1], icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
   const [active, setActive] = useState(Page[1]);
+  //if there is document created docsState will be true and MyDocumentsComponent will render
+  const [docsState, setDocsState] = useState<boolean>(false);
+
+  const updateDocsState = (value: boolean) => {
+    setDocsState(value);
+  };
 
   const links = data.map((item) => (
     <a
@@ -32,7 +39,11 @@ const Home: React.FC = () => {
   const renderComponent = () => {
     switch (active) {
       case Page[1]:
-        return <MyDocumentsComponent />;
+        if (docsState) {
+          return <MyPagesComponent updateDocsState={updateDocsState} />;
+        } else {
+          return <MyDocumentsEmptyComponent updateDocsState={updateDocsState} />;
+        }
       // More cases to be added
       default:
         return null;

@@ -1,0 +1,63 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 100px);
+  margin: 50px 50px 50px 50px;
+}
+
+.topLine {
+  display: flex;
+}
+
+.title {
+  margin-bottom: 5px;
+}
+
+.returnButton {
+}
+
+.editButton {
+}
+
+.contentDiv {
+  display: flex;
+  flex-direction: column;
+}
+
+.scannedDocsMini {
+  border: 1px solid black;
+  height: 100%;
+  display: grid;
+  grid-template-columns: 80px 80px 80px 80px;
+}
+
+.translatedDocs {
+  flex: 2;
+  border: 1px solid black;
+  height: 100%;
+}
+
+.scannedDoc {
+  height: 86px;
+  width: 68px;
+  border: 1px solid black;
+  margin: 5px;
+}
+
+.addDocButton {
+  padding: 0;
+  height: 40px;
+  width: 40px;
+}
+
+.docPreview {
+  height: 450px;
+  width: 300px;
+  border: 1px solid black;
+  flex: 1;
+}
+
+.scannedDocs {
+  display: flex;
+  flex-direction: row;
+}

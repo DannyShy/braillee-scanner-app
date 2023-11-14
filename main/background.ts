@@ -9,6 +9,7 @@ import { performCancelInitialSetup, performInitialSetup } from './utils/perform-
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
+import { performCreateDocument, performReadPages, performUpdateDocument } from './utils/perform-manage-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -60,6 +61,15 @@ if (IS_PROD) {
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();
+  });
+  ipcMain.on('create-document', performCreateDocument);
+  ipcMain.on('read-pages', async (event, documentUnixTimeStamp) => {
+    console.log(documentUnixTimeStamp);
+    const readPagesOutput = await performReadPages(documentUnixTimeStamp);
+    mainWindow.webContents.send('read-pages-output', readPagesOutput);
+  });
+  ipcMain.on('update-document', (event, documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
+    performUpdateDocument(documentUnixTimeStamp, action, data, pageUnixTimeStamp);
   });
 
   ipcMain.handle('close-app', () => {
