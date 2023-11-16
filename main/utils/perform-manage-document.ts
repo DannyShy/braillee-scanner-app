@@ -2,13 +2,12 @@ import { MY_DOCUMENTS_PATH } from './constants';
 import path from 'path';
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
+import { BrowserWindow } from 'electron';
 
 const performUpdateDocument = (unix, action, data, pageUnix) => {
   // based on unix time stamp number folder is found.
   // property which is to be updated needs to be defined
   // new value has to be defined.
-  console.log(unix);
-  console.log(typeof unix);
   const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(unix), 'document.json');
   const buffferData = fs.readFileSync(documentsPath);
   const stringData = buffferData.toString();
@@ -17,18 +16,21 @@ const performUpdateDocument = (unix, action, data, pageUnix) => {
   switch (action) {
     case 'editTitle':
       jsonData.title = data;
+      break;
     case 'addPage':
       const newPage = {
         createdAt: Date.now(),
         file: null,
       };
       jsonData.pages.push(newPage);
+      break;
 
     case 'editPage':
       const pageIndex = jsonData.pages.findIndex((page) => page.createdAt === pageUnix);
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].file = data;
       }
+      break;
   }
 
   const jsonStringifiedData = JSON.stringify(jsonData);
@@ -84,14 +86,11 @@ const performReadDocuments = () => {
 
 // this util serves for rendering of pages inside MyPagesComponent
 
-const performReadPages = (documentUnixTimeStamp: number) => {
-  console.log(documentUnixTimeStamp);
-  console.log(typeof documentUnixTimeStamp);
+const performReadPages = (documentUnixTimeStamp: number, mainWindow: BrowserWindow) => {
   // Convert documentUnixTimeStamp to a string explicitly
   const timeStampString = String(documentUnixTimeStamp);
 
   const documentsPath = path.resolve(MY_DOCUMENTS_PATH, timeStampString, 'document.json');
-  console.log(documentsPath);
 
   try {
     // Use fs.existsSync to check if the file exists before reading it
@@ -99,14 +98,12 @@ const performReadPages = (documentUnixTimeStamp: number) => {
       const buffferData = fs.readFileSync(documentsPath);
       const stringData = buffferData.toString();
       const jsonData = JSON.parse(stringData);
-      return jsonData;
+      mainWindow.webContents.send('read-pages-output', jsonData);
     } else {
       console.error('File not found:', documentsPath);
-      return null; // or handle the missing file case appropriately
     }
   } catch (error) {
     console.error('Error reading file:', error);
-    return null; // or handle the error case appropriately
   }
 };
 

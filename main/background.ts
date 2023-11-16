@@ -64,14 +64,11 @@ if (IS_PROD) {
   });
   ipcMain.on('create-document', performCreateDocument);
   ipcMain.on('read-pages', async (event, documentUnixTimeStamp) => {
-    console.log(documentUnixTimeStamp);
-    const readPagesOutput = await performReadPages(documentUnixTimeStamp);
-    mainWindow.webContents.send('read-pages-output', readPagesOutput);
+    performReadPages(documentUnixTimeStamp, mainWindow);
   });
   ipcMain.on('update-document', (event, documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
     performUpdateDocument(documentUnixTimeStamp, action, data, pageUnixTimeStamp);
   });
-
   ipcMain.handle('close-app', () => {
     app.quit();
   });

@@ -3,13 +3,19 @@ import classes from '../main/EditDocumentTitleComponent.module.css';
 import { Button, TextInput } from '@mantine/core';
 import { IconCheck, IconX } from '@tabler/icons-react';
 
-const EditDocumentTitleComponent = ({ pageContent, setEditTitleState }) => {
+const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageContent }) => {
   const [value, setValue] = useState('New Document');
 
-  const handleClickConfirm = () => {
+  const handleClickConfirm = async () => {
     window.electronAPI.updateDocument(1699949242679, 'editTitle', value, null);
+    window.electronAPI.readPages(1699949242679);
+    await window.electronAPI.addPagesDataListener((pageData) => {
+      setPageContent(pageData);
+      window.electronAPI.removePagesDataListener();
+    });
     setEditTitleState(false);
   };
+
   const handleClickReject = () => {
     setValue(pageContent.title);
   };

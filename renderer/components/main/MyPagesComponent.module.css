@@ -25,14 +25,20 @@
 }
 
 .scannedDocsMini {
+  display: flex;
+  flex-direction: row;
+}
+
+.scannedDocsMiniAndPlus {
   border: 1px solid black;
   height: 100%;
   display: grid;
-  grid-template-columns: 80px 80px 80px 80px;
+  grid-template-columns: 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px;
+  flex: 1;
 }
 
 .translatedDocs {
-  flex: 2;
+  flex: 1;
   border: 1px solid black;
   height: 100%;
 }
@@ -42,6 +48,30 @@
   width: 68px;
   border: 1px solid black;
   margin: 5px;
+  transition: background-color 0.3s ease;
+}
+
+.scannedDoc:hover {
+  background-color: lightgray;
+}
+
+.scannedDocClicked {
+  height: 86px;
+  width: 68px;
+  border: 1px solid black;
+  margin: 5px;
+  transition: background-color 0.3s ease;
+  background-color: darkgray;
+}
+
+.addDocButtonCont {
+  height: 86px;
+  width: 68px;
+  border: 1px solid white;
+  margin: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .addDocButton {
@@ -50,14 +80,36 @@
   width: 40px;
 }
 
+.iconPlus {
+  height: 68px;
+  width: 68px;
+}
+
 .docPreview {
-  height: 450px;
-  width: 300px;
+  /* height: 450px;
+  width: 300px; */
   border: 1px solid black;
   flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.docPreview p,
+.docPreview button {
+  margin: 7px;
+}
+
+.imagePreview {
+  max-width: auto;
+  max-height: 100%;
 }
 
 .scannedDocs {
   display: flex;
   flex-direction: row;
+  flex: 1;
+  width: 100%;
+  height: 100%;
 }
