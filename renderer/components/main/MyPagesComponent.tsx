@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classes from '../main/MyPagesComponent.module.css';
-import { Button, Text, Container, Image } from '@mantine/core';
-import { IconArrowLeft, IconPlus } from '@tabler/icons-react';
-import DocumentTitleComponent from './DocumentTitleComponent';
+import { Button, Text, Container, Image, Title, Tabs } from '@mantine/core';
+import { IconArrowLeft, IconPencil, IconPlus } from '@tabler/icons-react';
 import EditDocumentTitleComponent from './EditDocumentTitleComponent';
 
 const emptyDocumentData = {
@@ -16,7 +15,7 @@ const emptyDocumentData = {
   ],
 };
 
-const MyPagesComponent = ({ updateDocsState }) => {
+const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
   // editTitleState serves for rendering EditDocumentTitleComponent
   const [editTitleState, setEditTitleState] = useState<boolean>(true);
   const [pageContent, setPageContent] = useState(emptyDocumentData);
@@ -26,12 +25,16 @@ const MyPagesComponent = ({ updateDocsState }) => {
   };
 
   const handleAddPage = async () => {
-    window.electronAPI.updateDocument(1699949242679, 'addPage');
-    window.electronAPI.readPages(1699949242679);
+    window.electronAPI.updateDocument(activeDocument, 'addPage');
+    window.electronAPI.readPages(activeDocument);
     await window.electronAPI.addPagesDataListener((pageData) => {
       setPageContent(pageData);
       window.electronAPI.removePagesDataListener();
     });
+  };
+
+  const handleEditButtonClick = () => {
+    setEditTitleState(true);
   };
 
   const renderTopLine = () => {
@@ -41,10 +44,20 @@ const MyPagesComponent = ({ updateDocsState }) => {
           pageContent={pageContent}
           setEditTitleState={setEditTitleState}
           setPageContent={setPageContent}
+          activeDocument={activeDocument}
         />
       );
     } else {
-      return <DocumentTitleComponent setEditTitleState={setEditTitleState} pageContent={pageContent} />;
+      return (
+        <>
+          <Title className={classes.title} size="h2">
+            {pageContent.title}
+          </Title>
+          <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
+            <IconPencil></IconPencil>
+          </Button>
+        </>
+      );
     }
   };
 
@@ -53,10 +66,14 @@ const MyPagesComponent = ({ updateDocsState }) => {
       return pageContent.pages.map((page, index) => (
         <Container
           key={index}
-          className={` ${clickedContainer === index ? `${classes.scannedDocClicked}` : `${classes.scannedDoc}`} `}
+          className={` ${
+            clickedContainer === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`
+          } `}
           onClick={() => setClickedContainer(index)}
         >
-          <p>Page {index + 1}</p>
+          {pageContent.pages[index].file ? (
+            <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
+          ) : null}
         </Container>
       ));
     } else {
@@ -67,8 +84,7 @@ const MyPagesComponent = ({ updateDocsState }) => {
   const renderPagePreview = () => {
     if (pageContent.pages[clickedContainer].file === null) {
       return (
-        <Container className={classes.docPreview}>
-          {/* <Text>Page {clickedContainer + 1}</Text> */}
+        <Container className={classes.docPreviewEmpty}>
           <Button>Scan</Button>
           <Text>or</Text>
           <Button>Upload file</Button>
@@ -89,7 +105,6 @@ const MyPagesComponent = ({ updateDocsState }) => {
         (max, page, index) => (page.createdAt > pageContent.pages[max].createdAt ? index : max),
         0,
       );
-
       setClickedContainer(maxIndex);
     }
   }, [pageContent]);
@@ -100,7 +115,7 @@ const MyPagesComponent = ({ updateDocsState }) => {
         <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButtonClick}>
           <IconArrowLeft></IconArrowLeft>
         </Button>
-        <div> {renderTopLine()}</div>
+        {renderTopLine()}
       </div>
       <div className={classes.contentDiv}>
         <div className={classes.scannedDocsMiniAndPlus}>
@@ -113,7 +128,23 @@ const MyPagesComponent = ({ updateDocsState }) => {
         </div>
         <div className={classes.scannedDocs}>
           {renderPagePreview()}
-          <div className={classes.translatedDocs}></div>
+          <div className={classes.translatedDocs}>
+            <Tabs defaultValue="unicode">
+              <Tabs.List>
+                <Tabs.Tab value="unicode">Unicode</Tabs.Tab>
+                <Tabs.Tab value="text">Text</Tabs.Tab>
+              </Tabs.List>
+              <Tabs.Panel value="unicode">
+                ⠠⠞⠑⠉⠓⠝⠕⠧⠊⠝⠅⠽ ⠠⠙⠕⠞⠗⠊⠎⠀⠤⠀⠃⠗⠁⠊⠇⠕⠧⠯ ⠠⠞⠑⠞⠗⠊⠎⠀⠏⠗⠑⠀⠃⠗⠁⠊⠇⠕⠧⠯ ⠗⠊⠁⠙⠕⠅ ⠠⠞⠕⠂⠀⠮⠑⠀⠎⠁⠀⠧⠀⠎⠬⠩⠁⠎⠝⠕⠎⠞⠊⠀⠧⠑⠸⠁
+                ⠬⠎⠊⠇⠊⠁⠀⠧⠑⠝⠥⠚⠑⠀⠏⠗⠊⠎⠏⠾⠎⠕⠃⠕⠧⠁⠝⠊⠥ ⠏⠕⠩⠌⠞⠁⠩⠕⠧⠯⠉⠓⠀⠓⠊⠑⠗⠀⠁⠚ ⠝⠑⠧⠊⠙⠊⠁⠉⠊⠍⠀⠚⠑⠀⠋⠁⠝⠞⠁⠎⠞⠊⠉⠅⠡
+                ⠎⠏⠗⠡⠧⠁⠂⠀⠅⠞⠕⠗⠬⠀⠎⠍⠑⠀⠥⠮⠀⠝⠁⠀⠞⠯⠉⠓⠞⠕ ⠎⠞⠗⠡⠝⠅⠁⠉⠓⠀⠕⠎⠇⠡⠧⠊⠇⠊⠲⠀⠠⠵⠁⠓⠨⠃⠊⠳ ⠎⠁⠀⠙⠕⠀⠵⠧⠥⠅⠕⠧⠀⠏⠗⠌⠃⠑⠓⠕⠧⠀⠁⠀⠓⠊⠑⠗
+                ⠁⠀⠝⠑⠉⠓⠁⠳⠐⠎⠧⠕⠚⠥⠀⠋⠁⠝⠞⠡⠵⠊⠥⠀⠃⠇⠬⠙⠊⠳ ⠎⠏⠕⠇⠥⠀⠎⠀⠏⠗⠎⠞⠁⠍⠊⠀⠝⠁⠀⠅⠇⠡⠧⠑⠎⠝⠊⠉⠊ ⠚⠑⠀⠝⠁⠕⠵⠁⠚⠀⠙⠥⠱⠥⠀⠓⠗⠑⠚⠬⠉⠊
+                ⠵⠡⠮⠊⠞⠕⠅⠲⠀⠠⠁⠚⠀⠧⠀⠍⠕⠃⠊⠇⠝⠯⠉⠓ ⠞⠑⠇⠑⠋⠪⠝⠕⠉⠓⠀⠝⠡⠍⠀⠥⠮⠀⠵⠁⠩⠌⠝⠁ ⠎⠧⠊⠞⠁⠳⠀⠝⠁⠀⠇⠑⠏⠱⠊⠑⠀⠩⠁⠎⠽⠂⠀⠁⠚⠀⠞⠥
+                ⠓⠗⠽⠀⠏⠕⠍⠁⠇⠊⠩⠅⠽⠀⠏⠗⠊⠃⠬⠙⠁⠚⠬⠲⠀⠠⠚⠁ ⠎⠕⠍⠀⠧⠱⠁⠅⠀⠧⠹⠁⠅⠁⠀⠞⠊⠏⠥⠀⠕⠙
+              </Tabs.Panel>
+              <Tabs.Panel value="text">This is Text content</Tabs.Panel>
+            </Tabs>
+          </div>
         </div>
       </div>
     </div>

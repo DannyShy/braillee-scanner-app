@@ -39,7 +39,7 @@ const performUpdateDocument = (unix, action, data, pageUnix) => {
 };
 
 // creates document folder, creates content of file, creates json file
-const performCreateDocument = () => {
+const performCreateDocument = (mainWindow: BrowserWindow) => {
   if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
     mkdirSync(MY_DOCUMENTS_PATH);
   }
@@ -78,13 +78,15 @@ const performCreateDocument = () => {
   const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(fileName), 'document.json');
 
   fs.writeFileSync(documentsPath, documentDataString);
+
+  mainWindow.webContents.send('create-doc-output', fileName);
 };
 
 const performReadDocuments = () => {
-  //to be done as part of different task
+  // to be done as part of different task
 };
 
-// this util serves for rendering of pages inside MyPagesComponent
+// util below serves for rendering of pages inside MyPagesComponent
 
 const performReadPages = (documentUnixTimeStamp: number, mainWindow: BrowserWindow) => {
   // Convert documentUnixTimeStamp to a string explicitly

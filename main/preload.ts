@@ -52,6 +52,22 @@ const removePagesDataListener = () => {
   pagesDataListener = null;
 };
 
+let docDataListener;
+const addDocDataListener = (listener) => {
+  docDataListener = (event, docData) => {
+    listener(docData);
+  };
+  ipcRenderer.on('create-doc-output', docDataListener);
+};
+
+const removeDocDataListener = () => {
+  if (!docDataListener) {
+    return;
+  }
+  ipcRenderer.removeListener('create-doc-output', docDataListener);
+  docDataListener = null;
+};
+
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
@@ -82,6 +98,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   addPagesDataListener: addPagesDataListener,
   removePagesDataListener: removePagesDataListener,
+  addDocDataListener: addDocDataListener,
+  removeDocDataListener: removeDocDataListener,
   updateDocument: (documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
     ipcRenderer.send('update-document', documentUnixTimeStamp, action, data, pageUnixTimeStamp);
   },

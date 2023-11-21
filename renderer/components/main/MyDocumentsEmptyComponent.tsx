@@ -3,10 +3,14 @@ import classes from '../main/MyDocumentsEmptyComponent.module.css';
 import { Text } from '@mantine/core';
 import React from 'react';
 
-const MyDocumentsEmptyComponent = ({ updateDocsState }) => {
-  const handleCreateDocButtonClick = () => {
-    updateDocsState(true);
+const MyDocumentsEmptyComponent = ({ updateDocsState, setActiveDocument }) => {
+  const handleCreateDocButtonClick = async () => {
     window.electronAPI.createDocument();
+    await window.electronAPI.addDocDataListener((docUnixTimeStamp) => {
+      setActiveDocument(docUnixTimeStamp);
+      window.electronAPI.removeDocDataListener();
+    });
+    updateDocsState(true);
   };
 
   return (

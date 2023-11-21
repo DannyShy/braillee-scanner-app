@@ -1,23 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import classes from '../main/EditDocumentTitleComponent.module.css';
 import { Button, TextInput } from '@mantine/core';
 import { IconCheck, IconX } from '@tabler/icons-react';
 
-const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageContent }) => {
-  const [value, setValue] = useState('New Document');
+const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageContent, activeDocument }) => {
+  const [value, setValue] = useState(pageContent.title);
+  const ref = useRef(null);
 
   const handleClickConfirm = async () => {
-    window.electronAPI.updateDocument(1699949242679, 'editTitle', value, null);
-    window.electronAPI.readPages(1699949242679);
+    window.electronAPI.updateDocument(activeDocument, 'editTitle', value, null);
+    window.electronAPI.readPages(activeDocument);
     await window.electronAPI.addPagesDataListener((pageData) => {
       setPageContent(pageData);
       window.electronAPI.removePagesDataListener();
     });
+
     setEditTitleState(false);
   };
 
-  const handleClickReject = () => {
+  const handleClickReject = async () => {
+    window.electronAPI.readPages(activeDocument);
+    await window.electronAPI.addPagesDataListener((pageData) => {
+      setPageContent(pageData);
+      window.electronAPI.removePagesDataListener();
+    });
     setValue(pageContent.title);
+    setEditTitleState(false);
   };
 
   const handleFocus = (event) => {
@@ -26,16 +34,45 @@ const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageCon
     }
   };
 
+  useEffect(() => {
+    ref.current.focus();
+  }, []);
+
   return (
-    <>
-      <TextInput value={value} onChange={(event) => setValue(event.currentTarget.value)} onFocus={handleFocus} />
-      <Button className={classes.editButton} size="md" variant="transparent" onClick={handleClickConfirm} color="green">
-        <IconCheck></IconCheck>
-      </Button>
-      <Button className={classes.editButton} size="md" variant="transparent" onClick={handleClickReject} color="red">
-        <IconX></IconX>
-      </Button>
-    </>
+    <div className={classes.editTitle}>
+      <TextInput
+        className={classes.textInput}
+        ref={ref}
+        value={value}
+        onChange={(event) => setValue(event.currentTarget.value)}
+        onFocus={handleFocus}
+        // onBlur={handleClickConfirm}
+      />
+      <div className={classes.topLineButtons}>
+        <div>
+          <Button
+            className={classes.editButton}
+            size="md"
+            variant="transparent"
+            onClick={handleClickConfirm}
+            color="green"
+          >
+            <IconCheck></IconCheck>
+          </Button>
+        </div>
+        <div>
+          <Button
+            className={classes.editButton}
+            size="md"
+            variant="transparent"
+            onClick={handleClickReject}
+            color="red"
+          >
+            <IconX></IconX>
+          </Button>
+        </div>
+      </div>
+    </div>
   );
 };
 

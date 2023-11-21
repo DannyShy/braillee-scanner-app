@@ -15,6 +15,7 @@ const Home: React.FC = () => {
   const [active, setActive] = useState(Page[1]);
   //if there is document created docsState will be true and MyDocumentsComponent will render
   const [docsState, setDocsState] = useState<boolean>(false);
+  const [activeDocument, setActiveDocument] = useState(null);
 
   const updateDocsState = (value: boolean) => {
     setDocsState(value);
@@ -40,9 +41,9 @@ const Home: React.FC = () => {
     switch (active) {
       case Page[1]:
         if (docsState) {
-          return <MyPagesComponent updateDocsState={updateDocsState} />;
+          return <MyPagesComponent updateDocsState={updateDocsState} activeDocument={activeDocument} />;
         } else {
-          return <MyDocumentsEmptyComponent updateDocsState={updateDocsState} />;
+          return <MyDocumentsEmptyComponent updateDocsState={updateDocsState} setActiveDocument={setActiveDocument} />;
         }
       // More cases to be added
       default:

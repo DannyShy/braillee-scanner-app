@@ -62,7 +62,9 @@ if (IS_PROD) {
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();
   });
-  ipcMain.on('create-document', performCreateDocument);
+  ipcMain.on('create-document', () => {
+    performCreateDocument(mainWindow);
+  });
   ipcMain.on('read-pages', async (event, documentUnixTimeStamp) => {
     performReadPages(documentUnixTimeStamp, mainWindow);
   });
