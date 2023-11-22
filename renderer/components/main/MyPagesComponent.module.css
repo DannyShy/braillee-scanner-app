@@ -30,10 +30,19 @@
 }
 
 .scannedDocsMiniAndPlus {
-  height: 100%;
-  display: grid;
-  grid-template-columns: 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px 80px;
+  display: flex;
+  justify-content: space-between;
+
   flex: 1;
+
+  height: 100px;
+  max-height: 100px;
+}
+
+.scannedDocumentsMini {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
 }
 
 .scannedDocMini {

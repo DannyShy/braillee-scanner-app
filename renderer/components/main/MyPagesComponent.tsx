@@ -62,23 +62,17 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
   };
 
   const renderMiniPages = () => {
-    if (pageContent !== emptyDocumentData) {
-      return pageContent.pages.map((page, index) => (
-        <Container
-          key={index}
-          className={` ${
-            clickedContainer === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`
-          } `}
-          onClick={() => setClickedContainer(index)}
-        >
-          {pageContent.pages[index].file ? (
-            <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
-          ) : null}
-        </Container>
-      ));
-    } else {
-      return null;
-    }
+    return pageContent.pages.map((page, index) => (
+      <Container
+        key={index}
+        className={` ${clickedContainer === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
+        onClick={() => setClickedContainer(index)}
+      >
+        {pageContent.pages[index].file ? (
+          <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
+        ) : null}
+      </Container>
+    ));
   };
 
   const renderPagePreview = () => {
@@ -99,15 +93,15 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
     }
   };
 
+  const maxIndex = pageContent.pages.reduce(
+    (max, page, index) => (page.createdAt > pageContent.pages[max].createdAt ? index : max),
+    0,
+  );
+
+  // code below makes newest page focused once the number of pages changes
   useEffect(() => {
-    if (pageContent !== emptyDocumentData) {
-      const maxIndex = pageContent.pages.reduce(
-        (max, page, index) => (page.createdAt > pageContent.pages[max].createdAt ? index : max),
-        0,
-      );
-      setClickedContainer(maxIndex);
-    }
-  }, [pageContent]);
+    setClickedContainer(maxIndex);
+  }, [maxIndex]);
 
   return (
     <div className={classes.main}>
@@ -119,12 +113,12 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
       </div>
       <div className={classes.contentDiv}>
         <div className={classes.scannedDocsMiniAndPlus}>
-          {renderMiniPages()}
-          <Container className={classes.addDocButtonCont}>
+          <div className={classes.scannedDocumentsMini}>{renderMiniPages()}</div>
+          <div className={classes.addDocButtonCont}>
             <Button className={classes.addDocButton} size="xl" variant="transparent" onClick={handleAddPage}>
               <IconPlus className={classes.iconPlus}></IconPlus>
             </Button>
-          </Container>
+          </div>
         </div>
         <div className={classes.scannedDocs}>
           {renderPagePreview()}
