@@ -93,14 +93,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   createDocument: () => {
     ipcRenderer.send('create-document');
   },
-  readPages: (documentUnixTimeStamp) => {
-    ipcRenderer.send('read-pages', documentUnixTimeStamp);
+  readPages: (documentID) => {
+    ipcRenderer.send('read-pages', documentID);
   },
   addPagesDataListener: addPagesDataListener,
   removePagesDataListener: removePagesDataListener,
   addDocDataListener: addDocDataListener,
   removeDocDataListener: removeDocDataListener,
-  updateDocument: (documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
-    ipcRenderer.send('update-document', documentUnixTimeStamp, action, data, pageUnixTimeStamp);
+  updateDocument: (documentID, action, data, pageID) => {
+    ipcRenderer.send('update-document', documentID, action, data, pageID);
   },
 });

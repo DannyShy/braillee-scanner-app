@@ -3,25 +3,26 @@ import classes from '../main/MyPagesComponent.module.css';
 import { Button, Text, Container, Image, Title, Tabs } from '@mantine/core';
 import { IconArrowLeft, IconPencil, IconPlus } from '@tabler/icons-react';
 import EditDocumentTitleComponent from './EditDocumentTitleComponent';
+import { Document, MyPagesComponentProps } from './types';
 
-const emptyDocumentData = {
+const emptyDocumentData: Document = {
   title: 'New Document',
-  createdAt: '',
+  createdAt: null,
   pages: [
     {
-      createdAt: '',
+      createdAt: null,
       file: null,
     },
   ],
 };
 
-const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
+const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activeDocument }) => {
   // editTitleState serves for rendering EditDocumentTitleComponent
   const [editTitleState, setEditTitleState] = useState<boolean>(true);
-  const [pageContent, setPageContent] = useState(emptyDocumentData);
-  const [clickedContainer, setClickedContainer] = useState(0);
+  const [pageContent, setPageContent] = useState<Document>(emptyDocumentData);
+  const [selectedPage, setSelectedPage] = useState<number>(0);
   const handleReturnButtonClick = () => {
-    updateDocsState(false);
+    setDocsState(false);
   };
 
   const handleAddPage = async () => {
@@ -65,8 +66,8 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
     return pageContent.pages.map((page, index) => (
       <Container
         key={index}
-        className={` ${clickedContainer === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
-        onClick={() => setClickedContainer(index)}
+        className={` ${selectedPage === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
+        onClick={() => setSelectedPage(index)}
       >
         {pageContent.pages[index].file ? (
           <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
@@ -76,7 +77,7 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
   };
 
   const renderPagePreview = () => {
-    if (pageContent.pages[clickedContainer].file === null) {
+    if (pageContent.pages[selectedPage].file === null) {
       return (
         <Container className={classes.docPreviewEmpty}>
           <Button>Scan</Button>
@@ -87,7 +88,7 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
     } else {
       return (
         <Container className={classes.docPreview}>
-          <Image src={pageContent.pages[clickedContainer].file} className={classes.imagePreview}></Image>
+          <Image src={pageContent.pages[selectedPage].file} className={classes.imagePreview}></Image>
         </Container>
       );
     }
@@ -100,7 +101,7 @@ const MyPagesComponent = ({ updateDocsState, activeDocument }) => {
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
-    setClickedContainer(maxIndex);
+    setSelectedPage(maxIndex);
   }, [maxIndex]);
 
   return (

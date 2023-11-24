@@ -2,15 +2,16 @@ import { Button, Title } from '@mantine/core';
 import classes from '../main/MyDocumentsEmptyComponent.module.css';
 import { Text } from '@mantine/core';
 import React from 'react';
+import { MyDocumentsEmptyComponentProps } from './types';
 
-const MyDocumentsEmptyComponent = ({ updateDocsState, setActiveDocument }) => {
+const MyDocumentsEmptyComponent: React.FC<MyDocumentsEmptyComponentProps> = ({ setDocsState, setActiveDocument }) => {
   const handleCreateDocButtonClick = async () => {
     window.electronAPI.createDocument();
-    await window.electronAPI.addDocDataListener((docUnixTimeStamp) => {
-      setActiveDocument(docUnixTimeStamp);
+    await window.electronAPI.addDocDataListener((documentID) => {
+      setActiveDocument(documentID);
       window.electronAPI.removeDocDataListener();
     });
-    updateDocsState(true);
+    setDocsState(true);
   };
 
   return (

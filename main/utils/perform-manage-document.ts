@@ -4,11 +4,11 @@ import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
 
-const performUpdateDocument = (unix, action, data, pageUnix) => {
+const performUpdateDocument = (documentID, action, data, pageID) => {
   // based on unix time stamp number folder is found.
   // property which is to be updated needs to be defined
   // new value has to be defined.
-  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(unix), 'document.json');
+  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
   const buffferData = fs.readFileSync(documentsPath);
   const stringData = buffferData.toString();
   const jsonData = JSON.parse(stringData);
@@ -26,7 +26,7 @@ const performUpdateDocument = (unix, action, data, pageUnix) => {
       break;
 
     case 'editPage':
-      const pageIndex = jsonData.pages.findIndex((page) => page.createdAt === pageUnix);
+      const pageIndex = jsonData.pages.findIndex((page) => page.createdAt === pageID);
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].file = data;
       }
@@ -44,9 +44,9 @@ const performCreateDocument = (mainWindow: BrowserWindow) => {
     mkdirSync(MY_DOCUMENTS_PATH);
   }
   //creating unix timestamp file
-  const fileName = Date.now();
+  const documentID = Date.now();
 
-  mkdirSync(path.resolve(MY_DOCUMENTS_PATH, String(fileName)));
+  mkdirSync(path.resolve(MY_DOCUMENTS_PATH, String(documentID)));
   // below is option with using proper date. but for now lets use unix timestamp even in documents.json
   // const createdAt = new Date(fileName);
   // const dateTimeString =
@@ -64,10 +64,10 @@ const performCreateDocument = (mainWindow: BrowserWindow) => {
 
   const documentData = {
     title: 'New Document',
-    createdAt: fileName,
+    createdAt: documentID,
     pages: [
       {
-        createdAt: fileName,
+        createdAt: documentID,
         file: null,
       },
     ],
@@ -75,11 +75,11 @@ const performCreateDocument = (mainWindow: BrowserWindow) => {
 
   const documentDataString = JSON.stringify(documentData);
 
-  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(fileName), 'document.json');
+  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
 
   fs.writeFileSync(documentsPath, documentDataString);
 
-  mainWindow.webContents.send('create-doc-output', fileName);
+  mainWindow.webContents.send('create-doc-output', documentID);
 };
 
 const performReadDocuments = () => {
@@ -88,9 +88,9 @@ const performReadDocuments = () => {
 
 // util below serves for rendering of pages inside MyPagesComponent
 
-const performReadPages = (documentUnixTimeStamp: number, mainWindow: BrowserWindow) => {
+const performReadPages = (documentID: number, mainWindow: BrowserWindow) => {
   // Convert documentUnixTimeStamp to a string explicitly
-  const timeStampString = String(documentUnixTimeStamp);
+  const timeStampString = String(documentID);
 
   const documentsPath = path.resolve(MY_DOCUMENTS_PATH, timeStampString, 'document.json');
 

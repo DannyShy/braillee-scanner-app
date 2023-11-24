@@ -3,6 +3,7 @@ import { Image, Button, FileButton, Text, Box, CloseButton, Container } from '@m
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import classes from '../pages/WelcomeScreen.module.css';
+import { FileWithPath } from 'file-selector';
 
 declare global {
   interface Window {
@@ -11,7 +12,7 @@ declare global {
 }
 
 const App: NextPage = () => {
-  const [file, setFile] = useState<File | null>(null);
+  const [file, setFile] = useState<FileWithPath | null>(null);
   const [scannedOutputURI, setScannedOutputURI] = useState<string | null>(null);
   const [braille, setBraille] = useState(null);
 
@@ -47,8 +48,7 @@ const App: NextPage = () => {
   useEffect(() => {
     let brailleInput: string;
     if (file) {
-      // commented out line below due to error ---> this needs to be fixed
-      // brailleInput = file.path;
+      brailleInput = file.path;
       // Transfering whole file object to background ends up with error.
       // It is probably due to size of file so only file.path is transfered.
     } else if (scannedOutputURI) {

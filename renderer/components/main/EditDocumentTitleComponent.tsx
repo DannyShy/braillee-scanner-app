@@ -2,10 +2,16 @@ import React, { useEffect, useRef, useState } from 'react';
 import classes from '../main/EditDocumentTitleComponent.module.css';
 import { Button, TextInput } from '@mantine/core';
 import { IconCheck, IconX } from '@tabler/icons-react';
+import { EditDocumentTitleComponentProps } from './types';
 
-const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageContent, activeDocument }) => {
-  const [value, setValue] = useState(pageContent.title);
-  const ref = useRef(null);
+const EditDocumentTitleComponent: React.FC<EditDocumentTitleComponentProps> = ({
+  pageContent,
+  setEditTitleState,
+  setPageContent,
+  activeDocument,
+}) => {
+  const [value, setValue] = useState<string>(pageContent.title);
+  const titleInputRef = useRef<HTMLInputElement>(null);
 
   const handleClickConfirm = async () => {
     window.electronAPI.updateDocument(activeDocument, 'editTitle', value, null);
@@ -35,18 +41,17 @@ const EditDocumentTitleComponent = ({ pageContent, setEditTitleState, setPageCon
   };
 
   useEffect(() => {
-    ref.current.focus();
+    titleInputRef.current.focus();
   }, []);
 
   return (
     <div className={classes.editTitle}>
       <TextInput
         className={classes.textInput}
-        ref={ref}
+        ref={titleInputRef}
         value={value}
         onChange={(event) => setValue(event.currentTarget.value)}
         onFocus={handleFocus}
-        // onBlur={handleClickConfirm}
       />
       <div className={classes.topLineButtons}>
         <div>

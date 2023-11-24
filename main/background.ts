@@ -65,11 +65,11 @@ if (IS_PROD) {
   ipcMain.on('create-document', () => {
     performCreateDocument(mainWindow);
   });
-  ipcMain.on('read-pages', async (event, documentUnixTimeStamp) => {
-    performReadPages(documentUnixTimeStamp, mainWindow);
+  ipcMain.on('read-pages', async (event, documentID) => {
+    performReadPages(documentID, mainWindow);
   });
-  ipcMain.on('update-document', (event, documentUnixTimeStamp, action, data, pageUnixTimeStamp) => {
-    performUpdateDocument(documentUnixTimeStamp, action, data, pageUnixTimeStamp);
+  ipcMain.on('update-document', (event, documentID, action, data, pageID) => {
+    performUpdateDocument(documentID, action, data, pageID);
   });
   ipcMain.handle('close-app', () => {
     app.quit();
