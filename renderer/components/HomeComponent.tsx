@@ -1,27 +1,28 @@
 import classes from '../components/HomeComponent.module.css';
-import MyDocumentsComponent from './main/MyDocumentsComponent';
 import { useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
+import MyDocuments from './main/MyDocuments';
 
-const Page = {
-  1: 'My Documents',
-};
+enum Pages {
+  MY_DOCUMENTS = 'My Documents',
+}
 
-const data = [{ link: '', label: Page[1], icon: IconFolderOpen }];
+const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
-  const [active, setActive] = useState(Page[1]);
+  const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
+  //if there is document created docsState will be true and MyPagesComponent will render
 
   const links = data.map((item) => (
     <a
       className={classes.link}
-      data-active={item.label === active || undefined}
+      data-active={item.label === activePage || undefined}
       href={item.link}
       key={item.label}
       onClick={(event) => {
         event.preventDefault();
-        setActive(item.label);
+        setActivePage(item.label);
       }}
     >
       <item.icon className={classes.linkIcon} stroke={1.5} />
@@ -30,9 +31,9 @@ const Home: React.FC = () => {
   ));
 
   const renderComponent = () => {
-    switch (active) {
-      case Page[1]:
-        return <MyDocumentsComponent />;
+    switch (activePage) {
+      case Pages.MY_DOCUMENTS:
+        return <MyDocuments />;
       // More cases to be added
       default:
         return null;

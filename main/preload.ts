@@ -36,6 +36,38 @@ const removeCheckDiskSpaceListener = () => {
   checkDiskSpaceListener = null;
 };
 
+let pagesDataListener;
+const addPagesDataListener = (listener) => {
+  pagesDataListener = (event, pagesData) => {
+    listener(pagesData);
+  };
+  ipcRenderer.on('read-pages-output', pagesDataListener);
+};
+
+const removePagesDataListener = () => {
+  if (!pagesDataListener) {
+    return;
+  }
+  ipcRenderer.removeListener('read-pages-output', pagesDataListener);
+  pagesDataListener = null;
+};
+
+let docDataListener;
+const addDocDataListener = (listener) => {
+  docDataListener = (event, docData) => {
+    listener(docData);
+  };
+  ipcRenderer.on('create-doc-output', docDataListener);
+};
+
+const removeDocDataListener = () => {
+  if (!docDataListener) {
+    return;
+  }
+  ipcRenderer.removeListener('create-doc-output', docDataListener);
+  docDataListener = null;
+};
+
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
@@ -58,4 +90,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('close-app');
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
+  createDocument: () => {
+    ipcRenderer.send('create-document');
+  },
+  readPages: (documentID) => {
+    ipcRenderer.send('read-pages', documentID);
+  },
+  addPagesDataListener: addPagesDataListener,
+  removePagesDataListener: removePagesDataListener,
+  addDocDataListener: addDocDataListener,
+  removeDocDataListener: removeDocDataListener,
+  updateDocument: (documentID, action, data, pageID) => {
+    ipcRenderer.send('update-document', documentID, action, data, pageID);
+  },
 });

@@ -1,0 +1,21 @@
+.editTitle {
+  display: flex;
+  flex-grow: 1;
+  justify-content: space-between;
+}
+
+.textInput {
+  margin-top: 2px;
+  flex-grow: 1;
+}
+
+.editButton {
+  padding: 0;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.topLineButtons {
+  display: flex;
+  flex-direction: row;
+}
