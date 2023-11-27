@@ -1,24 +1,17 @@
 export type Document = {
   title: string;
-  createdAt?: number | null;
+  documentID?: number | null;
   pages: Page[];
 };
 
 export type Page = {
-  createdAt?: number | null;
+  pageID?: number | null;
   file?: string | null;
 };
 
 export type MyPagesComponentProps = {
   setDocsState: (state: boolean) => void;
   activeDocument: number;
-};
-
-export type MyDocumentsProps = {
-  docsState: boolean;
-  setDocsState: (state: boolean) => void;
-  activeDocument: number;
-  setActiveDocument: (document: number) => void;
 };
 
 export type MyDocumentsEmptyComponentProps = {

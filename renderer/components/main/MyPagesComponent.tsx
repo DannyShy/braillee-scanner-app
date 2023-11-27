@@ -7,10 +7,10 @@ import { Document, MyPagesComponentProps } from './types';
 
 const emptyDocumentData: Document = {
   title: 'New Document',
-  createdAt: null,
+  documentID: null,
   pages: [
     {
-      createdAt: null,
+      pageID: null,
       file: null,
     },
   ],
@@ -95,7 +95,7 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
   };
 
   const maxIndex = pageContent.pages.reduce(
-    (max, page, index) => (page.createdAt > pageContent.pages[max].createdAt ? index : max),
+    (max, page, index) => (page.pageID > pageContent.pages[max].pageID ? index : max),
     0,
   );
 

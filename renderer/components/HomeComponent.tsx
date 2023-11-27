@@ -13,8 +13,6 @@ const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 const Home: React.FC = () => {
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
   //if there is document created docsState will be true and MyPagesComponent will render
-  const [docsState, setDocsState] = useState<boolean>(false);
-  const [activeDocument, setActiveDocument] = useState<number>(null);
 
   const links = data.map((item) => (
     <a
@@ -35,15 +33,7 @@ const Home: React.FC = () => {
   const renderComponent = () => {
     switch (activePage) {
       case Pages.MY_DOCUMENTS:
-        return (
-          <MyDocuments
-            docsState={docsState}
-            setDocsState={setDocsState}
-            activeDocument={activeDocument}
-            setActiveDocument={setActiveDocument}
-          />
-        );
-
+        return <MyDocuments />;
       // More cases to be added
       default:
         return null;
