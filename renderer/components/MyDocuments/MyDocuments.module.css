@@ -1,0 +1,20 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px;
+}
+
+.title {
+  align-self: flex-start;
+  font-weight: 600;
+}
+
+.createDocButton {
+  align-self: flex-end;
+}
+
+.myDocuments {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}

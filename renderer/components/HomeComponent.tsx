@@ -2,7 +2,7 @@ import classes from '../components/HomeComponent.module.css';
 import { useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
-import MyDocuments from './main/MyDocuments';
+import MyDocuments from './MyDocuments/MyDocuments';
 
 enum Pages {
   MY_DOCUMENTS = 'My Documents',
@@ -12,7 +12,6 @@ const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
-  //if there is document created docsState will be true and MyPagesComponent will render
 
   const links = data.map((item) => (
     <a

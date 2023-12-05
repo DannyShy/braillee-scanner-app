@@ -1,45 +1,55 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classes from '../main/EditDocumentTitleComponent.module.css';
+import classes from '../EditDocumentTitle/EditDocumentTitleComponent.module.css';
 import { Button, TextInput } from '@mantine/core';
 import { IconCheck, IconX } from '@tabler/icons-react';
-import { EditDocumentTitleComponentProps } from './types';
+import { Document } from '../../../../types';
 
-const EditDocumentTitleComponent: React.FC<EditDocumentTitleComponentProps> = ({
-  pageContent,
+type Props = {
+  setEditTitleState: (state: boolean) => void;
+  activeDocument: Document;
+  setDocuments: (array: Document[]) => void;
+  documents: Document[];
+  setActiveDocument: (document: Document) => void;
+};
+
+const EditDocumentTitleComponent: React.FC<Props> = ({
   setEditTitleState,
-  setPageContent,
+  setActiveDocument,
   activeDocument,
+  setDocuments,
+  documents,
 }) => {
-  const [value, setValue] = useState<string>(pageContent.title);
+  const [value, setValue] = useState<string>(activeDocument.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
 
+  // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
   const handleClickConfirm = async () => {
-    window.electronAPI.updateDocument(activeDocument, 'editTitle', value, null);
-    window.electronAPI.readPages(activeDocument);
-    await window.electronAPI.addPagesDataListener((pageData) => {
-      setPageContent(pageData);
-      window.electronAPI.removePagesDataListener();
+    window.electronAPI.updateDocument(activeDocument.documentID, 'editTitle', value, null);
+    window.electronAPI.readDocuments();
+    await window.electronAPI.addDocumentsDataListener((documentsData) => {
+      setDocuments(documentsData);
+      window.electronAPI.removeDocumentsDataListener();
     });
-
+    const doc = documents.find((document) => {
+      return document.documentID === activeDocument.documentID;
+    });
+    setActiveDocument(doc);
     setEditTitleState(false);
   };
 
+  //returns original value to title and exits editTitleState
   const handleClickReject = async () => {
-    window.electronAPI.readPages(activeDocument);
-    await window.electronAPI.addPagesDataListener((pageData) => {
-      setPageContent(pageData);
-      window.electronAPI.removePagesDataListener();
-    });
-    setValue(pageContent.title);
+    setValue(activeDocument.title);
     setEditTitleState(false);
   };
 
+  // makes selectAll effect in initual value of TextInput
   const handleFocus = (event) => {
-    if (event.currentTarget.value === pageContent.title) {
+    if (event.currentTarget.value === activeDocument.title) {
       event.target.select();
     }
   };
-
+  // makes focus on TextInput
   useEffect(() => {
     titleInputRef.current.focus();
   }, []);

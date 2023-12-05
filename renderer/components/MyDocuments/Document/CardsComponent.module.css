@@ -1,0 +1,23 @@
+.cards {
+  display: flex;
+  flex-direction: column;
+  margin: 40px;
+  margin-top: 0px;
+  overflow-y: auto;
+}
+
+.searchDocument {
+  border: blue;
+  margin-bottom: 20px;
+}
+
+.documentCardsWrapper {
+  overflow-y: auto;
+}
+
+.documentCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding-bottom: 10px;
+}

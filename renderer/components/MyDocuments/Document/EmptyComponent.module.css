@@ -5,26 +5,12 @@
   margin: 50px 100px 50px 100px;
 }
 
-.topLine {
-  display: flex;
-  justify-content: space-between;
-}
-
 .centeredDiv {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   flex: 1;
-}
-
-.title {
-  align-self: flex-start;
-  font-weight: 600;
-}
-
-.createDocButton {
-  align-self: flex-end;
 }
 
 .createDocButtonCentered {

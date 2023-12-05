@@ -1,0 +1,28 @@
+.documentCard {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.documentCard > * {
+  margin-bottom: 10px;
+  max-height: 200px;
+}
+
+.cardTitle {
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardButton {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  margin-bottom: 0px;
+}

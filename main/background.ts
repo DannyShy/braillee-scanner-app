@@ -9,7 +9,7 @@ import { performCancelInitialSetup, performInitialSetup } from './utils/perform-
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
-import { performCreateDocument, performReadPages, performUpdateDocument } from './utils/perform-manage-document';
+import { performCreateDocument, performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -43,6 +43,9 @@ if (IS_PROD) {
     await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
     mainWindow.webContents.openDevTools();
   }
+  ipcMain.handle('read-documents', () => {
+    performReadDocuments(mainWindow);
+  });
 
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
@@ -64,9 +67,6 @@ if (IS_PROD) {
   });
   ipcMain.on('create-document', () => {
     performCreateDocument(mainWindow);
-  });
-  ipcMain.on('read-pages', async (event, documentID) => {
-    performReadPages(documentID, mainWindow);
   });
   ipcMain.on('update-document', (event, documentID, action, data, pageID) => {
     performUpdateDocument(documentID, action, data, pageID);

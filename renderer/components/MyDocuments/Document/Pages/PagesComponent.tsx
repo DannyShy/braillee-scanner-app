@@ -1,36 +1,37 @@
 import React, { useEffect, useState } from 'react';
-import classes from '../main/MyPagesComponent.module.css';
+import classes from '../Pages/PagesComponent.module.css';
 import { Button, Text, Container, Image, Title, Tabs } from '@mantine/core';
 import { IconArrowLeft, IconPencil, IconPlus } from '@tabler/icons-react';
-import EditDocumentTitleComponent from './EditDocumentTitleComponent';
-import { Document, MyPagesComponentProps } from './types';
+import EditDocumentTitleComponent from './EditDocumentTitle/EditDocumentTitleComponent';
+import { Document } from '../../../types';
+import { emptyDocumentData } from '../../../constants';
 
-const emptyDocumentData: Document = {
-  title: 'New Document',
-  documentID: null,
-  pages: [
-    {
-      pageID: null,
-      file: null,
-    },
-  ],
+type Props = {
+  setActiveDocument: (document: Document) => void;
+  activeDocument: Document;
+  setDocuments: (array: Document[]) => void;
+  documents: Document[];
+  editTitleState: boolean;
+  setEditTitleState: (state: boolean) => void;
 };
 
-const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activeDocument }) => {
-  // editTitleState serves for rendering EditDocumentTitleComponent
-  const [editTitleState, setEditTitleState] = useState<boolean>(true);
-  const [pageContent, setPageContent] = useState<Document>(emptyDocumentData);
+const PagesComponent: React.FC<Props> = ({
+  setDocuments,
+  activeDocument,
+  setActiveDocument,
+  documents,
+  editTitleState,
+  setEditTitleState,
+}) => {
   const [selectedPage, setSelectedPage] = useState<number>(0);
-  const handleReturnButtonClick = () => {
-    setDocsState(false);
-  };
 
+  //adds page and reads updated document
   const handleAddPage = async () => {
-    window.electronAPI.updateDocument(activeDocument, 'addPage');
-    window.electronAPI.readPages(activeDocument);
-    await window.electronAPI.addPagesDataListener((pageData) => {
-      setPageContent(pageData);
-      window.electronAPI.removePagesDataListener();
+    window.electronAPI.updateDocument(activeDocument.documentID, 'addPage');
+    window.electronAPI.readDocuments();
+    await window.electronAPI.addDocumentsDataListener((documentsData) => {
+      setDocuments(documentsData);
+      window.electronAPI.removeDocumentsDataListener();
     });
   };
 
@@ -42,17 +43,18 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
     if (editTitleState) {
       return (
         <EditDocumentTitleComponent
-          pageContent={pageContent}
-          setEditTitleState={setEditTitleState}
-          setPageContent={setPageContent}
           activeDocument={activeDocument}
+          setActiveDocument={setActiveDocument}
+          setEditTitleState={setEditTitleState}
+          setDocuments={setDocuments}
+          documents={documents}
         />
       );
     } else {
       return (
         <>
           <Title className={classes.title} size="h2">
-            {pageContent.title}
+            {activeDocument.title}
           </Title>
           <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
             <IconPencil></IconPencil>
@@ -63,21 +65,22 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
   };
 
   const renderMiniPages = () => {
-    return pageContent.pages.map((page, index) => (
+    return activeDocument.pages.map((page, index) => (
       <Container
         key={index}
         className={` ${selectedPage === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
         onClick={() => setSelectedPage(index)}
       >
-        {pageContent.pages[index].file ? (
-          <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
+        {activeDocument.pages[index].file ? (
+          <Image src={activeDocument.pages[index].file} className={classes.miniImage}></Image>
         ) : null}
       </Container>
     ));
   };
 
   const renderPagePreview = () => {
-    if (pageContent.pages[selectedPage].file === null) {
+    const fileValue = activeDocument.pages[selectedPage].file;
+    if (fileValue === null) {
       return (
         <Container className={classes.docPreviewEmpty}>
           <Button>Scan</Button>
@@ -88,16 +91,25 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
     } else {
       return (
         <Container className={classes.docPreview}>
-          <Image src={pageContent.pages[selectedPage].file} className={classes.imagePreview}></Image>
+          <Image src={activeDocument.pages[selectedPage].file} className={classes.imagePreview}></Image>
         </Container>
       );
     }
   };
 
-  const maxIndex = pageContent.pages.reduce(
-    (max, page, index) => (page.pageID > pageContent.pages[max].pageID ? index : max),
-    0,
-  );
+  const handleReturnButtonClick = () => {
+    setActiveDocument(emptyDocumentData);
+  };
+
+  // updates the value of activeDocument variable after change of its data
+  useEffect(() => {
+    const doc = documents.find((document) => {
+      return document.documentID === activeDocument.documentID;
+    });
+    setActiveDocument(doc);
+  }, [documents]);
+
+  const maxIndex = activeDocument ? activeDocument.pages.length - 1 : 0;
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
@@ -146,4 +158,4 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
   );
 };
 
-export default MyPagesComponent;
+export default PagesComponent;
