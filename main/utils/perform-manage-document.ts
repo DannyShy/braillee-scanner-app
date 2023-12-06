@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
+import { Document } from './types';
 
 const getDocPathFromDocID = (documentID) => {
   return path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
@@ -50,7 +51,7 @@ const performUpdateDocument = (documentID, action, data, pageID) => {
       break;
     case 'addPage':
       const newPage = {
-        documentID: Date.now(),
+        pageID: Date.now(),
         file: null,
       };
       jsonData.pages.push(newPage);
@@ -66,19 +67,19 @@ const performUpdateDocument = (documentID, action, data, pageID) => {
 };
 
 // creates document folder, creates content of file, creates json file
-const performCreateDocument = (mainWindow: BrowserWindow) => {
+const performCreateDocument = (mainWindow: BrowserWindow): Promise<Document> => {
   if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
     mkdirSync(MY_DOCUMENTS_PATH);
   }
   //creating unix timestamp file
   const documentID = Date.now();
   mkdirSync(path.resolve(MY_DOCUMENTS_PATH, String(documentID)));
-  const documentData = {
+  const documentData: Document = {
     title: 'New Document',
     documentID: documentID,
     pages: [
       {
-        documentID: documentID,
+        pageID: documentID,
         file: null,
       },
     ],
@@ -87,13 +88,19 @@ const performCreateDocument = (mainWindow: BrowserWindow) => {
 
   const documents = readDocuments();
 
-  mainWindow.webContents.send('create-doc-output', documentID, documents);
+  mainWindow.webContents.send('create-doc-output', documents);
+
+  return new Promise<Document>((resolve) => {
+    resolve(documentData);
+  });
 };
 
-const performReadDocuments = (mainWindow: BrowserWindow) => {
-  // sends documents array to renderer
+const performReadDocuments = (mainWindow: BrowserWindow): Promise<Document[]> => {
   const documents = readDocuments();
-  mainWindow.webContents.send('read-documents-output', documents);
+
+  return new Promise<Document[]>((resolve) => {
+    resolve(documents);
+  });
 };
 
 export { performUpdateDocument, performCreateDocument, performReadDocuments };

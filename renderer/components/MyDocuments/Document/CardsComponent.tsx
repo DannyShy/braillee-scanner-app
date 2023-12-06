@@ -23,7 +23,7 @@ const CardsComponent: React.FC<Props> = ({ documents, setActiveDocument }) => {
 
   const renderDocumentCards = () => {
     return filteredFiles.map((document, index) => (
-      <DocumentCardComponent setActiveDocument={setActiveDocument} document={document} index={index} />
+      <DocumentCardComponent key={document.documentID} setActiveDocument={setActiveDocument} document={document} />
     ));
   };
 

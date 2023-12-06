@@ -36,26 +36,10 @@ const removeCheckDiskSpaceListener = () => {
   checkDiskSpaceListener = null;
 };
 
-let documentsDataListener;
-const addDocumentsDataListener = (listener) => {
-  documentsDataListener = (event, documentData) => {
-    listener(documentData);
-  };
-  ipcRenderer.on('read-documents-output', documentsDataListener);
-};
-
-const removeDocumentsDataListener = () => {
-  if (!documentsDataListener) {
-    return;
-  }
-  ipcRenderer.removeListener('read-documents-output', documentsDataListener);
-  documentsDataListener = null;
-};
-
 let createdDocumentDataListener;
 const addCreatedDocumentDataListener = (listener) => {
-  createdDocumentDataListener = (event, documentID, documents) => {
-    listener(documentID, documents);
+  createdDocumentDataListener = (event, documents) => {
+    listener(documents);
   };
   ipcRenderer.on('create-doc-output', createdDocumentDataListener);
 };
@@ -90,14 +74,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('close-app');
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
-  createDocument: () => {
-    ipcRenderer.send('create-document');
-  },
-  readDocuments: () => {
-    ipcRenderer.invoke('read-documents');
-  },
-  addDocumentsDataListener: addDocumentsDataListener,
-  removeDocumentsDataListener: removeDocumentsDataListener,
+  createDocument: () => ipcRenderer.invoke('create-document'),
+  readDocuments: () => ipcRenderer.invoke('read-documents'),
   addCreatedDocumentDataListener: addCreatedDocumentDataListener,
   removeCreatedDocumentDataListener: removeCreatedDocumentDataListener,
   updateDocument: (documentID, action, data, pageID) => {

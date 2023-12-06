@@ -25,11 +25,8 @@ const EditDocumentTitleComponent: React.FC<Props> = ({
   // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
   const handleClickConfirm = async () => {
     window.electronAPI.updateDocument(activeDocument.documentID, 'editTitle', value, null);
-    window.electronAPI.readDocuments();
-    await window.electronAPI.addDocumentsDataListener((documentsData) => {
-      setDocuments(documentsData);
-      window.electronAPI.removeDocumentsDataListener();
-    });
+    const readDocumentsOutput = await window.electronAPI.readDocuments();
+    setDocuments(readDocumentsOutput);
     const doc = documents.find((document) => {
       return document.documentID === activeDocument.documentID;
     });

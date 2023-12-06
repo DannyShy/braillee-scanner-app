@@ -28,11 +28,8 @@ const PagesComponent: React.FC<Props> = ({
   //adds page and reads updated document
   const handleAddPage = async () => {
     window.electronAPI.updateDocument(activeDocument.documentID, 'addPage');
-    window.electronAPI.readDocuments();
-    await window.electronAPI.addDocumentsDataListener((documentsData) => {
-      setDocuments(documentsData);
-      window.electronAPI.removeDocumentsDataListener();
-    });
+    const documents = await window.electronAPI.readDocuments();
+    setDocuments(documents);
   };
 
   const handleEditButtonClick = () => {
