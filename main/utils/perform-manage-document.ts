@@ -4,12 +4,13 @@ import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
 import { Document } from './types';
+import * as crypto from 'node:crypto';
 
-const getDocPathFromDocID = (documentID) => {
+const getDocPathFromDocID = (documentID: number | string): string => {
   return path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
 };
 
-const getJsonFromFile = (documentID) => {
+const getJsonFromFile = (documentID: number | string): Document => {
   const documentPath = getDocPathFromDocID(documentID);
   const buffferData = fs.readFileSync(documentPath);
   const stringData = buffferData.toString();
@@ -17,30 +18,17 @@ const getJsonFromFile = (documentID) => {
   return jsonData;
 };
 
-const writeJsonToFile = (jsonData, documentID) => {
+const writeJsonToFile = (jsonData: Document, documentID: number | string): void => {
   const jsonStringifiedData = JSON.stringify(jsonData);
   fs.writeFileSync(getDocPathFromDocID(documentID), jsonStringifiedData);
 };
 
-// 1. read folder content and make array of its folders.
-// 2. create documents array
-// 3. read content of each folder and append its content to supper array
-// 4. repeat that using for each loop
-const readDocuments = () => {
-  let documents: Document[] = [];
-  try {
-    const files = fs.readdirSync(MY_DOCUMENTS_PATH);
-    files.forEach((element) => {
-      const jsonData = getJsonFromFile(element);
-      documents.push(jsonData);
-    });
-  } catch (err) {
-    console.error('Error reading directory synchronously:', err);
-  }
-  return documents;
-};
-
-const performUpdateDocument = (documentID, action, data, pageID) => {
+const performUpdateDocument = (
+  documentID: number | string,
+  action: string,
+  data: string,
+  pageID: number | string,
+): void => {
   // based on unix time stamp number folder is found.
   // property which is to be updated needs to be defined
   // new value has to be defined.
@@ -51,13 +39,13 @@ const performUpdateDocument = (documentID, action, data, pageID) => {
       break;
     case 'addPage':
       const newPage = {
-        pageID: Date.now(),
+        pageID: crypto.randomUUID(),
         file: null,
       };
       jsonData.pages.push(newPage);
       break;
     case 'editPage':
-      const pageIndex = jsonData.pages.findIndex((page) => page.createdAt === pageID);
+      const pageIndex = jsonData.pages.findIndex((page) => page.pageID === pageID);
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].file = data;
       }
@@ -67,7 +55,7 @@ const performUpdateDocument = (documentID, action, data, pageID) => {
 };
 
 // creates document folder, creates content of file, creates json file
-const performCreateDocument = (mainWindow: BrowserWindow): Promise<Document> => {
+const performCreateDocument = (mainWindow: BrowserWindow): Document => {
   if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
     mkdirSync(MY_DOCUMENTS_PATH);
   }
@@ -79,28 +67,37 @@ const performCreateDocument = (mainWindow: BrowserWindow): Promise<Document> => 
     documentID: documentID,
     pages: [
       {
-        pageID: documentID,
+        pageID: crypto.randomUUID(),
         file: null,
       },
     ],
   };
   writeJsonToFile(documentData, documentID);
 
-  const documents = readDocuments();
+  const documents = performReadDocuments();
 
   mainWindow.webContents.send('create-doc-output', documents);
 
-  return new Promise<Document>((resolve) => {
-    resolve(documentData);
-  });
+  return documentData;
 };
 
-const performReadDocuments = (mainWindow: BrowserWindow): Promise<Document[]> => {
-  const documents = readDocuments();
-
-  return new Promise<Document[]>((resolve) => {
-    resolve(documents);
-  });
+// 1. read folder content and make array of its folders.
+// 2. create documents array
+// 3. read content of each folder and append its content to supper array
+// 4. repeat that using for each loop
+// 5. returns documents array
+const performReadDocuments = (): Document[] => {
+  let documents: Document[] = [];
+  try {
+    const files = fs.readdirSync(MY_DOCUMENTS_PATH);
+    files.forEach((element) => {
+      const jsonData = getJsonFromFile(element);
+      documents.push(jsonData);
+    });
+  } catch (err) {
+    console.error('Error reading directory synchronously:', err);
+  }
+  return documents;
 };
 
 export { performUpdateDocument, performCreateDocument, performReadDocuments };

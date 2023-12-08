@@ -1,26 +1,34 @@
-import CardsComponent from './Document/CardsComponent';
+import OpenDocumentComponent from './Document/OpenDocumentComponent';
 import { useEffect, useState } from 'react';
 import classes from '../MyDocuments/MyDocuments.module.css';
 import { Button, Title } from '@mantine/core';
-import PagesComponent from './Document/Pages/PagesComponent';
 import EmptyComponent from './Document/EmptyComponent';
 import { Document } from '../types';
-import { emptyDocumentData } from '../constants';
+import ViewDocumentComponent from './Document/ViewDocument/ViewDocumentComponent';
 
 const MyDocuments: React.FC = () => {
-  // says if we have at least 1 document saved in memory
-  const [docsState, setDocsState] = useState<boolean>(false);
   // contains data from all documents
   const [documents, setDocuments] = useState<Document[]>(null);
   // contains data from active document
-  const [activeDocument, setActiveDocument] = useState<Document>(emptyDocumentData);
-  // editTitleState serves for rendering EditDocumentTitleComponent
-  const [editTitleState, setEditTitleState] = useState<boolean>(false);
+  const [activeDocument, setActiveDocument] = useState<Document>(null);
 
-  const handleCreateDocButtonClick = async () => {
+  const onCreateDocument = async () => {
     const createdDocument = await window.electronAPI.createDocument();
     setActiveDocument(createdDocument);
-    setEditTitleState(true);
+  };
+
+  const onClose = () => {
+    setActiveDocument(null);
+  };
+
+  const onOpen = (document) => {
+    setActiveDocument(document);
+  };
+
+  const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
+    window.electronAPI.updateDocument(activeDocument.documentID, action, data, activePage);
+    const documents = await window.electronAPI.readDocuments();
+    setDocuments(documents);
   };
 
   // getting inital data
@@ -42,43 +50,39 @@ const MyDocuments: React.FC = () => {
     };
   }, []);
 
+  // updates the value of activeDocument variable after change of its data
   useEffect(() => {
-    // setting DocsState
-    if (documents !== null) {
-      setDocsState(true);
+    if (activeDocument) {
+      const doc = documents.find((document) => {
+        return document.documentID === activeDocument.documentID;
+      });
+      setActiveDocument(doc);
     }
   }, [documents]);
 
   return (
     <div className={classes.myDocuments}>
-      {activeDocument === emptyDocumentData && (
+      {!activeDocument && (
         <>
           <div className={classes.header}>
             <Title className={classes.title} size="h2">
               My Documents
             </Title>
-            <Button className={classes.createDocButton} radius="xs" onClick={handleCreateDocButtonClick}>
+            <Button className={classes.createDocButton} radius="xs" onClick={onCreateDocument}>
               + Create Document
             </Button>
           </div>
           <>
-            {docsState ? (
-              <CardsComponent documents={documents} setActiveDocument={setActiveDocument} />
+            {documents !== null && documents.length ? (
+              <OpenDocumentComponent documents={documents} onOpen={onOpen} />
             ) : (
-              <EmptyComponent onCreateDocument={handleCreateDocButtonClick} />
+              <EmptyComponent onCreateDocument={onCreateDocument} />
             )}
           </>
         </>
       )}
-      {activeDocument !== emptyDocumentData ? (
-        <PagesComponent
-          setActiveDocument={setActiveDocument}
-          activeDocument={activeDocument}
-          setDocuments={setDocuments}
-          documents={documents}
-          editTitleState={editTitleState}
-          setEditTitleState={setEditTitleState}
-        />
+      {activeDocument ? (
+        <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} onUpdate={onUpdate} />
       ) : null}
     </div>
   );

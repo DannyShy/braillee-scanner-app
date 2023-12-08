@@ -1,17 +1,17 @@
 import classes from '../DocumentCard/DocumentCardComponent.module.css';
 import { Text, Button, Title, Card } from '@mantine/core';
 import React from 'react';
-import { Document } from '../../../../types';
+import { Document } from '../../../types';
 
 type Props = {
   document: Document;
-  setActiveDocument: (document: Document) => void;
+  onOpen: (document: Document) => void;
 };
 
-const DocumentCardComponent: React.FC<Props> = ({ document, setActiveDocument }) => {
+const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
   //opens the card
   const handleClickDocumentCard = () => {
-    setActiveDocument(document);
+    onOpen(document);
   };
 
   return (

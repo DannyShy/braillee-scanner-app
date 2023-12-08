@@ -43,7 +43,7 @@ if (IS_PROD) {
     await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
     mainWindow.webContents.openDevTools();
   }
-  ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
+  ipcMain.handle('read-documents', () => performReadDocuments());
 
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);

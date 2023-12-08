@@ -5,6 +5,6 @@ export type Document = {
 };
 
 export type Page = {
-  pageID?: number | null;
+  pageID?: string | null;
   file?: string | null;
 };
