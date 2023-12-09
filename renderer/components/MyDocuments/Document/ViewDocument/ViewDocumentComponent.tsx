@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import classes from '../ViewDocument/ViewDocumentComponent.module.css';
-import { Button, Text, Container, Image, Tabs } from '@mantine/core';
+import classes from './ViewDocumentComponent.module.css';
+import { Button, Text, Container, Image, Tabs, Paper, Pagination } from '@mantine/core';
 import { IconArrowLeft, IconPlus } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitleComponent';
 import { Document } from '../../../types';
+import { pages } from 'next/dist/build/templates/app-page';
+import MainContent from '@renderer/components/MainContent';
 
 type Props = {
   activeDocument: Document;
@@ -21,15 +23,16 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
 
   const renderMiniPages = () => {
     return activeDocument.pages.map((page, index) => (
-      <Container
+      <Paper
         key={index}
         className={` ${activePage === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
         onClick={() => setActivePage(index)}
+        withBorder
       >
         {activeDocument.pages[index].file ? (
           <Image src={activeDocument.pages[index].file} className={classes.miniImage}></Image>
         ) : null}
-      </Container>
+      </Paper>
     ));
   };
 
@@ -38,9 +41,9 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
     if (fileValue === null) {
       return (
         <Container className={classes.docPreviewEmpty}>
-          <Button>Scan</Button>
+          <Button size="xl">Scan</Button>
           <Text>or</Text>
-          <Button>Upload file</Button>
+          <Button size="xl">Upload file</Button>
         </Container>
       );
     } else {
@@ -60,10 +63,13 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
   }, [maxIndex]);
 
   return (
-    <div className={classes.main}>
-      <div className={classes.topLine}>
-        <DocumentTitleComponent activeDocument={activeDocument} onUpdate={onUpdate} onClose={onClose} />
-      </div>
+    <MainContent
+      header={
+        <div className={classes.topLine}>
+          <DocumentTitleComponent activeDocument={activeDocument} onUpdate={onUpdate} onClose={onClose} />
+        </div>
+      }
+    >
       <div className={classes.contentDiv}>
         <div className={classes.scannedDocsMiniAndPlus}>
           <div className={classes.scannedDocumentsMini}>{renderMiniPages()}</div>
@@ -72,6 +78,15 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
               <IconPlus className={classes.iconPlus}></IconPlus>
             </Button>
           </div>
+        </div>
+        <div className={classes.paginationWrapper}>
+          <Pagination
+            value={activePage + 1}
+            total={activeDocument.pages.length}
+            size="md"
+            onChange={(page) => setActivePage(page - 1)}
+            withEdges
+          />
         </div>
         <div className={classes.scannedDocs}>
           {renderPagePreview()}
@@ -94,7 +109,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
           </div>
         </div>
       </div>
-    </div>
+    </MainContent>
   );
 };
 

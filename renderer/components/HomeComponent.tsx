@@ -1,4 +1,4 @@
-import classes from '../components/HomeComponent.module.css';
+import classes from './HomeComponent.module.css';
 import { useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';

@@ -1,5 +1,5 @@
 import '@mantine/core/styles.css';
-import classes from '../components/WelcomeComponent.module.css';
+import classes from './WelcomeComponent.module.css';
 import { Button, Center, RingProgress, Text, Title, Loader, Container, SimpleGrid, Modal, Flex } from '@mantine/core';
 import { useRouter } from 'next/router';
 import React, { useState } from 'react';

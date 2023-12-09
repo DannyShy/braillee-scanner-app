@@ -1,8 +1,7 @@
 .main {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 100px);
-  margin: 50px 100px 50px 100px;
+  height: 100%;
 }
 
 .centeredDiv {

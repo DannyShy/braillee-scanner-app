@@ -1,4 +1,4 @@
-import classes from '../Document/OpenDocumentComponent.module.css';
+import classes from './DocumentCards.module.css';
 import { TextInput } from '@mantine/core';
 import React, { useMemo, useState } from 'react';
 import DocumentCardComponent from './DocumentCard/DocumentCardComponent';
@@ -9,7 +9,7 @@ type Props = {
   onOpen: (document: Document) => void;
 };
 
-const OpenDocumentComponent: React.FC<Props> = ({ documents, onOpen }) => {
+const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter documents based on the search term
@@ -44,4 +44,4 @@ const OpenDocumentComponent: React.FC<Props> = ({ documents, onOpen }) => {
   );
 };
 
-export default OpenDocumentComponent;
+export default DocumentCards;

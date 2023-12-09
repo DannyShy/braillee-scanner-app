@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classes from '../DocumentTitle/DocumentTitleComponent.module.css';
+import classes from './DocumentTitleComponent.module.css';
 import { Button, TextInput, Title } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
