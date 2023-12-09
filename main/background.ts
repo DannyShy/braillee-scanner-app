@@ -28,13 +28,13 @@ if (IS_PROD) {
   let firstPageHtml: string;
   let firstPage: string;
 
-  if (!fs.existsSync(PATH_TO_MODEL)) {
-    firstPageHtml = 'welcome-screen.html';
-    firstPage = 'welcome-screen';
-  } else {
+  // if (!fs.existsSync(PATH_TO_MODEL)) {
+  //   firstPageHtml = 'welcome-screen.html';
+  //   firstPage = 'welcome-screen';
+  // } else {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
-  }
+  // }
 
   if (IS_PROD) {
     await mainWindow.loadURL(`app://./${firstPageHtml}`);

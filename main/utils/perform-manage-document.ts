@@ -89,6 +89,9 @@ const performCreateDocument = (mainWindow: BrowserWindow): Document => {
 const performReadDocuments = (): Document[] => {
   let documents: Document[] = [];
   try {
+    if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
+      return documents;
+    }
     const files = fs.readdirSync(MY_DOCUMENTS_PATH);
     files.forEach((element) => {
       const jsonData = getJsonFromFile(element);

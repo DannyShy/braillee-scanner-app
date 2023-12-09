@@ -24,9 +24,6 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
 
   const handleEditButtonClick = () => {
     setEditTitleState(true);
-    (event) => {
-      event.target.select();
-    };
   };
 
   // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
