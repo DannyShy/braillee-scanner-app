@@ -36,13 +36,6 @@ if (IS_PROD) {
     firstPage = 'home-screen';
   // }
 
-  if (IS_PROD) {
-    await mainWindow.loadURL(`app://./${firstPageHtml}`);
-  } else {
-    const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
-    mainWindow.webContents.openDevTools();
-  }
   ipcMain.handle('read-documents', () => performReadDocuments());
 
   ipcMain.handle('check-disk-space', async () => {
@@ -70,6 +63,14 @@ if (IS_PROD) {
   ipcMain.handle('close-app', () => {
     app.quit();
   });
+
+  if (IS_PROD) {
+    await mainWindow.loadURL(`app://./${firstPageHtml}`);
+  } else {
+    const port = process.argv[2];
+    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
+    mainWindow.webContents.openDevTools();
+  }
 })();
 
 app.on('window-all-closed', () => {

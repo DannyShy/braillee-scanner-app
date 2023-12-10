@@ -57,7 +57,9 @@ const performUpdateDocument = (
 // creates document folder, creates content of file, creates json file
 const performCreateDocument = (mainWindow: BrowserWindow): Document => {
   if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
-    mkdirSync(MY_DOCUMENTS_PATH);
+    mkdirSync(MY_DOCUMENTS_PATH, {
+      recursive: true
+    });
   }
   //creating unix timestamp file
   const documentID = Date.now();
