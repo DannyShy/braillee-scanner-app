@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classes from '../ViewDocument/ViewDocumentComponent.module.css';
-import { Button, Text, Container, Image, Tabs } from '@mantine/core';
-import { IconArrowLeft, IconPlus } from '@tabler/icons-react';
+import { Button, Text, Container, Image, Tabs, Center, Loader } from '@mantine/core';
+import { IconArrowLeft, IconCheck, IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitleComponent';
 import { Document } from '../../../types';
 
@@ -13,10 +13,32 @@ type Props = {
 
 const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpdate }) => {
   const [activePage, setActivePage] = useState<number>(0);
+  const [scanInProgress, setScanInProgress] = useState<boolean>(false);
+  const [scanOutputConfirmed, setScanOutputConfirmed] = useState<boolean>(true);
 
   //adds page and reads updated document
   const handleAddPage = async () => {
     onUpdate('addPage');
+  };
+
+  const handleScan = async () => {
+    try {
+      setScanInProgress(true);
+      setScanOutputConfirmed(false);
+      const scannedOutput = await window.electronAPI.scanFile();
+      const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
+      onUpdate('editPage', formattedURI, activeDocument.pages[activePage].pageID);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleClickRejectScan = () => {
+    onUpdate('editPage', null, activeDocument.pages[activePage].pageID);
+  };
+
+  const handleClickConfirmScan = () => {
+    setScanOutputConfirmed(true);
   };
 
   const renderMiniPages = () => {
@@ -35,24 +57,60 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
 
   const renderPagePreview = () => {
     const fileValue = activeDocument.pages[activePage].file;
-    if (fileValue === null) {
-      return (
-        <Container className={classes.docPreviewEmpty}>
-          <Button>Scan</Button>
-          <Text>or</Text>
-          <Button>Upload file</Button>
-        </Container>
-      );
-    } else {
-      return (
-        <Container className={classes.docPreview}>
-          <Image src={activeDocument.pages[activePage].file} className={classes.imagePreview}></Image>
-        </Container>
-      );
-    }
+    return scanInProgress ? (
+      <Center>
+        <Loader color="blue" />
+      </Center>
+    ) : fileValue === null ? (
+      <Container className={classes.docPreviewEmpty}>
+        <Button onClick={handleScan}>Scan</Button>
+        <Text>or</Text>
+        <Button>Upload file</Button>
+      </Container>
+    ) : (
+      <Container className={classes.docPreview}>
+        <div className={classes.imageContainer}>
+          <Image src={activeDocument.pages[activePage].file} className={classes.imagePreview} />
+          <>
+            {!scanOutputConfirmed ? (
+              <div className={classes.buttonsContainer}>
+                <Button
+                  className={classes.editButton}
+                  size="md"
+                  variant="transparent"
+                  color="green"
+                  onClick={handleClickConfirmScan}
+                >
+                  <IconCheck></IconCheck>
+                </Button>
+                <Button
+                  className={classes.editButton}
+                  size="md"
+                  variant="transparent"
+                  onClick={handleClickRejectScan}
+                  color="red"
+                >
+                  <IconX></IconX>
+                </Button>
+              </div>
+            ) : null}
+          </>
+        </div>
+      </Container>
+    );
   };
 
   const maxIndex = activeDocument ? activeDocument.pages.length - 1 : 0;
+
+  useEffect(() => {
+    if (activeDocument.pages[activePage].file !== null) {
+      setScanInProgress(false);
+    }
+  }, [activeDocument.pages[activePage].file]);
+
+  // useEffect(() => {
+  //   await window.electronAPI.readBraille(activeDocument.pages[activePage].file);
+  // }, [activeDocument.pages[activePage].file]);
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
