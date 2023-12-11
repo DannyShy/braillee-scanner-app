@@ -3,110 +3,106 @@ import path from 'path';
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
+import { Document } from './types';
+import * as crypto from 'node:crypto';
 
-const performUpdateDocument = (documentID, action, data, pageID) => {
+const getDocPathFromDocID = (documentID: number | string): string => {
+  return path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
+};
+
+const getJsonFromFile = (documentID: number | string): Document => {
+  const documentPath = getDocPathFromDocID(documentID);
+  const buffferData = fs.readFileSync(documentPath);
+  const stringData = buffferData.toString();
+  const jsonData = JSON.parse(stringData);
+  return jsonData;
+};
+
+const writeJsonToFile = (jsonData: Document, documentID: number | string): void => {
+  const jsonStringifiedData = JSON.stringify(jsonData);
+  fs.writeFileSync(getDocPathFromDocID(documentID), jsonStringifiedData);
+};
+
+const performUpdateDocument = (
+  documentID: number | string,
+  action: string,
+  data: string,
+  pageID: number | string,
+): void => {
   // based on unix time stamp number folder is found.
   // property which is to be updated needs to be defined
   // new value has to be defined.
-  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
-  const buffferData = fs.readFileSync(documentsPath);
-  const stringData = buffferData.toString();
-  const jsonData = JSON.parse(stringData);
-
+  const jsonData = getJsonFromFile(documentID);
   switch (action) {
     case 'editTitle':
       jsonData.title = data;
       break;
     case 'addPage':
       const newPage = {
-        createdAt: Date.now(),
+        pageID: crypto.randomUUID(),
         file: null,
       };
       jsonData.pages.push(newPage);
       break;
-
     case 'editPage':
-      const pageIndex = jsonData.pages.findIndex((page) => page.createdAt === pageID);
+      const pageIndex = jsonData.pages.findIndex((page) => page.pageID === pageID);
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].file = data;
       }
       break;
   }
-
-  const jsonStringifiedData = JSON.stringify(jsonData);
-
-  fs.writeFileSync(documentsPath, jsonStringifiedData);
+  writeJsonToFile(jsonData, documentID);
 };
 
 // creates document folder, creates content of file, creates json file
-const performCreateDocument = (mainWindow: BrowserWindow) => {
+const performCreateDocument = (mainWindow: BrowserWindow): Document => {
   if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
-    mkdirSync(MY_DOCUMENTS_PATH);
+    mkdirSync(MY_DOCUMENTS_PATH, {
+      recursive: true
+    });
   }
   //creating unix timestamp file
   const documentID = Date.now();
-
   mkdirSync(path.resolve(MY_DOCUMENTS_PATH, String(documentID)));
-  // below is option with using proper date. but for now lets use unix timestamp even in documents.json
-  // const createdAt = new Date(fileName);
-  // const dateTimeString =
-  //   createdAt.toLocaleDateString('en-US', {
-  //     year: 'numeric',
-  //     month: 'numeric',
-  //     day: 'numeric',
-  //   }) +
-  //   ' ' +
-  //   createdAt.toLocaleTimeString('en-US', {
-  //     hour: 'numeric',
-  //     minute: 'numeric',
-  //   });
-  // console.log(dateTimeString);
-
-  const documentData = {
+  const documentData: Document = {
     title: 'New Document',
-    createdAt: documentID,
+    documentID: documentID,
     pages: [
       {
-        createdAt: documentID,
+        pageID: crypto.randomUUID(),
         file: null,
       },
     ],
   };
+  writeJsonToFile(documentData, documentID);
 
-  const documentDataString = JSON.stringify(documentData);
+  const documents = performReadDocuments();
 
-  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
+  mainWindow.webContents.send('create-doc-output', documents);
 
-  fs.writeFileSync(documentsPath, documentDataString);
-
-  mainWindow.webContents.send('create-doc-output', documentID);
+  return documentData;
 };
 
-const performReadDocuments = () => {
-  // to be done as part of different task
-};
-
-// util below serves for rendering of pages inside MyPagesComponent
-
-const performReadPages = (documentID: number, mainWindow: BrowserWindow) => {
-  // Convert documentUnixTimeStamp to a string explicitly
-  const timeStampString = String(documentID);
-
-  const documentsPath = path.resolve(MY_DOCUMENTS_PATH, timeStampString, 'document.json');
-
+// 1. read folder content and make array of its folders.
+// 2. create documents array
+// 3. read content of each folder and append its content to supper array
+// 4. repeat that using for each loop
+// 5. returns documents array
+const performReadDocuments = (): Document[] => {
+  let documents: Document[] = [];
   try {
-    // Use fs.existsSync to check if the file exists before reading it
-    if (fs.existsSync(documentsPath)) {
-      const buffferData = fs.readFileSync(documentsPath);
-      const stringData = buffferData.toString();
-      const jsonData = JSON.parse(stringData);
-      mainWindow.webContents.send('read-pages-output', jsonData);
-    } else {
-      console.error('File not found:', documentsPath);
+    if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
+      return documents;
     }
-  } catch (error) {
-    console.error('Error reading file:', error);
+    const files = fs.readdirSync(MY_DOCUMENTS_PATH);
+    files.forEach((element) => {
+      const jsonData = getJsonFromFile(element);
+      documents.push(jsonData);
+    });
+  } catch (err) {
+    console.error('Error reading directory synchronously:', err);
   }
+  return documents;
 };
 
-export { performUpdateDocument, performCreateDocument, performReadDocuments, performReadPages };
+export { performUpdateDocument, performCreateDocument, performReadDocuments };

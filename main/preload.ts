@@ -36,36 +36,20 @@ const removeCheckDiskSpaceListener = () => {
   checkDiskSpaceListener = null;
 };
 
-let pagesDataListener;
-const addPagesDataListener = (listener) => {
-  pagesDataListener = (event, pagesData) => {
-    listener(pagesData);
+let createdDocumentDataListener;
+const addCreatedDocumentDataListener = (listener) => {
+  createdDocumentDataListener = (event, documents) => {
+    listener(documents);
   };
-  ipcRenderer.on('read-pages-output', pagesDataListener);
+  ipcRenderer.on('create-doc-output', createdDocumentDataListener);
 };
 
-const removePagesDataListener = () => {
-  if (!pagesDataListener) {
+const removeCreatedDocumentDataListener = () => {
+  if (!createdDocumentDataListener) {
     return;
   }
-  ipcRenderer.removeListener('read-pages-output', pagesDataListener);
-  pagesDataListener = null;
-};
-
-let docDataListener;
-const addDocDataListener = (listener) => {
-  docDataListener = (event, docData) => {
-    listener(docData);
-  };
-  ipcRenderer.on('create-doc-output', docDataListener);
-};
-
-const removeDocDataListener = () => {
-  if (!docDataListener) {
-    return;
-  }
-  ipcRenderer.removeListener('create-doc-output', docDataListener);
-  docDataListener = null;
+  ipcRenderer.removeListener('create-doc-output', createdDocumentDataListener);
+  createdDocumentDataListener = null;
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -90,16 +74,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('close-app');
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
-  createDocument: () => {
-    ipcRenderer.send('create-document');
-  },
-  readPages: (documentID) => {
-    ipcRenderer.send('read-pages', documentID);
-  },
-  addPagesDataListener: addPagesDataListener,
-  removePagesDataListener: removePagesDataListener,
-  addDocDataListener: addDocDataListener,
-  removeDocDataListener: removeDocDataListener,
+  createDocument: () => ipcRenderer.invoke('create-document'),
+  readDocuments: () => ipcRenderer.invoke('read-documents'),
+  addCreatedDocumentDataListener: addCreatedDocumentDataListener,
+  removeCreatedDocumentDataListener: removeCreatedDocumentDataListener,
   updateDocument: (documentID, action, data, pageID) => {
     ipcRenderer.send('update-document', documentID, action, data, pageID);
   },

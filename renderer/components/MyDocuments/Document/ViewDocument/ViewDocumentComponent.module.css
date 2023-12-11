@@ -1,8 +1,6 @@
 .main {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 80px);
-  margin: 40px 40px 40px 40px;
 }
 
 .topLine {
@@ -14,11 +12,6 @@
   margin-top: 2px;
 }
 
-.returnButton {
-  padding: 0;
-  padding-right: 15px;
-}
-
 .editButton {
   padding-bottom: 2px;
 }
@@ -26,45 +19,51 @@
 .contentDiv {
   display: flex;
   flex-direction: column;
-  flex-grow: 1;
+  height: 100%;
 }
 
 .scannedDocsMiniAndPlus {
   display: flex;
   justify-content: space-between;
-
-  flex: 1;
-
-  height: 100px;
-  max-height: 100px;
+  position: relative;
+  min-height: 110px;
 }
 
 .scannedDocumentsMini {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 80px;
   display: flex;
-  flex-wrap: wrap;
-  overflow-y: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.scannedDocumentsMini div:first-child {
+  margin-left: 0;
 }
 
 .scannedDocMini {
+  flex-shrink: 0;
   height: 86px;
   width: 68px;
-  border: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   margin: 5px;
-  transition: background-color 0.3s ease;
+  transition: border-color 0.3s ease;
   padding: 0;
 }
 
 .scannedDocMini:hover {
-  background-color: lightgray;
+  border-color: var(--mantine-color-blue-2);
 }
 
 .scannedDocMiniClicked {
+  flex-shrink: 0;
   height: 86px;
   width: 68px;
-  border: rem(1px) solid light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
   margin: 5px;
-  transition: background-color 0.3s ease;
-  background-color: darkgray;
+  transition: border-color 0.3s ease;
+  border-color: var(--mantine-color-blue-3);
   padding: 0;
 }
 
@@ -74,6 +73,10 @@
 }
 
 .addDocButtonCont {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   height: 86px;
   width: 68px;
   border: 1px solid white;
@@ -94,10 +97,16 @@
   width: 68px;
 }
 
+.paginationWrapper {
+  display: flex;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
 .scannedDocs {
   display: flex;
+  flex-grow: 1;
   flex-direction: row;
-  flex: 20;
 }
 
 .docPreviewEmpty {
@@ -106,7 +115,7 @@
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  background: light-dark(var(--mantine-color-gray-3), var(--mantine-color-dark-4));
+  background: var(--mantine-color-gray-3);
   margin-right: 30px;
   margin-top: 10px;
   border-radius: 1%;

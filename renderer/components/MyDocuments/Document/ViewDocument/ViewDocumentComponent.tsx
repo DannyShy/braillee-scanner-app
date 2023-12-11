@@ -1,117 +1,75 @@
 import React, { useEffect, useState } from 'react';
-import classes from '../main/MyPagesComponent.module.css';
-import { Button, Text, Container, Image, Title, Tabs } from '@mantine/core';
-import { IconArrowLeft, IconPencil, IconPlus } from '@tabler/icons-react';
-import EditDocumentTitleComponent from './EditDocumentTitleComponent';
-import { Document, MyPagesComponentProps } from './types';
+import classes from './ViewDocumentComponent.module.css';
+import { Button, Text, Container, Image, Tabs, Paper, Pagination } from '@mantine/core';
+import { IconArrowLeft, IconPlus } from '@tabler/icons-react';
+import DocumentTitleComponent from './DocumentTitle/DocumentTitleComponent';
+import { Document } from '../../../types';
+import { pages } from 'next/dist/build/templates/app-page';
+import MainContent from '@renderer/components/MainContent';
 
-const emptyDocumentData: Document = {
-  title: 'New Document',
-  documentID: null,
-  pages: [
-    {
-      pageID: null,
-      file: null,
-    },
-  ],
+type Props = {
+  activeDocument: Document;
+  onClose: () => void;
+  onUpdate: (action: string, data?: string, activePage?: number | string) => void;
 };
 
-const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activeDocument }) => {
-  // editTitleState serves for rendering EditDocumentTitleComponent
-  const [editTitleState, setEditTitleState] = useState<boolean>(true);
-  const [pageContent, setPageContent] = useState<Document>(emptyDocumentData);
-  const [selectedPage, setSelectedPage] = useState<number>(0);
-  const handleReturnButtonClick = () => {
-    setDocsState(false);
-  };
+const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpdate }) => {
+  const [activePage, setActivePage] = useState<number>(0);
 
+  //adds page and reads updated document
   const handleAddPage = async () => {
-    window.electronAPI.updateDocument(activeDocument, 'addPage');
-    window.electronAPI.readPages(activeDocument);
-    await window.electronAPI.addPagesDataListener((pageData) => {
-      setPageContent(pageData);
-      window.electronAPI.removePagesDataListener();
-    });
-  };
-
-  const handleEditButtonClick = () => {
-    setEditTitleState(true);
-  };
-
-  const renderTopLine = () => {
-    if (editTitleState) {
-      return (
-        <EditDocumentTitleComponent
-          pageContent={pageContent}
-          setEditTitleState={setEditTitleState}
-          setPageContent={setPageContent}
-          activeDocument={activeDocument}
-        />
-      );
-    } else {
-      return (
-        <>
-          <Title className={classes.title} size="h2">
-            {pageContent.title}
-          </Title>
-          <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
-            <IconPencil></IconPencil>
-          </Button>
-        </>
-      );
-    }
+    onUpdate('addPage');
   };
 
   const renderMiniPages = () => {
-    return pageContent.pages.map((page, index) => (
-      <Container
+    return activeDocument.pages.map((page, index) => (
+      <Paper
         key={index}
-        className={` ${selectedPage === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
-        onClick={() => setSelectedPage(index)}
+        className={` ${activePage === index ? `${classes.scannedDocMiniClicked}` : `${classes.scannedDocMini}`} `}
+        onClick={() => setActivePage(index)}
+        withBorder
       >
-        {pageContent.pages[index].file ? (
-          <Image src={pageContent.pages[index].file} className={classes.miniImage}></Image>
+        {activeDocument.pages[index].file ? (
+          <Image src={activeDocument.pages[index].file} className={classes.miniImage}></Image>
         ) : null}
-      </Container>
+      </Paper>
     ));
   };
 
   const renderPagePreview = () => {
-    if (pageContent.pages[selectedPage].file === null) {
+    const fileValue = activeDocument.pages[activePage].file;
+    if (fileValue === null) {
       return (
         <Container className={classes.docPreviewEmpty}>
-          <Button>Scan</Button>
+          <Button size="xl">Scan</Button>
           <Text>or</Text>
-          <Button>Upload file</Button>
+          <Button size="xl">Upload file</Button>
         </Container>
       );
     } else {
       return (
         <Container className={classes.docPreview}>
-          <Image src={pageContent.pages[selectedPage].file} className={classes.imagePreview}></Image>
+          <Image src={activeDocument.pages[activePage].file} className={classes.imagePreview}></Image>
         </Container>
       );
     }
   };
 
-  const maxIndex = pageContent.pages.reduce(
-    (max, page, index) => (page.pageID > pageContent.pages[max].pageID ? index : max),
-    0,
-  );
+  const maxIndex = activeDocument ? activeDocument.pages.length - 1 : 0;
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
-    setSelectedPage(maxIndex);
+    setActivePage(maxIndex);
   }, [maxIndex]);
 
   return (
-    <div className={classes.main}>
-      <div className={classes.topLine}>
-        <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButtonClick}>
-          <IconArrowLeft></IconArrowLeft>
-        </Button>
-        {renderTopLine()}
-      </div>
+    <MainContent
+      header={
+        <div className={classes.topLine}>
+          <DocumentTitleComponent activeDocument={activeDocument} onUpdate={onUpdate} onClose={onClose} />
+        </div>
+      }
+    >
       <div className={classes.contentDiv}>
         <div className={classes.scannedDocsMiniAndPlus}>
           <div className={classes.scannedDocumentsMini}>{renderMiniPages()}</div>
@@ -120,6 +78,15 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
               <IconPlus className={classes.iconPlus}></IconPlus>
             </Button>
           </div>
+        </div>
+        <div className={classes.paginationWrapper}>
+          <Pagination
+            value={activePage + 1}
+            total={activeDocument.pages.length}
+            size="md"
+            onChange={(page) => setActivePage(page - 1)}
+            withEdges
+          />
         </div>
         <div className={classes.scannedDocs}>
           {renderPagePreview()}
@@ -142,8 +109,8 @@ const MyPagesComponent: React.FC<MyPagesComponentProps> = ({ setDocsState, activ
           </div>
         </div>
       </div>
-    </div>
+    </MainContent>
   );
 };
 
-export default MyPagesComponent;
+export default ViewDocumentComponent;

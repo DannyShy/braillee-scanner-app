@@ -1,0 +1,20 @@
+.cards {
+  display: flex;
+  flex-direction: column;
+}
+
+.searchDocument {
+  border: blue;
+  margin-bottom: 20px;
+}
+
+.documentCardsWrapper {
+  overflow-y: auto;
+}
+
+.documentCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding-bottom: 10px;
+}

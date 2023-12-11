@@ -9,7 +9,7 @@ import { performCancelInitialSetup, performInitialSetup } from './utils/perform-
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
-import { performCreateDocument, performReadPages, performUpdateDocument } from './utils/perform-manage-document';
+import { performCreateDocument, performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -28,21 +28,15 @@ if (IS_PROD) {
   let firstPageHtml: string;
   let firstPage: string;
 
-  if (!fs.existsSync(PATH_TO_MODEL)) {
-    firstPageHtml = 'welcome-screen.html';
-    firstPage = 'welcome-screen';
-  } else {
+  // if (!fs.existsSync(PATH_TO_MODEL)) {
+  //   firstPageHtml = 'welcome-screen.html';
+  //   firstPage = 'welcome-screen';
+  // } else {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
-  }
+  // }
 
-  if (IS_PROD) {
-    await mainWindow.loadURL(`app://./${firstPageHtml}`);
-  } else {
-    const port = process.argv[2];
-    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
-    mainWindow.webContents.openDevTools();
-  }
+  ipcMain.handle('read-documents', () => performReadDocuments());
 
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
@@ -62,18 +56,21 @@ if (IS_PROD) {
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();
   });
-  ipcMain.on('create-document', () => {
-    performCreateDocument(mainWindow);
-  });
-  ipcMain.on('read-pages', async (event, documentID) => {
-    performReadPages(documentID, mainWindow);
-  });
+  ipcMain.handle('create-document', () => performCreateDocument(mainWindow));
   ipcMain.on('update-document', (event, documentID, action, data, pageID) => {
     performUpdateDocument(documentID, action, data, pageID);
   });
   ipcMain.handle('close-app', () => {
     app.quit();
   });
+
+  if (IS_PROD) {
+    await mainWindow.loadURL(`app://./${firstPageHtml}`);
+  } else {
+    const port = process.argv[2];
+    await mainWindow.loadURL(`http://localhost:${port}/${firstPage}`);
+    mainWindow.webContents.openDevTools();
+  }
 })();
 
 app.on('window-all-closed', () => {

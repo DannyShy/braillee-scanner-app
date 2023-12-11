@@ -1,3 +1,9 @@
+.documentTitle {
+  display: flex;
+  align-items: center;
+  flex-grow: 1;
+}
+
 .editTitle {
   display: flex;
   flex-grow: 1;
@@ -18,4 +24,10 @@
 .topLineButtons {
   display: flex;
   flex-direction: row;
+}
+
+.returnButton {
+  padding: 0;
+  padding-right: 15px;
+  padding-left: 0px;
 }
