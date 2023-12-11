@@ -37,19 +37,12 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
     setEditTitleState(false);
   };
 
-  // makes selectAll effect in initual value of TextInput
-  const handleFocus = (event) => {
-    if (event.currentTarget.value === activeDocument.title) {
-      event.target.select();
-    }
-  };
-
   // makes focus on TextInput
   useEffect(() => {
     if (editTitleState) {
-      titleInputRef.current.focus();
+      titleInputRef.current.select();
     }
-  }, []);
+  }, [editTitleState]);
 
   return (
     <div className={classes.documentTitle}>
@@ -63,7 +56,6 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
             ref={titleInputRef}
             value={value}
             onChange={(event) => setValue(event.currentTarget.value)}
-            onFocus={handleFocus}
           />
           <div className={classes.topLineButtons}>
             <div>
