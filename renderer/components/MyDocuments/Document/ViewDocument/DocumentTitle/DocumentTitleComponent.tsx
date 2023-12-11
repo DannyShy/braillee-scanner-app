@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classes from '../DocumentTitle/DocumentTitleComponent.module.css';
+import classes from './DocumentTitleComponent.module.css';
 import { Button, TextInput, Title } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
@@ -24,9 +24,6 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
 
   const handleEditButtonClick = () => {
     setEditTitleState(true);
-    (event) => {
-      event.target.select();
-    };
   };
 
   // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
@@ -40,19 +37,12 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
     setEditTitleState(false);
   };
 
-  // makes selectAll effect in initual value of TextInput
-  const handleFocus = (event) => {
-    if (event.currentTarget.value === activeDocument.title) {
-      event.target.select();
-    }
-  };
-
   // makes focus on TextInput
   useEffect(() => {
     if (editTitleState) {
-      titleInputRef.current.focus();
+      titleInputRef.current.select();
     }
-  }, []);
+  }, [editTitleState]);
 
   return (
     <div className={classes.documentTitle}>
@@ -66,7 +56,6 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
             ref={titleInputRef}
             value={value}
             onChange={(event) => setValue(event.currentTarget.value)}
-            onFocus={handleFocus}
           />
           <div className={classes.topLineButtons}>
             <div>

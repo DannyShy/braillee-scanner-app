@@ -1,10 +1,11 @@
-import OpenDocumentComponent from './Document/OpenDocumentComponent';
+import DocumentCards from 'components/MyDocuments/Document/DocumentCards';
 import { useEffect, useState } from 'react';
-import classes from '../MyDocuments/MyDocuments.module.css';
-import { Button, Title } from '@mantine/core';
-import EmptyComponent from './Document/EmptyComponent';
+import classes from './MyDocuments.module.css';
+import { Button, Paper, Title } from '@mantine/core';
+import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
 import { Document } from '../types';
 import ViewDocumentComponent from './Document/ViewDocument/ViewDocumentComponent';
+import MainContent from '@renderer/components/MainContent';
 
 const MyDocuments: React.FC = () => {
   // contains data from all documents
@@ -60,31 +61,27 @@ const MyDocuments: React.FC = () => {
     }
   }, [documents]);
 
-  return (
-    <div className={classes.myDocuments}>
-      {!activeDocument && (
-        <>
-          <div className={classes.header}>
-            <Title className={classes.title} size="h2">
-              My Documents
-            </Title>
-            <Button className={classes.createDocButton} radius="xs" onClick={onCreateDocument}>
-              + Create Document
-            </Button>
-          </div>
-          <>
-            {documents !== null && documents.length ? (
-              <OpenDocumentComponent documents={documents} onOpen={onOpen} />
-            ) : (
-              <EmptyComponent onCreateDocument={onCreateDocument} />
-            )}
-          </>
-        </>
+  return activeDocument ? (
+    <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} onUpdate={onUpdate} />
+  ) : (
+    <MainContent
+      header={
+        <div className={classes.header}>
+          <Title className={classes.title} size="h2">
+            My Documents
+          </Title>
+          <Button className={classes.createDocButton} radius="sm" size="md" onClick={onCreateDocument}>
+            + Create Document
+          </Button>
+        </div>
+      }
+    >
+      {documents !== null && documents.length ? (
+        <DocumentCards documents={documents} onOpen={onOpen} />
+      ) : (
+        <NoDocuments onCreateDocument={onCreateDocument} />
       )}
-      {activeDocument ? (
-        <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} onUpdate={onUpdate} />
-      ) : null}
-    </div>
+    </MainContent>
   );
 };
 

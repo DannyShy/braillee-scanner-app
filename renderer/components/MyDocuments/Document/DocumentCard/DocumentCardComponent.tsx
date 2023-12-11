@@ -19,12 +19,13 @@ const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
       <Title className={classes.cardTitle} size="h4">
         {document.title}
       </Title>
-      <Text>Pages: {document.pages.length}</Text>
+      <Text c="dimmed">Pages: {document.pages.length}</Text>
       <Button
         key={document.documentID}
         className={classes.cardButton}
         onClick={handleClickDocumentCard}
-        variant="default"
+        variant="light"
+        size="md"
       >
         Open
       </Button>
