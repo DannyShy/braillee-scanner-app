@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import classes from '../ViewDocument/ViewDocumentComponent.module.css';
 import { Button, Text, Container, Image, Tabs, Paper, Loader, Pagination, Tooltip } from '@mantine/core';
-import { IconCheck, IconPlus, IconX } from '@tabler/icons-react';
+import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitleComponent';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
