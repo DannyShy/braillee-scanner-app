@@ -90,7 +90,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
     if (activeDocument.pages[activePage].file !== null) {
       setScanInProgress(false);
     }
-  }, [activeDocument.pages[activePage].file]);
+  }, [activeDocument?.pages[activePage]?.file]);
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
