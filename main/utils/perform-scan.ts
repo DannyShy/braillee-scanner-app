@@ -1,32 +1,33 @@
 import twain from 'node-twain';
 import tmp from 'tmp';
 
+let app;
+let defaultSource;
+let sources;
+
 const performScan = async (): Promise<string> => {
-  const app = new twain.TwainSDK({
-    //data below are accepted also with dummy values
-    productName: 'x',
-    productFamily: 'x',
-    manufacturer: 'x',
-    version: {
-      country: 1,
-      language: 1,
-      majorNum: 1,
-      minorNum: 1,
-      info: 'x',
-    },
-  });
-
-  const sources = app.getDataSources(); // ["PaperStream IP SP-1120N #2"] -> object
-  // here if there is more than 1 scanner user should be able to pick which scanner to use.
-
-  const defaultSource = app.getDefaultSource(); // "PaperStream IP SP-1120N #2" -> string
-
-  app.setDefaultSource(sources[0]); //set which scanner to work
-
-  await app.openDataSource(defaultSource);
+  if (!app) {
+    app = new twain.TwainSDK({
+      //data below are accepted also with dummy values
+      productName: 'x',
+      productFamily: 'x',
+      manufacturer: 'x',
+      version: {
+        country: 1,
+        language: 1,
+        majorNum: 1,
+        minorNum: 1,
+        info: 'x',
+      },
+    });
+    sources = app.getDataSources();
+    defaultSource = app.getDefaultSource();
+    app.setDefaultSource(sources[0]);
+    await app.openDataSource(defaultSource);
+  }
 
   app.setCallback();
-  // runs scanner and create unique name of file
+
   return new Promise<string>((resolve, reject) => {
     const options = {};
 
