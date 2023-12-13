@@ -6,7 +6,7 @@ let defaultSource;
 let sources;
 
 const performScan = async (): Promise<string> => {
-  if (app === undefined) {
+  if (!app) {
     app = new twain.TwainSDK({
       //data below are accepted also with dummy values
       productName: 'x',

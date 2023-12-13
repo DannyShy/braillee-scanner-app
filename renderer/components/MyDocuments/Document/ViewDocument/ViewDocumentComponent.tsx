@@ -12,9 +12,12 @@ type Props = {
   onUpdate: (action: string, data?: string, activePage?: number | string) => void;
 };
 
+let recognizedBrailleDots;
+
 const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpdate }) => {
   const [activePage, setActivePage] = useState<number>(0);
   const [scanInProgress, setScanInProgress] = useState<boolean>(false);
+  const [recognitionInProgress, setRecognitionInProgress] = useState<boolean>(false);
 
   //adds page and reads updated document
   const handleAddPage = async () => {
@@ -34,6 +37,17 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
 
   const handleClickRejectScan = () => {
     onUpdate('editPage', null, activeDocument.pages[activePage].pageID);
+  };
+
+  const handleReadBraille = async (brailleInput) => {
+    await window.electronAPI.readBraille(brailleInput);
+  };
+
+  const handleViewBraille = async () => {
+    await window.electronAPI.handleBrailleData((brailleOutput) => {
+      recognizedBrailleDots = brailleOutput;
+      setRecognitionInProgress(false);
+    });
   };
 
   const renderMiniPages = () => {
@@ -84,13 +98,27 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
     );
   };
 
+  const renderRecognizedBraille = () => {
+    return recognitionInProgress ? (
+      <Container className={classes.brailleText}>
+        <Loader color="blue" />
+        <Text>Recognition in progress...</Text>
+      </Container>
+    ) : (
+      recognizedBrailleDots
+    );
+  };
+
   const maxIndex = activeDocument ? activeDocument.pages.length - 1 : 0;
 
   useEffect(() => {
     if (activeDocument.pages[activePage].file !== null) {
       setScanInProgress(false);
+      setRecognitionInProgress(true);
+      handleReadBraille(activeDocument.pages[activePage].file);
+      handleViewBraille();
     }
-  }, [activeDocument.pages[activePage].file]);
+  }, [activeDocument?.pages[activePage]?.file]);
 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
@@ -126,18 +154,13 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose, onUpd
         <div className={classes.scannedDocs}>
           {renderPagePreview()}
           <div className={classes.translatedDocs}>
-            <Tabs defaultValue="unicode">
+            <Tabs defaultValue="unicode" className={classes.tab}>
               <Tabs.List>
                 <Tabs.Tab value="unicode">Unicode</Tabs.Tab>
                 <Tabs.Tab value="text">Text</Tabs.Tab>
               </Tabs.List>
-              <Tabs.Panel value="unicode">
-                ⠠⠞⠑⠉⠓⠝⠕⠧⠊⠝⠅⠽ ⠠⠙⠕⠞⠗⠊⠎⠀⠤⠀⠃⠗⠁⠊⠇⠕⠧⠯ ⠠⠞⠑⠞⠗⠊⠎⠀⠏⠗⠑⠀⠃⠗⠁⠊⠇⠕⠧⠯ ⠗⠊⠁⠙⠕⠅ ⠠⠞⠕⠂⠀⠮⠑⠀⠎⠁⠀⠧⠀⠎⠬⠩⠁⠎⠝⠕⠎⠞⠊⠀⠧⠑⠸⠁
-                ⠬⠎⠊⠇⠊⠁⠀⠧⠑⠝⠥⠚⠑⠀⠏⠗⠊⠎⠏⠾⠎⠕⠃⠕⠧⠁⠝⠊⠥ ⠏⠕⠩⠌⠞⠁⠩⠕⠧⠯⠉⠓⠀⠓⠊⠑⠗⠀⠁⠚ ⠝⠑⠧⠊⠙⠊⠁⠉⠊⠍⠀⠚⠑⠀⠋⠁⠝⠞⠁⠎⠞⠊⠉⠅⠡
-                ⠎⠏⠗⠡⠧⠁⠂⠀⠅⠞⠕⠗⠬⠀⠎⠍⠑⠀⠥⠮⠀⠝⠁⠀⠞⠯⠉⠓⠞⠕ ⠎⠞⠗⠡⠝⠅⠁⠉⠓⠀⠕⠎⠇⠡⠧⠊⠇⠊⠲⠀⠠⠵⠁⠓⠨⠃⠊⠳ ⠎⠁⠀⠙⠕⠀⠵⠧⠥⠅⠕⠧⠀⠏⠗⠌⠃⠑⠓⠕⠧⠀⠁⠀⠓⠊⠑⠗
-                ⠁⠀⠝⠑⠉⠓⠁⠳⠐⠎⠧⠕⠚⠥⠀⠋⠁⠝⠞⠡⠵⠊⠥⠀⠃⠇⠬⠙⠊⠳ ⠎⠏⠕⠇⠥⠀⠎⠀⠏⠗⠎⠞⠁⠍⠊⠀⠝⠁⠀⠅⠇⠡⠧⠑⠎⠝⠊⠉⠊ ⠚⠑⠀⠝⠁⠕⠵⠁⠚⠀⠙⠥⠱⠥⠀⠓⠗⠑⠚⠬⠉⠊
-                ⠵⠡⠮⠊⠞⠕⠅⠲⠀⠠⠁⠚⠀⠧⠀⠍⠕⠃⠊⠇⠝⠯⠉⠓ ⠞⠑⠇⠑⠋⠪⠝⠕⠉⠓⠀⠝⠡⠍⠀⠥⠮⠀⠵⠁⠩⠌⠝⠁ ⠎⠧⠊⠞⠁⠳⠀⠝⠁⠀⠇⠑⠏⠱⠊⠑⠀⠩⠁⠎⠽⠂⠀⠁⠚⠀⠞⠥
-                ⠓⠗⠽⠀⠏⠕⠍⠁⠇⠊⠩⠅⠽⠀⠏⠗⠊⠃⠬⠙⠁⠚⠬⠲⠀⠠⠚⠁ ⠎⠕⠍⠀⠧⠱⠁⠅⠀⠧⠹⠁⠅⠁⠀⠞⠊⠏⠥⠀⠕⠙
+              <Tabs.Panel value="unicode" className={classes.brailleText}>
+                {renderRecognizedBraille()}
               </Tabs.Panel>
               <Tabs.Panel value="text">This is Text content</Tabs.Panel>
             </Tabs>
