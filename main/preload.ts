@@ -36,34 +36,65 @@ const removeCheckDiskSpaceListener = () => {
   checkDiskSpaceListener = null;
 };
 
-let createdDocumentDataListener;
-const addCreatedDocumentDataListener = (listener) => {
-  createdDocumentDataListener = (event, documents) => {
-    listener(documents);
+let createdDocumentListener;
+
+const addCreatedDocumentListener = (listener) => {
+  createdDocumentListener = (event, createdDocument) => {
+    listener(createdDocument);
   };
-  ipcRenderer.on('create-doc-output', createdDocumentDataListener);
+  ipcRenderer.on('create-document-output', createdDocumentListener);
 };
 
-const removeCreatedDocumentDataListener = () => {
-  if (!createdDocumentDataListener) {
+const removeCreatedDocumentListener = () => {
+  if (!createdDocumentListener) {
     return;
   }
-  ipcRenderer.removeListener('create-doc-output', createdDocumentDataListener);
-  createdDocumentDataListener = null;
+  ipcRenderer.removeListener('create-document-output', createdDocumentListener);
+  documentDataListener = null;
+};
+
+let documentDataListener;
+const addDocumentDataListener = (listener) => {
+  documentDataListener = (event, documents) => {
+    listener(documents);
+  };
+  ipcRenderer.on('read-documents-output', documentDataListener);
+};
+
+const removeDocumentDataListener = () => {
+  if (!documentDataListener) {
+    return;
+  }
+  ipcRenderer.removeListener('read-documents-output', documentDataListener);
+  documentDataListener = null;
+};
+
+let brailleTextListener;
+
+const addBrailleTextListener = (listener) => {
+  brailleTextListener = (event, brailleText) => {
+    listener(brailleText);
+  };
+  ipcRenderer.on('braille-text', brailleTextListener);
+};
+
+const removeBrailleTextListener = () => {
+  if (!brailleTextListener) {
+    return;
+  }
+  ipcRenderer.removeListener('braille-text', brailleTextListener);
+  brailleTextListener = null;
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
-  readBraille: (brailleInput) => {
-    ipcRenderer.send('send-file-to-main', brailleInput);
+  recognizeBraille: (file, documentID, pageID) => {
+    ipcRenderer.send('recognize-braille', file, documentID, pageID);
   },
-  handleBrailleData: (listener) => {
-    ipcRenderer.on('braille', (event, brailleData) => {
-      listener(brailleData);
-    });
-    ipcRenderer.removeListener('braille', listener);
-  },
+  readBraille: (file) => ipcRenderer.invoke('read-braille', file),
+  addBrailleTextListener: addBrailleTextListener,
+  removeBrailleTextListener: removeBrailleTextListener,
   initialSetup: () => ipcRenderer.invoke('initial-setup'),
   addInitialSetupProgressListener: addInitialSetupProgressListener,
   removeInitialSetupProgressListener: removeInitialSetupProgressListener,
@@ -74,11 +105,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('close-app');
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
-  createDocument: () => ipcRenderer.invoke('create-document'),
+  cancelRecognition: () => ipcRenderer.invoke('cancel-recognition'),
   readDocuments: () => ipcRenderer.invoke('read-documents'),
-  addCreatedDocumentDataListener: addCreatedDocumentDataListener,
-  removeCreatedDocumentDataListener: removeCreatedDocumentDataListener,
-  updateDocument: (documentID, action, data, pageID) => {
-    ipcRenderer.send('update-document', documentID, action, data, pageID);
+  addDocumentDataListener: addDocumentDataListener,
+  removeDocumentDataListener: removeDocumentDataListener,
+  addCreatedDocumentListener: addCreatedDocumentListener,
+  removeCreatedDocumentListener: removeCreatedDocumentListener,
+  updateDocument: (action, documentID, data, pageID) => {
+    ipcRenderer.send('update-document', action, documentID, data, pageID);
   },
 });

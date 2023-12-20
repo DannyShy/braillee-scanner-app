@@ -1,11 +1,13 @@
 import DocumentCards from 'components/MyDocuments/Document/DocumentCards';
 import { useEffect, useState } from 'react';
 import classes from './MyDocuments.module.css';
-import { Button, Paper, Title } from '@mantine/core';
+import { Button, Title } from '@mantine/core';
 import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
 import { Document } from '../types';
 import ViewDocumentComponent from './Document/ViewDocument/ViewDocumentComponent';
 import MainContent from '@renderer/components/MainContent';
+
+const emptyDocuments = [];
 
 const MyDocuments: React.FC = () => {
   // contains data from all documents
@@ -14,8 +16,11 @@ const MyDocuments: React.FC = () => {
   const [activeDocument, setActiveDocument] = useState<Document>(null);
 
   const onCreateDocument = async () => {
-    const createdDocument = await window.electronAPI.createDocument();
-    setActiveDocument(createdDocument);
+    await window.electronAPI.updateDocument('createDocument');
+    window.electronAPI.addCreatedDocumentListener((createdDocument) => {
+      setActiveDocument(createdDocument);
+      window.electronAPI.removeCreatedDocumentListener();
+    });
   };
 
   const onClose = () => {
@@ -26,28 +31,18 @@ const MyDocuments: React.FC = () => {
     setActiveDocument(document);
   };
 
-  const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
-    window.electronAPI.updateDocument(activeDocument.documentID, action, data, activePage);
-    const documents = await window.electronAPI.readDocuments();
-    setDocuments(documents);
-  };
-
   // getting inital data
   useEffect(() => {
-    const loadDocuments = async () => {
-      const documents = await window.electronAPI.readDocuments();
-      setDocuments(documents);
-    };
-    void loadDocuments();
+    window.electronAPI.readDocuments();
   }, []);
 
   // mounting the listener
   useEffect(() => {
-    window.electronAPI.addCreatedDocumentDataListener((newDocuments) => {
+    window.electronAPI.addDocumentDataListener((newDocuments) => {
       setDocuments(newDocuments);
     });
     return () => {
-      window.electronAPI.removeCreatedDocumentDataListener();
+      window.electronAPI.removeDocumentDataListener();
     };
   }, []);
 
@@ -62,7 +57,7 @@ const MyDocuments: React.FC = () => {
   }, [documents]);
 
   return activeDocument ? (
-    <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} onUpdate={onUpdate} />
+    <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} />
   ) : (
     <MainContent
       header={
@@ -76,7 +71,7 @@ const MyDocuments: React.FC = () => {
         </div>
       }
     >
-      {documents !== null && documents.length ? (
+      {documents && documents !== emptyDocuments ? (
         <DocumentCards documents={documents} onOpen={onOpen} />
       ) : (
         <NoDocuments onCreateDocument={onCreateDocument} />

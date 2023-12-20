@@ -1,9 +1,9 @@
-import twain from 'node-twain';
+import twain, { TwainSDK } from 'node-twain';
 import tmp from 'tmp';
 
-let app;
-let defaultSource;
-let sources;
+let app: TwainSDK;
+let defaultSource: string;
+let sources: string[];
 
 const performScan = async (): Promise<string> => {
   if (!app) {

@@ -7,4 +7,5 @@ export type Document = {
 export type Page = {
   pageID?: string | null;
   file?: string | null;
+  brailleText?: null | 'brailleTextAvailable' | 'recognitionCanceled' | 'recognitionInProgress';
 };

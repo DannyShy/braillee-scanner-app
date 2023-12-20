@@ -4,12 +4,12 @@ import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
-import { performReadBraille } from './utils/perform-read-braille';
+import { addFileToQueue, performCancelRecognizeBraille, performReadBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
-import { performCreateDocument, performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
+import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -28,16 +28,15 @@ if (IS_PROD) {
   let firstPageHtml: string;
   let firstPage: string;
 
-  // if (!fs.existsSync(PATH_TO_MODEL)) {
-  //   firstPageHtml = 'welcome-screen.html';
-  //   firstPage = 'welcome-screen';
-  // } else {
+  if (!fs.existsSync(PATH_TO_MODEL)) {
+    firstPageHtml = 'welcome-screen.html';
+    firstPage = 'welcome-screen';
+  } else {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
-  // }
+  }
 
-  ipcMain.handle('read-documents', () => performReadDocuments());
-
+  ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
   });
@@ -49,16 +48,20 @@ if (IS_PROD) {
   ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
     performCancelPreview(scannedOutputURI);
   });
-  ipcMain.on('send-file-to-main', async (event, brailleInput) => {
-    const brailleOutput = await performReadBraille(brailleInput);
-    mainWindow.webContents.send('braille', brailleOutput);
+  ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
+    addFileToQueue(fileName, documentID, pageID, mainWindow);
+  });
+  ipcMain.handle('read-braille', async (event, file) => {
+    performReadBraille(file, mainWindow);
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();
   });
-  ipcMain.handle('create-document', () => performCreateDocument(mainWindow));
-  ipcMain.on('update-document', (event, documentID, action, data, pageID) => {
-    performUpdateDocument(documentID, action, data, pageID);
+  ipcMain.handle('cancel-recognition', () => {
+    performCancelRecognizeBraille();
+  });
+  ipcMain.on('update-document', (event, action, documentID, data, pageID) => {
+    performUpdateDocument(mainWindow, action, documentID, data, pageID);
   });
   ipcMain.handle('close-app', () => {
     app.quit();
