@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
-import { BrailleText, Document, UpdateDocumentAction } from './types';
+import { BrailleStatus, Document, UpdateDocumentAction } from './types';
 import * as crypto from 'node:crypto';
 
 const getDocPathFromDocID = (documentID: number | string): string => {
@@ -31,6 +31,7 @@ const createDocumentData = (documentID): Document => {
       {
         pageID: crypto.randomUUID(),
         file: null,
+        brailleStatus: null,
         brailleText: null,
       },
     ],
@@ -44,7 +45,7 @@ const performUpdateDocument = (
   mainWindow: BrowserWindow,
   action: UpdateDocumentAction,
   documentID?: number | string,
-  data?: string | BrailleText,
+  data?: string | BrailleStatus,
   pageID?: number | string,
 ): Document => {
   let pageIndex;
@@ -74,6 +75,7 @@ const performUpdateDocument = (
       const newPage = {
         pageID: crypto.randomUUID(),
         file: null,
+        brailleStatus: null,
         brailleText: null,
       };
       jsonData.pages.push(newPage);
@@ -83,10 +85,16 @@ const performUpdateDocument = (
         jsonData.pages[pageIndex].file = data;
       }
       break;
+    case 'editBrailleStatus':
+      if (pageIndex !== -1) {
+        jsonData.pages[pageIndex].brailleStatus = data as BrailleStatus;
+      }
+      break;
     case 'editBrailleText':
       if (pageIndex !== -1) {
-        jsonData.pages[pageIndex].brailleText = data as BrailleText;
+        jsonData.pages[pageIndex].brailleText = data;
       }
+      break;
   }
   writeJsonToFile(jsonData, documentID);
   performReadDocuments(mainWindow);

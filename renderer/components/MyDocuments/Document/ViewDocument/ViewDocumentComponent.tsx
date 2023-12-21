@@ -13,7 +13,6 @@ type Props = {
 
 const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => {
   const [activePage, setActivePage] = useState<number>(0);
-  const [brailleText, setBrailleText] = useState<string>(null);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
@@ -22,7 +21,6 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
 
   //adds page and reads updated document
   const handleAddPage = async () => {
-    setBrailleText(null);
     onUpdate('addPage');
   };
 
@@ -32,7 +30,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
       const scannedOutput = await window.electronAPI.scanFile();
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
-      await onUpdate('editBrailleText', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
+      await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     } catch (error) {
       console.error(error);
     }
@@ -40,23 +38,23 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
 
   const handleClickRejectScan = async () => {
     await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
-    if (activeDocument.pages[activePage].brailleText === 'recognitionInProgress') {
+    if (activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress') {
       window.electronAPI.cancelRecognition();
     }
+    await onUpdate('editBrailleStatus', null, activeDocument.pages[activePage].pageID);
     await onUpdate('editBrailleText', null, activeDocument.pages[activePage].pageID);
-    setBrailleText(null);
   };
 
   const handleClickCancelRecognition = async () => {
     await window.electronAPI.cancelRecognition();
-    await onUpdate('editBrailleText', 'recognitionCanceled', activeDocument.pages[activePage].pageID);
+    await onUpdate('editBrailleStatus', 'recognitionCanceled', activeDocument.pages[activePage].pageID);
   };
 
   const handleUploadFile = async () => {
     const pathToUploadedFile = (uploadedFile as any).path;
     const correctedPathToFile = 'file:///' + pathToUploadedFile.replace(/\\/g, '/');
     await onUpdate('editFile', correctedPathToFile, activeDocument.pages[activePage].pageID);
-    await onUpdate('editBrailleText', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
+    await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     setUploadedFile(null);
   };
 
@@ -69,17 +67,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
     );
   };
 
-  // reads braille data and sets it to brailleText
-  const handleViewBraille = async () => {
-    window.electronAPI.readBraille(activeDocument.pages[activePage].file);
-    await window.electronAPI.addBrailleTextListener((brailleOutput) => {
-      setBrailleText(brailleOutput);
-      window.electronAPI.removeBrailleTextListener();
-    });
-  };
-
   const handleClickMiniPage = (index) => {
-    setBrailleText(null);
     setActivePage(index);
   };
 
@@ -137,7 +125,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   };
 
   const renderRecognizedBraille = () => {
-    return activeDocument.pages[activePage].brailleText === 'recognitionInProgress' ? (
+    return activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress' ? (
       <div className={classes.brailleTextContainer}>
         <Tooltip label="Cancel recognition">
           <Button
@@ -153,8 +141,8 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
         <Loader color="blue" />
         <Text>Recognition in progress...</Text>
       </div>
-    ) : activeDocument.pages[activePage].brailleText === 'brailleTextAvailable' ? (
-      brailleText
+    ) : activeDocument.pages[activePage].brailleStatus === 'brailleTextAvailable' ? (
+      activeDocument.pages[activePage].brailleText
     ) : null;
   };
 
@@ -163,17 +151,11 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
     if (
       activeDocument.pages[activePage].file &&
       activeDocument.pages[activePage].file !== 'scanInProgress' &&
-      activeDocument.pages[activePage].brailleText !== 'recognitionCanceled'
+      !activeDocument.pages[activePage].brailleStatus
     ) {
-      if (!activeDocument.pages[activePage].brailleText) {
-        handleRecognizeBraille();
-      }
-      handleViewBraille();
-      return () => {
-        window.electronAPI.removeBrailleTextListener();
-      };
+      handleRecognizeBraille();
     }
-  }, [activeDocument?.pages[activePage]?.file, activePage, activeDocument.pages[activePage].brailleText]);
+  }, [activeDocument?.pages[activePage]?.file, activePage, activeDocument.pages[activePage].brailleStatus]);
 
   // updates the value of file in doccument after update of file
   useEffect(() => {

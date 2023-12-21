@@ -7,9 +7,16 @@ export type Document = {
 export type Page = {
   pageID?: string | null;
   file?: string | null;
-  brailleText?: BrailleText;
+  brailleStatus?: BrailleStatus;
+  brailleText?: null | string;
 };
 
-export type BrailleText = null | 'brailleTextAvailable' | 'recognitionCanceled' | 'recognitionInProgress';
+export type BrailleStatus = null | 'brailleTextAvailable' | 'recognitionCanceled' | 'recognitionInProgress';
 
-export type UpdateDocumentAction = 'createDocument' | 'editTitle' | 'addPage' | 'editFile' | 'editBrailleText';
+export type UpdateDocumentAction =
+  | 'createDocument'
+  | 'editTitle'
+  | 'addPage'
+  | 'editFile'
+  | 'editBrailleText'
+  | 'editBrailleStatus';

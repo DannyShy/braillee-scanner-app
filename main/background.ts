@@ -4,7 +4,7 @@ import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
 import { performCancelPreview } from './utils/perform-cancel-preview';
-import { addFileToQueue, performCancelRecognizeBraille, performReadBraille } from './utils/perform-braille-recognition';
+import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
@@ -50,9 +50,6 @@ if (IS_PROD) {
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);
-  });
-  ipcMain.handle('read-braille', async (event, file) => {
-    performReadBraille(file, mainWindow);
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();

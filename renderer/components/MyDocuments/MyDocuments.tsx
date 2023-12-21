@@ -7,8 +7,6 @@ import { Document } from '../types';
 import ViewDocumentComponent from './Document/ViewDocument/ViewDocumentComponent';
 import MainContent from '@renderer/components/MainContent';
 
-const emptyDocuments = [];
-
 const MyDocuments: React.FC = () => {
   // contains data from all documents
   const [documents, setDocuments] = useState<Document[]>(null);
@@ -71,7 +69,7 @@ const MyDocuments: React.FC = () => {
         </div>
       }
     >
-      {documents && documents !== emptyDocuments ? (
+      {documents?.length > 0 ? (
         <DocumentCards documents={documents} onOpen={onOpen} />
       ) : (
         <NoDocuments onCreateDocument={onCreateDocument} />

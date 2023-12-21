@@ -5,41 +5,27 @@ import { spawn } from 'child_process';
 import treeKill from 'tree-kill';
 import { performUpdateDocument } from './perform-manage-document';
 import { BrowserWindow } from 'electron';
+import { ChildProcessWithoutNullStreams } from 'child_process';
 
 const getBrailleFilePath = (scannedFilePath: string) => {
   const brailleInputFileName = path.basename(scannedFilePath);
-  const filePath = path.join(TEMP_OUTPUT, brailleInputFileName.replace(/\.[^.]+$/, '.marked.brl'));
-  return filePath;
+  return path.join(TEMP_OUTPUT, brailleInputFileName.replace(/\.[^.]+$/, '.marked.brl'));
 };
 
-const fixFileFormat = (brailleInput) => {
-  const pathWithForwardSlashes = brailleInput.slice(8);
-  const windowsPath = pathWithForwardSlashes.replace(/\//g, '\\');
-  return windowsPath;
+const fixFileFormat = (brailleInput: string): string => {
+  const pathWithForwardSlashes = brailleInput.replace('file:///', '');
+  return pathWithForwardSlashes.replace(/\//g, '\\');
 };
 
-const waitUntilFinished = async (process) => {
-  return new Promise((resolve, reject) => {
+const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
+  return new Promise<number>((resolve, reject) => {
     process.on('close', (code) => {
       resolve(code);
     });
   });
 };
 
-let recognizeBraille;
-
-const performReadBraille = async (scannedFilePath: string, mainWindow: BrowserWindow): Promise<void> => {
-  const brailleFilePath = getBrailleFilePath(scannedFilePath);
-  if (fs.existsSync(brailleFilePath)) {
-    try {
-      const brailleOutput = await fs.promises.readFile(brailleFilePath, 'utf8');
-      mainWindow.webContents.send('braille-text', brailleOutput);
-    } catch (error) {
-      console.error(`Error in reading file: ${error.message}`);
-      throw error;
-    }
-  }
-};
+let recognizeBraille: ChildProcessWithoutNullStreams;
 
 const performRecognizeBraille = async (
   fileName: string,
@@ -60,7 +46,15 @@ const performRecognizeBraille = async (
       throw error;
     }
   }
-  await performUpdateDocument(mainWindow, 'editBrailleText', documentID, 'brailleTextAvailable', pageID);
+  try {
+    const brailleOutput = await fs.promises.readFile(brailleFilePath, 'utf8');
+    // mainWindow.webContents.send('braille-text', brailleOutput);
+    await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
+  } catch (error) {
+    console.error(`Error in reading file: ${error.message}`);
+    throw error;
+  }
+  await performUpdateDocument(mainWindow, 'editBrailleStatus', documentID, 'brailleTextAvailable', pageID);
 };
 
 const performCancelRecognizeBraille = () => {
@@ -94,10 +88,4 @@ const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
   executeRecognizeBrailleQueue(mainWindow); // Continue with the next script in the queue
 };
 
-export {
-  performReadBraille,
-  performCancelRecognizeBraille,
-  performRecognizeBraille,
-  executeRecognizeBrailleQueue,
-  addFileToQueue,
-};
+export { performCancelRecognizeBraille, performRecognizeBraille, executeRecognizeBrailleQueue, addFileToQueue };
