@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classes from './DocumentTitleComponent.module.css';
 import { Button, TextInput, Title } from '@mantine/core';
-import { IconArrowLeft, IconCheck, IconPencil, IconX } from '@tabler/icons-react';
+import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
 
 type Props = {
@@ -17,13 +17,17 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
 
   const titleInputRef = useRef<HTMLInputElement>(null);
 
-  const handleReturnButton = () => {
+  const handleReturnButtonClick = () => {
     onClose();
     setEditTitleState(false);
   };
 
   const handleEditButtonClick = () => {
     setEditTitleState(true);
+  };
+
+  const handleExportButtonClick = async () => {
+    window.electronAPI.exportDocument(activeDocument);
   };
 
   // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
@@ -46,7 +50,7 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
 
   return (
     <div className={classes.documentTitle}>
-      <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButton}>
+      <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButtonClick}>
         <IconArrowLeft></IconArrowLeft>
       </Button>
       {editTitleState ? (
@@ -83,14 +87,26 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
           </div>
         </div>
       ) : (
-        <>
-          <Title className={classes.title} size="h2">
-            {activeDocument.title}
-          </Title>
-          <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
-            <IconPencil></IconPencil>
+        <div className={classes.notEditStateContent}>
+          <div className={classes.titleAndEditButton}>
+            <Title className={classes.title} size="h2">
+              {activeDocument.title}
+            </Title>
+            <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
+              <IconPencil></IconPencil>
+            </Button>
+          </div>
+          <Button
+            className={classes.exportButton}
+            variant="outline"
+            radius="sm"
+            size="md"
+            onClick={handleExportButtonClick}
+          >
+            <IconFileExport></IconFileExport>
+            <p>Export</p>
           </Button>
-        </>
+        </div>
       )}
     </div>
   );

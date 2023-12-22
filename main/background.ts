@@ -10,6 +10,7 @@ import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
+import { performExportDocument } from './utils/perform-export-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -59,6 +60,9 @@ if (IS_PROD) {
   });
   ipcMain.on('update-document', (event, action, documentID, data, pageID) => {
     performUpdateDocument(mainWindow, action, documentID, data, pageID);
+  });
+  ipcMain.handle('export-document', (event, activeDocument) => {
+    performExportDocument(activeDocument);
   });
   ipcMain.handle('close-app', () => {
     app.quit();

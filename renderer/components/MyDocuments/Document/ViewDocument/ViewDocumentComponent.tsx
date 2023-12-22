@@ -208,7 +208,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
               <Tabs.Panel value="unicode" className={classes.brailleText}>
                 {renderRecognizedBraille()}
               </Tabs.Panel>
-              <Tabs.Panel value="text">This is Text content</Tabs.Panel>
+              <Tabs.Panel value="text">Coming soon...</Tabs.Panel>
             </Tabs>
           </div>
         </div>

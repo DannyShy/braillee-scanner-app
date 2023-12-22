@@ -1,6 +1,5 @@
 .documentTitle {
   display: flex;
-  align-items: center;
   flex-grow: 1;
 }
 
@@ -30,4 +29,22 @@
   padding: 0;
   padding-right: 15px;
   padding-left: 0px;
+}
+
+.notEditStateContent {
+  display: flex;
+  justify-content: space-between;
+  flex-grow: 1;
+}
+
+.titleAndEditButton {
+  display: flex;
+}
+
+.exportButton {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.exportButton svg {
+  margin-right: 10px;
 }

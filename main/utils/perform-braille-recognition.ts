@@ -48,7 +48,6 @@ const performRecognizeBraille = async (
   }
   try {
     const brailleOutput = await fs.promises.readFile(brailleFilePath, 'utf8');
-    // mainWindow.webContents.send('braille-text', brailleOutput);
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
   } catch (error) {
     console.error(`Error in reading file: ${error.message}`);
