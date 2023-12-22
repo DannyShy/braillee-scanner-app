@@ -1,6 +1,6 @@
-appId: com.example.nextron
-productName: My Nextron App
-copyright: Copyright © 2018 Yoshihide Shiono
+appId: com.hotovo.dotsight
+productName: DotSight
+copyright: Copyright © 2023 Hotovo
 directories:
   output: dist
   buildResources: resources
@@ -14,8 +14,35 @@ extraResources:
     to: AngelinaReader
     filter:
       - '**/*'
-  - from: ./resources/python-3.11.6-embed-amd64
-    to: python-3.11.6-embed-amd64
+  - from: ./resources/icons
+    to: icons
     filter:
       - '**/*'
 publish: null
+
+linux:
+  category: "Office"
+  target:
+    - AppImage
+  maintainer: "Hotovo <dotsight@hotovo.com>"
+  synopsis: "Braille Document Scanner and Recognizer"
+  executableName: "dotsight"
+  desktop:
+    Name: "DotSight"
+    Comment: "Braille Document Scanner and Recognizer"
+    Terminal: "false"
+    Type: "Application"
+    Categories: "Office;"
+    StartupWMClass: "dotsight"
+
+win:
+  target:
+    - nsis
+  icon: "resources/icons/icon.png"
+  publisherName: "Hotovo"
+  legalTrademarks: "s.r.o."
+  extraResources:
+    - from: ./resources/python-3.11.6-embed-amd64
+      to: python-3.11.6-embed-amd64
+      filter:
+        - '**/*'

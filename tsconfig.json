@@ -17,7 +17,12 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "preserve"
+    "jsx": "preserve",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "exclude": [
     "node_modules",
@@ -25,5 +30,8 @@
     "app",
     "dist"
   ],
-  "include": ["main/**/*"]
+  "include": [
+    "main/**/*",
+    ".next/types/**/*.ts"
+  ]
 }

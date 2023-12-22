@@ -1,6 +1,7 @@
 import { screen, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import Store from 'electron-store';
 import path from 'path';
+import { ICON_PATH } from '../utils/constants';
 
 export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
   const key = 'window-state';
@@ -81,6 +82,7 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     },
     frame: true,
     autoHideMenuBar: true,
+    icon: ICON_PATH,
   };
 
   win = new BrowserWindow(browserOptions);

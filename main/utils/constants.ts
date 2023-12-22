@@ -24,6 +24,7 @@ export const MODEL_SIZE: number = 144771584;
 export const ANGELINA_READER_PATH: string = path.join(pathToResources, 'AngelinaReader');
 export const ANGELINA_READER_CODE: string = path.join(ANGELINA_READER_PATH, 'run_local.py');
 export const PYTHON_HOME: string = path.join(pathToResources, 'python-3.11.6-embed-amd64');
+export const ICON_PATH: string = path.join(pathToResources, 'icons/icon.png');
 export const PYTHON_MODULES = path.join(PYTHON_HOME, 'python311');
 export const PYTHON_EXE: string = path.join(PYTHON_HOME, 'python.exe');
 export const REQUIREMENTS_PATH = path.join(ANGELINA_READER_PATH, 'requirements.txt');

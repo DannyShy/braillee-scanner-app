@@ -8,16 +8,15 @@ let sources: string[];
 const performScan = async (): Promise<string> => {
   if (!app) {
     app = new twain.TwainSDK({
-      //data below are accepted also with dummy values
-      productName: 'x',
-      productFamily: 'x',
-      manufacturer: 'x',
+      productName: 'DotSight',
+      productFamily: 'tools',
+      manufacturer: 'Hotovo',
       version: {
-        country: 1,
-        language: 1,
-        majorNum: 1,
+        country: twain.TWCY_SLOVAKIA,
+        language: twain.TWLG_SLOVAK,
+        majorNum: 0,
         minorNum: 1,
-        info: 'x',
+        info: '0.1.0',
       },
     });
     sources = app.getDataSources();
