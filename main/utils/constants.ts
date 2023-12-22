@@ -22,6 +22,7 @@ export const MODEL_URL: string = 'http://ovdv.ru/files/retina_chars_eced60.clr.0
 export const CHUNK_SIZE: number = 1024 * 1414;
 export const MODEL_SIZE: number = 144771584;
 export const ANGELINA_READER_PATH: string = path.join(pathToResources, 'AngelinaReader');
+export const ANGELINA_READER_CODE: string = path.join(ANGELINA_READER_PATH, 'run_local.py');
 export const PYTHON_HOME: string = path.join(pathToResources, 'python-3.11.6-embed-amd64');
 export const PYTHON_MODULES = path.join(PYTHON_HOME, 'python311');
 export const PYTHON_EXE: string = path.join(PYTHON_HOME, 'python.exe');
