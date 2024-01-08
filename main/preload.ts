@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { Document } from './utils/types';
 
 window.global = window;
 
@@ -88,6 +89,7 @@ const removeBrailleTextListener = () => {
 
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
+  exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
   recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
     ipcRenderer.send('recognize-braille', file, documentID, pageID);
