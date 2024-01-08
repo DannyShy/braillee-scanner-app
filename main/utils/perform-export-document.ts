@@ -10,12 +10,10 @@ const performExportDocument = async (activeDocument: Document) => {
   if (userInputPath.canceled) {
     return;
   }
-  let pageCounter = 1;
   activeDocument.pages.forEach((page) => {
     if (page.brailleText !== null) {
       // Append brailleText to the file
-      fs.appendFileSync(userInputPath.filePath, `Page ${pageCounter}:\n${page.brailleText}\n\n`, 'utf-8');
-      pageCounter += 1;
+      fs.appendFileSync(userInputPath.filePath, `${page.brailleText}\n\n`, 'utf-8');
     }
   });
 };
