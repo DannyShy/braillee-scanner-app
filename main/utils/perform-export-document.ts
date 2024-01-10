@@ -1,6 +1,7 @@
 import { dialog } from 'electron';
 import { Document } from './types';
 import fs from 'fs';
+import { logger } from './logger';
 
 const performExportDocument = async (activeDocument: Document) => {
   const userInputPath = await dialog.showSaveDialog({
@@ -8,6 +9,7 @@ const performExportDocument = async (activeDocument: Document) => {
   });
 
   if (userInputPath.canceled) {
+    logger.info(`SaveDialog for exporting document cancelled by user.`);
     return;
   }
   activeDocument.pages.forEach((page) => {
@@ -16,6 +18,7 @@ const performExportDocument = async (activeDocument: Document) => {
       fs.appendFileSync(userInputPath.filePath, `${page.brailleText}\n\n`, 'utf-8');
     }
   });
+  logger.info(`Braille document successfully exported.`);
 };
 
 export { performExportDocument };

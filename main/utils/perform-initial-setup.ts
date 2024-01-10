@@ -13,6 +13,7 @@ import {
 import { spawn } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
+import { logger } from './logger';
 
 const controller = new AbortController();
 
@@ -33,21 +34,28 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
     detached: false,
   });
+  logger.info(`Pip installations started.`);
   await waitUntilFinished(pipUpgrade);
   pipUpgrade = null;
+  logger.info(`Pip installations finished.`);
 
   mainWindow.webContents.send('initial-setup-progress', 'Installing requirements...', null, false);
+  logger.info(`Requirements installations started.`);
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
   await waitUntilFinished(installRequirements);
   installRequirements = null;
+  logger.info(`Requirements installations finished.`);
 
+  logger.info(`Model download started.`);
   let progressPercentage = 0;
   mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
 
   let offset = 0;
-  mkdirSync(APP_DATA_PATH);
+  if (!fs.existsSync(APP_DATA_PATH)) {
+    mkdirSync(APP_DATA_PATH);
+  }
   while (true) {
     try {
       const response = await axios.get(MODEL_URL, {
@@ -61,19 +69,21 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
       fs.appendFileSync(PATH_TO_MODEL, chunk);
       offset += chunk.length;
       progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-      const isFinished = chunk.length < CHUNK_SIZE;
 
+      const isFinished = chunk.length < CHUNK_SIZE;
+      logger.info(`Model download is at ${progressPercentage}%.`);
       if (isFinished) {
         progressPercentage = null;
         mainWindow.webContents.send('initial-setup-progress', null, progressPercentage, true);
+        logger.info(`Model download finished.`);
         break;
       }
       mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
     } catch (error) {
       if (error.code === 'ERR_CANCELED') {
-        console.log('Download cancelled by user.');
+        logger.error('Download cancelled by user.');
       } else {
-        console.error('Error downloading chunk:', error);
+        logger.error('Error downloading chunk:', error);
       }
       break;
     }
@@ -88,6 +98,7 @@ const performCancelInitialSetup = async () => {
   } else {
     controller.abort();
   }
+  logger.info(`Initial setup cancelled by user.`);
 };
 
 export { performInitialSetup, performCancelInitialSetup };
