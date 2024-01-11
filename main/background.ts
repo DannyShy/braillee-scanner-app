@@ -3,7 +3,6 @@ import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import { performScan } from './utils/perform-scan';
 import { ipcMain } from 'electron';
-import { performCancelPreview } from './utils/perform-cancel-preview';
 import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
@@ -11,6 +10,7 @@ import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
+import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -46,9 +46,6 @@ if (IS_PROD) {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', performScan);
-  ipcMain.on('send-data-to-main', (event, scannedOutputURI) => {
-    performCancelPreview(scannedOutputURI);
-  });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);
   });
@@ -63,6 +60,9 @@ if (IS_PROD) {
   });
   ipcMain.handle('export-document', (event, activeDocument) => {
     performExportDocument(activeDocument);
+  });
+  ipcMain.on('log-from-renderer', (event, status, text) => {
+    performLogFromRenderer(status, text);
   });
   ipcMain.handle('close-app', () => {
     app.quit();

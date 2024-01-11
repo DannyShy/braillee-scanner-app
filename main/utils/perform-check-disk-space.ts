@@ -1,6 +1,6 @@
 import checkDiskSpace from 'check-disk-space';
 import { DISK_NAME, MODEL_AND_DEPENDENCIES_SIZE } from './constants';
-import { logger } from './logger';
+import { logger } from '../logger';
 
 const bytesToSize = (bytes: number) => {
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
@@ -13,6 +13,7 @@ const bytesToSize = (bytes: number) => {
 };
 
 const performCheckDiskSpace = async (mainWindow) => {
+  logger.debug(`Check of disk space started.`);
   try {
     const diskSpace = await checkDiskSpace(DISK_NAME);
     let spaceToBeEmptied;
@@ -25,6 +26,7 @@ const performCheckDiskSpace = async (mainWindow) => {
     }
     mainWindow.webContents.send('disk-space-output', spaceToBeEmptied);
   } catch (error) {
+    logger.error(`Error occured during check of disk space: ${error}.`);
     throw error;
   }
 };

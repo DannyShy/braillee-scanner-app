@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import classes from '../ViewDocument/ViewDocumentComponent.module.css';
+import classes from '../ViewDocument/ViewDocument.module.css';
 import { Button, Text, Container, Image, Tabs, Paper, Loader, Pagination, Tooltip, FileButton } from '@mantine/core';
 import { IconPlus, IconX } from '@tabler/icons-react';
-import DocumentTitleComponent from './DocumentTitle/DocumentTitleComponent';
+import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
 
@@ -11,7 +11,7 @@ type Props = {
   onClose: () => void;
 };
 
-const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => {
+const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
 
@@ -21,11 +21,13 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
 
   //adds page and reads updated document
   const handleAddPage = async () => {
+    window.electronAPI.log('debug', 'Add new page button clicked by user.');
     onUpdate('addPage');
   };
 
   const handleScan = async () => {
     try {
+      window.electronAPI.log('debug', 'Scan button clicked by user.');
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
       const scannedOutput = await window.electronAPI.scanFile();
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
@@ -37,6 +39,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   };
 
   const handleClickRejectScan = async () => {
+    window.electronAPI.log('debug', 'Reject scan button clicked by user.');
     await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
     if (activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress') {
       window.electronAPI.cancelRecognition();
@@ -46,6 +49,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   };
 
   const handleClickCancelRecognition = async () => {
+    window.electronAPI.log('debug', 'Cancel recognition button clicked by user.');
     await window.electronAPI.cancelRecognition();
     await onUpdate('editBrailleStatus', 'recognitionCanceled', activeDocument.pages[activePage].pageID);
   };
@@ -53,6 +57,7 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   const handleUploadFile = async () => {
     const pathToUploadedFile = (uploadedFile as any).path;
     const correctedPathToFile = 'file:///' + pathToUploadedFile.replace(/\\/g, '/');
+    window.electronAPI.log('debug', `User uploaded file ${correctedPathToFile}.`);
     await onUpdate('editFile', correctedPathToFile, activeDocument.pages[activePage].pageID);
     await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     setUploadedFile(null);
@@ -60,6 +65,10 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
 
   // creates marked.brl file and updates value of page.brailleText to 'brailleTextAvailable'
   const handleRecognizeBraille = async () => {
+    window.electronAPI.log(
+      'debug',
+      `Sent request to background to recognize file ${activeDocument.pages[activePage].file}.`,
+    );
     await window.electronAPI.recognizeBraille(
       activeDocument.pages[activePage].file,
       activeDocument.documentID,
@@ -68,6 +77,10 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   };
 
   const handleClickMiniPage = (index) => {
+    window.electronAPI.log(
+      'debug',
+      `User clicked on miniPage: ${activeDocument.pages[index].pageID} and set it to be active`,
+    );
     setActivePage(index);
   };
 
@@ -98,7 +111,13 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
           Scan
         </Button>
         <Text>or</Text>
-        <FileButton onChange={setUploadedFile} accept="image/png,image/jpeg">
+        <FileButton
+          onChange={() => {
+            setUploadedFile;
+            window.electronAPI.log('debug', `Upload file button clicked by user.`);
+          }}
+          accept="image/png,image/jpeg"
+        >
           {(props) => (
             <Button size="xl" {...props}>
               Upload file
@@ -169,7 +188,18 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   // code below makes newest page focused once the number of pages changes
   useEffect(() => {
     setActivePage(newestPageIndex);
+    window.electronAPI.log(
+      'debug',
+      `Created Page: ${activeDocument.pages[newestPageIndex].pageID} and set it to be active.`,
+    );
   }, [newestPageIndex]);
+
+  useEffect(() => {
+    window.electronAPI.log('debug', 'ViewDocument component mounted.');
+    return () => {
+      window.electronAPI.log('debug', 'ViewDocument component unmounted.');
+    };
+  }, []);
 
   return (
     <MainContent
@@ -193,7 +223,13 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
             value={activePage + 1}
             total={activeDocument.pages.length}
             size="md"
-            onChange={(page) => setActivePage(page - 1)}
+            onChange={(page) => {
+              setActivePage(page - 1);
+              window.electronAPI.log(
+                'debug',
+                `Pagination clicked by user. This changes active page to: ${activeDocument.pages[page - 1].pageID}.`,
+              );
+            }}
             withEdges
           />
         </div>
@@ -217,4 +253,4 @@ const ViewDocumentComponent: React.FC<Props> = ({ activeDocument, onClose }) => 
   );
 };
 
-export default ViewDocumentComponent;
+export default ViewDocument;

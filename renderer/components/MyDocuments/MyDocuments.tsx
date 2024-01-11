@@ -4,7 +4,7 @@ import classes from './MyDocuments.module.css';
 import { Button, Title } from '@mantine/core';
 import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
 import { Document } from '../types';
-import ViewDocumentComponent from './Document/ViewDocument/ViewDocumentComponent';
+import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
 
 const MyDocuments: React.FC = () => {
@@ -14,6 +14,7 @@ const MyDocuments: React.FC = () => {
   const [activeDocument, setActiveDocument] = useState<Document>(null);
 
   const onCreateDocument = async () => {
+    window.electronAPI.log('debug', 'Create new document clicked by user.');
     await window.electronAPI.updateDocument('createDocument');
     window.electronAPI.addCreatedDocumentListener((createdDocument) => {
       setActiveDocument(createdDocument);
@@ -26,6 +27,7 @@ const MyDocuments: React.FC = () => {
   };
 
   const onOpen = (document) => {
+    window.electronAPI.log('debug', `Document: ${document.documentID} set to be activeDocument.`);
     setActiveDocument(document);
   };
 
@@ -54,8 +56,15 @@ const MyDocuments: React.FC = () => {
     }
   }, [documents]);
 
+  useEffect(() => {
+    window.electronAPI.log('debug', 'MyDocuments component mounted.');
+    return () => {
+      window.electronAPI.log('debug', 'MyDocuments component unmounted.');
+    };
+  }, []);
+
   return activeDocument ? (
-    <ViewDocumentComponent activeDocument={activeDocument} onClose={onClose} />
+    <ViewDocument activeDocument={activeDocument} onClose={onClose} />
   ) : (
     <MainContent
       header={

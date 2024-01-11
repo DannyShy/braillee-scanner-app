@@ -1,7 +1,7 @@
 import classes from './DocumentCards.module.css';
 import { TextInput } from '@mantine/core';
-import React, { useMemo, useState } from 'react';
-import DocumentCardComponent from './DocumentCard/DocumentCardComponent';
+import React, { useEffect, useMemo, useState } from 'react';
+import DocumentCardComponent from './DocumentCard/DocumentCard';
 import { Document } from '../../types';
 
 type Props = {
@@ -20,6 +20,7 @@ const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
   // changing searchTerm based on value of textFieldInput
   const handleSearchChange = (event) => {
     const { value } = event.target;
+    window.electronAPI.log('info', `Searched term in DocumentCards component is: ${searchTerm}.`);
     setSearchTerm(value.toLowerCase());
   };
 
@@ -28,6 +29,13 @@ const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
       <DocumentCardComponent key={document.documentID} onOpen={onOpen} document={document} />
     ));
   };
+
+  useEffect(() => {
+    window.electronAPI.log('debug', 'DocumentCards component mounted.');
+    return () => {
+      window.electronAPI.log('debug', 'DocumentCards component unmounted.');
+    };
+  }, []);
 
   return (
     <div className={classes.cards}>

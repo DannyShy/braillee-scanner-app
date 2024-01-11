@@ -1,12 +1,13 @@
 import twain, { TwainSDK } from 'node-twain';
 import tmp from 'tmp';
-import { logger } from './logger';
+import { logger } from '../logger';
 
 let app: TwainSDK;
 let defaultSource: string;
 let sources: string[];
 
 const performScan = async (): Promise<string> => {
+  logger.debug(`Scanner util opened.`);
   if (!app) {
     app = new twain.TwainSDK({
       productName: 'DotSight',
@@ -43,6 +44,7 @@ const performScan = async (): Promise<string> => {
       } else {
         app.scan(twain.TWSX_FILE, path);
         logger.info(`Scanning executed.`);
+        logger.debug(`Scanner util closed.`);
         resolve(path + '.bmp');
       }
     });

@@ -13,7 +13,7 @@ import {
 import { spawn } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
-import { logger } from './logger';
+import { logger } from '../logger';
 
 const controller = new AbortController();
 
@@ -29,6 +29,7 @@ const waitUntilFinished = async (process) => {
 };
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
+  logger.debug(`Initial Setup util opened.`);
   mainWindow.webContents.send('initial-setup-progress', 'Installing Python library...', null, false);
 
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
@@ -88,6 +89,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
       break;
     }
   }
+  logger.debug(`Initial Setup util closed.`);
 };
 
 const performCancelInitialSetup = async () => {

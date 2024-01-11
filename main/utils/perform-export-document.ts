@@ -1,9 +1,10 @@
 import { dialog } from 'electron';
 import { Document } from './types';
 import fs from 'fs';
-import { logger } from './logger';
+import { logger } from '../logger';
 
 const performExportDocument = async (activeDocument: Document) => {
+  logger.debug(`Export Document util opened.`);
   const userInputPath = await dialog.showSaveDialog({
     filters: [{ name: 'Text Files', extensions: ['txt'] }],
   });
@@ -19,6 +20,7 @@ const performExportDocument = async (activeDocument: Document) => {
     }
   });
   logger.info(`Braille document successfully exported.`);
+  logger.debug(`Export Document util closed.`);
 };
 
 export { performExportDocument };

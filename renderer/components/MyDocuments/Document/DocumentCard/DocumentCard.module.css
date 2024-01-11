@@ -10,9 +10,6 @@
   max-height: 200px;
 }
 
-.cardTitle {
-}
-
 .group {
   display: flex;
   flex-direction: column;

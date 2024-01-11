@@ -6,7 +6,7 @@ import treeKill from 'tree-kill';
 import { performUpdateDocument } from './perform-manage-document';
 import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
-import { logger } from './logger';
+import { logger } from '../logger';
 
 const getBrailleFilePath = (scannedFilePath: string) => {
   const brailleInputFileName = path.basename(scannedFilePath);
@@ -78,12 +78,14 @@ const addFileToQueue = (fileName: string, documentID: number, pageID: number, ma
 
 const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
   if (scriptQueue.length === 0) {
+    logger.debug(`Braille recognition finished.`);
     isQueueRunning = false;
     return;
   }
   isQueueRunning = true;
   const { fileName, documentID, pageID } = scriptQueue.shift();
   try {
+    logger.debug(`Braille recognition util running.`);
     await performRecognizeBraille(fileName, documentID, pageID, mainWindow);
   } catch (error) {
     logger.error('Error during performRecognizeBraille execution:', error);

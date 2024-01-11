@@ -1,6 +1,6 @@
-import classes from '../DocumentCard/DocumentCardComponent.module.css';
+import classes from '../DocumentCard/DocumentCard.module.css';
 import { Text, Button, Title, Card } from '@mantine/core';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Document } from '../../../types';
 
 type Props = {
@@ -8,11 +8,19 @@ type Props = {
   onOpen: (document: Document) => void;
 };
 
-const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
+const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
   //opens the card
   const handleClickDocumentCard = () => {
+    window.electronAPI.log('debug', `Document: ${document.documentID} clicked by user and set to active.`);
     onOpen(document);
   };
+
+  useEffect(() => {
+    window.electronAPI.log('debug', 'DocumentCard component mounted.');
+    return () => {
+      window.electronAPI.log('debug', 'DocumentCard component unmounted.');
+    };
+  }, []);
 
   return (
     <Card className={classes.documentCard} withBorder radius="sm" padding="lg" shadow="sm">
@@ -33,4 +41,4 @@ const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
   );
 };
 
-export default DocumentCardComponent;
+export default DocumentCard;

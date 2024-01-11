@@ -1,8 +1,8 @@
 import '@mantine/core/styles.css';
-import classes from './WelcomeComponent.module.css';
+import classes from './Welcome.module.css';
 import { Button, Center, RingProgress, Text, Title, Loader, Container, SimpleGrid, Modal, Flex } from '@mantine/core';
 import { useRouter } from 'next/router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 
 const Welcome: React.FC = () => {
@@ -26,6 +26,7 @@ const Welcome: React.FC = () => {
   };
 
   const handlecheckDiskSpace = async () => {
+    window.electronAPI.log('debug', 'Button for installing app (starting initial setup) clicked by user.');
     await window.electronAPI.checkDiskSpace();
     await window.electronAPI.addCheckDiskSpaceListener(async (checkDiskSpaceOutput) => {
       if (checkDiskSpaceOutput === 0) {
@@ -44,15 +45,38 @@ const Welcome: React.FC = () => {
     setDownloadModelProgress(null);
     setProgressMessage(null); //delete model/packages as well?
     window.electronAPI.cancelSetup();
+    window.electronAPI.log('debug', 'Button for cancel installing app (initial setup) clicked by user.');
   };
 
   const handleCloseApp = () => {
+    window.electronAPI.log('debug', 'Button for exiting app clicked by user.');
     window.electronAPI.closeApp();
   };
 
   const handleGoHome = () => {
+    window.electronAPI.log('debug', 'Continue button to proceed after completing installation clicked by user.');
+    window.electronAPI.log('debug', 'Page changed from welcome-screen to home-screen.');
     router.push('/home-screen');
   };
+
+  useEffect(() => {
+    window.electronAPI.log('debug', `Progress message changed to: ${progressMessage}.`);
+  }, [progressMessage]);
+
+  useEffect(() => {
+    window.electronAPI.log('debug', `Download Model Progress value changed to: ${downloadModelProgress}.`);
+  }, [downloadModelProgress]);
+
+  useEffect(() => {
+    window.electronAPI.log('debug', `isFinishedState value changed to: ${isFinishedState}.`);
+  }, [isFinishedState]);
+
+  useEffect(() => {
+    window.electronAPI.log('debug', 'Welcome component mounted.');
+    return () => {
+      window.electronAPI.log('debug', 'Welcome component unmounted.');
+    };
+  }, []);
 
   return (
     <Container className={classes.wrapper} size={1400}>
@@ -105,7 +129,15 @@ const Welcome: React.FC = () => {
               )}
             </>
             <Center>
-              <Button className={classes.control} size="lg" color="gray" onClick={open}>
+              <Button
+                className={classes.control}
+                size="lg"
+                color="gray"
+                onClick={() => {
+                  open;
+                  window.electronAPI.log('debug', `Modal for cancelling initial setup opened.`);
+                }}
+              >
                 Cancel
               </Button>
             </Center>
@@ -125,7 +157,15 @@ const Welcome: React.FC = () => {
           </Container>
         )}
 
-        <Modal opened={opened} onClose={close} withCloseButton={true} centered>
+        <Modal
+          opened={opened}
+          onClose={() => {
+            close;
+            window.electronAPI.log('debug', `Button for closing modal clicked.`);
+          }}
+          withCloseButton={true}
+          centered
+        >
           <SimpleGrid>
             <Center>
               <Text className={classes.modalText}>Are you sure you want to cancel the data download?</Text>
@@ -135,11 +175,22 @@ const Welcome: React.FC = () => {
                 onClick={() => {
                   handleCancelSetup();
                   close();
+                  window.electronAPI.log(
+                    'debug',
+                    `Button for confirming cancellilng of initial setup clicked in modal.`,
+                  );
                 }}
               >
                 Yes
               </Button>
-              <Button onClick={close}>No </Button>
+              <Button
+                onClick={() => {
+                  close;
+                  window.electronAPI.log('debug', `Button for closing modal clicked.`);
+                }}
+              >
+                No{' '}
+              </Button>
             </Flex>
           </SimpleGrid>
         </Modal>
