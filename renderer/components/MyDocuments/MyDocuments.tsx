@@ -69,10 +69,10 @@ const MyDocuments: React.FC = () => {
     <MainContent
       header={
         <div className={classes.header}>
-          <Title className={classes.title} size="h2">
+          <Title className={classes.title} size="h2" tabIndex={0}>
             My Documents
           </Title>
-          <Button className={classes.createDocButton} radius="sm" size="md" onClick={onCreateDocument}>
+          <Button className={classes.createDocButton} radius="sm" size="md" onClick={onCreateDocument} tabIndex={0}>
             + Create Document
           </Button>
         </div>

@@ -3,16 +3,20 @@
   flex-direction: column;
   justify-content: space-between;
   max-width: 350px;
-}
-
-.documentCard > * {
-  margin-bottom: 10px;
   max-height: 200px;
 }
 
 .group {
   display: flex;
   flex-direction: column;
+}
+
+.cardTitle {
+  margin-bottom: 10px;
+}
+
+.cardText {
+  margin-bottom: 10px;
 }
 
 .cardButton {

@@ -1,5 +1,5 @@
 import classes from '../DocumentCard/DocumentCard.module.css';
-import { Text, Button, Title, Card } from '@mantine/core';
+import { Text, Button, Title, Card, VisuallyHidden } from '@mantine/core';
 import React, { useEffect } from 'react';
 import { Document } from '../../../types';
 
@@ -24,10 +24,17 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
 
   return (
     <Card className={classes.documentCard} withBorder radius="sm" padding="lg" shadow="sm">
-      <Title className={classes.cardTitle} size="h4">
-        {document.title}
-      </Title>
-      <Text c="dimmed">Pages: {document.pages.length}</Text>
+      <div tabIndex={0}>
+        <VisuallyHidden>
+          Document card with document title: {document.title} which contains {document.pages.length} pages.
+        </VisuallyHidden>
+        <Title className={classes.cardTitle} size="h4" aria-hidden="true">
+          {document.title}
+        </Title>
+        <Text className={classes.cardText} c="dimmed" aria-hidden="true">
+          Pages: {document.pages.length}
+        </Text>
+      </div>
       <Button
         key={document.documentID}
         className={classes.cardButton}
@@ -36,6 +43,7 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
         size="md"
       >
         Open
+        <VisuallyHidden>Document</VisuallyHidden>
       </Button>
     </Card>
   );

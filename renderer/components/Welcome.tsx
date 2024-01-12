@@ -1,6 +1,18 @@
 import '@mantine/core/styles.css';
 import classes from './Welcome.module.css';
-import { Button, Center, RingProgress, Text, Title, Loader, Container, SimpleGrid, Modal, Flex } from '@mantine/core';
+import {
+  Button,
+  Center,
+  RingProgress,
+  Text,
+  Title,
+  Loader,
+  Container,
+  SimpleGrid,
+  Modal,
+  Flex,
+  VisuallyHidden,
+} from '@mantine/core';
 import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
@@ -11,6 +23,8 @@ const Welcome: React.FC = () => {
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
   const [opened, { open, close }] = useDisclosure(false);
   const router = useRouter();
+
+  const roundedProgress = Math.ceil(downloadModelProgress / 5) * 5;
 
   const handleViewInitialSetupProgress = async () => {
     await window.electronAPI.addInitialSetupProgressListener(
@@ -84,11 +98,14 @@ const Welcome: React.FC = () => {
         {!progressMessage && !isFinishedState && (
           <Container>
             <div className={classes.inner}>
-              <Title className={classes.title}>Welcome to Braille Scanner</Title>
+              <Title className={classes.title} tabIndex={0}>
+                Welcome to Braille Scanner
+              </Title>
               <Container p={0} size={600}>
-                <Text size="lg" c="dimmed" className={classes.description}>
-                  In order to continue, additional data has to be downloaded. This is one time setup. Do you want to
-                  continue?
+                <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
+                  In order to continue, additional data has to be downloaded.
+                  <br />
+                  This is one time setup. Do you want to continue?
                 </Text>
               </Container>
               <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
@@ -106,7 +123,7 @@ const Welcome: React.FC = () => {
         {progressMessage && (
           <Container>
             <Container p={0} size={1000}>
-              <Text size="lg" c="dimmed" className={classes.initialSetupProgress}>
+              <Text size="lg" c="dimmed" className={classes.initialSetupProgress} aria-live="assertive" tabIndex={0}>
                 {progressMessage}
               </Text>
             </Container>
@@ -117,7 +134,12 @@ const Welcome: React.FC = () => {
                     sections={[{ value: downloadModelProgress, color: 'teal' }]}
                     label={
                       <Center>
-                        <Text> {downloadModelProgress}% </Text>
+                        <Text aria-live="off" tabIndex={0}>
+                          {downloadModelProgress}%
+                        </Text>
+                        <VisuallyHidden aria-live="polite">
+                          {roundedProgress}% of braille model has been downloaded.
+                        </VisuallyHidden>
                       </Center>
                     }
                   />
@@ -134,7 +156,7 @@ const Welcome: React.FC = () => {
                 size="lg"
                 color="gray"
                 onClick={() => {
-                  open;
+                  open();
                   window.electronAPI.log('debug', `Modal for cancelling initial setup opened.`);
                 }}
               >
@@ -146,7 +168,7 @@ const Welcome: React.FC = () => {
 
         {isFinishedState && (
           <Container>
-            <Text size="lg" c="dimmed" className={classes.description}>
+            <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
               Additional data has been successfully downloaded and application is ready to use.
             </Text>
             <Center>
@@ -160,7 +182,7 @@ const Welcome: React.FC = () => {
         <Modal
           opened={opened}
           onClose={() => {
-            close;
+            close();
             window.electronAPI.log('debug', `Button for closing modal clicked.`);
           }}
           withCloseButton={true}
@@ -168,7 +190,9 @@ const Welcome: React.FC = () => {
         >
           <SimpleGrid>
             <Center>
-              <Text className={classes.modalText}>Are you sure you want to cancel the data download?</Text>
+              <Text className={classes.modalText} tabIndex={0}>
+                Are you sure you want to cancel the data download?
+              </Text>
             </Center>
             <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
               <Button
@@ -185,11 +209,11 @@ const Welcome: React.FC = () => {
               </Button>
               <Button
                 onClick={() => {
-                  close;
+                  close();
                   window.electronAPI.log('debug', `Button for closing modal clicked.`);
                 }}
               >
-                No{' '}
+                No
               </Button>
             </Flex>
           </SimpleGrid>
