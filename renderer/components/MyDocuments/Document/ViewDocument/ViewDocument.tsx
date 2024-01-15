@@ -242,6 +242,9 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           </div>
         </div>
         <div className={classes.paginationWrapper}>
+          <VisuallyHidden>
+            Below is pagination component used to navigate through pages. Button number represents page number.
+          </VisuallyHidden>
           <Pagination
             value={activePage + 1}
             total={activeDocument.pages.length}
@@ -254,7 +257,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
               );
             }}
             withEdges
-            aria-hidden="true"
           />
         </div>
         <div className={classes.scannedDocs}>
