@@ -14,15 +14,14 @@ if (!fs.existsSync(LOGS_PATH)) {
 }
 
 const logger = winston.createLogger({
-  level: 'debug',
+  level: 'info',
   format: combine(format.timestamp(), myFormat),
   transports: [
     new winston.transports.File({
       filename: 'background.log',
       dirname: LOGS_PATH,
-      // zippedArchive: true,
+      zippedArchive: true,
       maxsize: 1024 * 1024,
-      maxFiles: 5,
       tailable: true,
     }),
   ],

@@ -14,15 +14,14 @@ if (!fs.existsSync(LOGS_PATH)) {
 }
 
 const rendererLogger = winston.createLogger({
-  level: 'debug',
+  level: 'info',
   format: combine(format.timestamp(), myFormat),
   transports: [
     new winston.transports.File({
       filename: 'renderer.log',
       dirname: LOGS_PATH,
-      // zippedArchive: true,
+      zippedArchive: true,
       maxsize: 1024 * 1024,
-      maxFiles: 5,
       tailable: true,
     }),
   ],
@@ -36,13 +35,13 @@ if (!IS_PROD) {
   );
 }
 
-const performLogFromRenderer = (status: string, text: string) => {
-  if (status === 'info') {
-    rendererLogger.info(text);
-  } else if (status === 'debug') {
-    rendererLogger.debug(text);
-  } else if (status === 'error') {
-    rendererLogger.error(text);
+const performLogFromRenderer = (level: string, message: string) => {
+  if (level === 'info') {
+    rendererLogger.info(message);
+  } else if (level === 'debug') {
+    rendererLogger.debug(message);
+  } else if (level === 'error') {
+    rendererLogger.error(message);
   }
 };
 
