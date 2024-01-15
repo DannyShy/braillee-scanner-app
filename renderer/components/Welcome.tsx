@@ -134,7 +134,7 @@ const Welcome: React.FC = () => {
                 size="lg"
                 color="gray"
                 onClick={() => {
-                  open;
+                  open();
                   window.electronAPI.log('debug', `Modal for cancelling initial setup opened.`);
                 }}
               >
@@ -160,7 +160,7 @@ const Welcome: React.FC = () => {
         <Modal
           opened={opened}
           onClose={() => {
-            close;
+            close();
             window.electronAPI.log('debug', `Button for closing modal clicked.`);
           }}
           withCloseButton={true}
@@ -185,11 +185,11 @@ const Welcome: React.FC = () => {
               </Button>
               <Button
                 onClick={() => {
-                  close;
+                  close();
                   window.electronAPI.log('debug', `Button for closing modal clicked.`);
                 }}
               >
-                No{' '}
+                No
               </Button>
             </Flex>
           </SimpleGrid>

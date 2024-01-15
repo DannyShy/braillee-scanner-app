@@ -114,7 +114,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateDocument: (action, documentID, data, pageID) => {
     ipcRenderer.send('update-document', action, documentID, data, pageID);
   },
-  log: (status: string, text: string) => {
-    ipcRenderer.send('log-from-renderer', status, text);
+  log: (level: string, message: string) => {
+    ipcRenderer.send('log-from-renderer', level, message);
   },
 });
