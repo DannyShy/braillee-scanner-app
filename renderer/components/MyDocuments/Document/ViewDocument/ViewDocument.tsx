@@ -5,6 +5,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = {
   activeDocument: Document;
@@ -12,6 +13,7 @@ type Props = {
 };
 
 const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
+  useLogMount('ViewDocument');
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
 
@@ -193,13 +195,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       `Created Page: ${activeDocument.pages[newestPageIndex].pageID} and set it to be active.`,
     );
   }, [newestPageIndex]);
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'ViewDocument component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'ViewDocument component unmounted.');
-    };
-  }, []);
 
   return (
     <MainContent

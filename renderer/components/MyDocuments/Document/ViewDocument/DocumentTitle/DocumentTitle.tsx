@@ -3,6 +3,7 @@ import classes from './DocumentTitle.module.css';
 import { Button, TextInput, Title } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = {
   activeDocument: Document;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) => {
+  useLogMount('DocumentTitle');
   const [value, setValue] = useState<string>(activeDocument.title);
   // editTitleState serves for rendering EditDocumentTitleComponent
   const [editTitleState, setEditTitleState] = useState<boolean>(false);
@@ -59,13 +61,6 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
       window.electronAPI.log('debug', `Current value of edited title is: ${value}.`);
     }
   }, [value]);
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'DocumentTitle component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'DocumentTitle component unmounted.');
-    };
-  }, []);
 
   return (
     <div className={classes.documentTitle}>
