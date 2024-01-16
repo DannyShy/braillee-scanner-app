@@ -1,8 +1,9 @@
-import classes from './HomeComponent.module.css';
-import { useState } from 'react';
+import classes from './Home.module.css';
+import { useEffect, useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
+import useLogMount from 'hooks/useLogMount';
 
 enum Pages {
   MY_DOCUMENTS = 'My Documents',
@@ -11,6 +12,7 @@ enum Pages {
 const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
+  useLogMount('Home');
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
   const links = data.map((item) => (
@@ -40,6 +42,7 @@ const Home: React.FC = () => {
   };
 
   const handleCloseApp = () => {
+    window.electronAPI.log('debug', 'User clicked on Exit/Logout button.');
     window.electronAPI.closeApp();
   };
 

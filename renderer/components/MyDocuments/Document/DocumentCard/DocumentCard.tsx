@@ -1,16 +1,19 @@
-import classes from '../DocumentCard/DocumentCardComponent.module.css';
+import classes from '../DocumentCard/DocumentCard.module.css';
 import { Text, Button, Title, Card } from '@mantine/core';
 import React from 'react';
 import { Document } from '../../../types';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = {
   document: Document;
   onOpen: (document: Document) => void;
 };
 
-const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
+const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
+  useLogMount('DocumentCard');
   //opens the card
   const handleClickDocumentCard = () => {
+    window.electronAPI.log('debug', `Document: ${document.documentID} clicked by user and set to active.`);
     onOpen(document);
   };
 
@@ -33,4 +36,4 @@ const DocumentCardComponent: React.FC<Props> = ({ document, onOpen }) => {
   );
 };
 
-export default DocumentCardComponent;
+export default DocumentCard;

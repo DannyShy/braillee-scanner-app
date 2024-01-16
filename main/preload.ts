@@ -90,7 +90,6 @@ const removeBrailleTextListener = () => {
 contextBridge.exposeInMainWorld('electronAPI', {
   scanFile: () => ipcRenderer.invoke('scan-file'),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
-  cancelPreview: (scannedOutputURI: string) => ipcRenderer.send('send-data-to-main', scannedOutputURI),
   recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
     ipcRenderer.send('recognize-braille', file, documentID, pageID);
   },
@@ -114,5 +113,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeCreatedDocumentListener: removeCreatedDocumentListener,
   updateDocument: (action, documentID, data, pageID) => {
     ipcRenderer.send('update-document', action, documentID, data, pageID);
+  },
+  log: (level: string, message: string) => {
+    ipcRenderer.send('log-from-renderer', level, message);
   },
 });

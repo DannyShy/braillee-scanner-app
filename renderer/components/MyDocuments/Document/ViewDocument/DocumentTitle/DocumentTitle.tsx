@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classes from './DocumentTitleComponent.module.css';
+import classes from './DocumentTitle.module.css';
 import { Button, TextInput, Title } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = {
   activeDocument: Document;
@@ -10,7 +11,8 @@ type Props = {
   onClose: () => void;
 };
 
-const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) => {
+const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) => {
+  useLogMount('DocumentTitle');
   const [value, setValue] = useState<string>(activeDocument.title);
   // editTitleState serves for rendering EditDocumentTitleComponent
   const [editTitleState, setEditTitleState] = useState<boolean>(false);
@@ -18,26 +20,31 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
   const titleInputRef = useRef<HTMLInputElement>(null);
 
   const handleReturnButtonClick = () => {
+    window.electronAPI.log('debug', 'Return button clicked by user.');
     onClose();
     setEditTitleState(false);
   };
 
-  const handleEditButtonClick = () => {
+  const handleEditTitleButtonClick = () => {
+    window.electronAPI.log('debug', 'Edit title button clicked by user.');
     setEditTitleState(true);
   };
 
   const handleExportButtonClick = async () => {
+    window.electronAPI.log('debug', 'Export button clicked by user.');
     window.electronAPI.exportDocument(activeDocument);
   };
 
   // 1. updates data, 2. read data, 3. sets data to be rendered accordingly, 4.exits editTitleState
-  const handleClickConfirm = async () => {
+  const handleConfirmEditedTitleClick = async () => {
+    window.electronAPI.log('debug', 'Confirm edited title button clicked by user.');
     onUpdate('editTitle', value);
     setEditTitleState(false);
   };
 
   //returns original value to title and exits editTitleState
-  const handleClickReject = async () => {
+  const handleRejectEditedTitleClick = async () => {
+    window.electronAPI.log('debug', 'Cancel editing title button clicked by user.');
     setEditTitleState(false);
   };
 
@@ -46,7 +53,14 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
     if (editTitleState) {
       titleInputRef.current.select();
     }
+    window.electronAPI.log('debug', `Edit title state changed to: ${editTitleState}`);
   }, [editTitleState]);
+
+  useEffect(() => {
+    if (editTitleState) {
+      window.electronAPI.log('debug', `Current value of edited title is: ${value}.`);
+    }
+  }, [value]);
 
   return (
     <div className={classes.documentTitle}>
@@ -67,7 +81,7 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
                 className={classes.editButton}
                 size="md"
                 variant="transparent"
-                onClick={handleClickConfirm}
+                onClick={handleConfirmEditedTitleClick}
                 color="green"
               >
                 <IconCheck></IconCheck>
@@ -78,7 +92,7 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
                 className={classes.editButton}
                 size="md"
                 variant="transparent"
-                onClick={handleClickReject}
+                onClick={handleRejectEditedTitleClick}
                 color="red"
               >
                 <IconX></IconX>
@@ -92,7 +106,7 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
             <Title className={classes.title} size="h2">
               {activeDocument.title}
             </Title>
-            <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditButtonClick}>
+            <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditTitleButtonClick}>
               <IconPencil></IconPencil>
             </Button>
           </div>
@@ -112,4 +126,4 @@ const DocumentTitleComponent: React.FC<Props> = ({ activeDocument, onUpdate, onC
   );
 };
 
-export default DocumentTitleComponent;
+export default DocumentTitle;
