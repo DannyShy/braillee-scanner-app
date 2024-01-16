@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
+import { useTranslation } from 'react-i18next';
 
 enum Pages {
   MY_DOCUMENTS = 'My Documents',
@@ -11,6 +12,7 @@ enum Pages {
 const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
   const links = data.map((item) => (

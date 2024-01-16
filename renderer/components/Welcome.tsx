@@ -16,8 +16,10 @@ import {
 import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
+import { useTranslation } from 'react-i18next';
 
 const Welcome: React.FC = () => {
+  const { t } = useTranslation();
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
@@ -99,7 +101,7 @@ const Welcome: React.FC = () => {
           <Container>
             <div className={classes.inner}>
               <Title className={classes.title} tabIndex={0}>
-                Welcome to Braille Scanner
+                {t('welcome.welcome_text')}
               </Title>
               <Container p={0} size={600}>
                 <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
