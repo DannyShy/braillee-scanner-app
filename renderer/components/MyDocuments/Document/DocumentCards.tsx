@@ -1,8 +1,9 @@
 import classes from './DocumentCards.module.css';
 import { TextInput } from '@mantine/core';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import DocumentCardComponent from './DocumentCard/DocumentCard';
 import { Document } from '../../types';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = {
   documents: Document[];
@@ -10,6 +11,7 @@ type Props = {
 };
 
 const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
+  useLogMount('DocumentCards');
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter documents based on the search term
@@ -29,13 +31,6 @@ const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
       <DocumentCardComponent key={document.documentID} onOpen={onOpen} document={document} />
     ));
   };
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'DocumentCards component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'DocumentCards component unmounted.');
-    };
-  }, []);
 
   return (
     <div className={classes.cards}>

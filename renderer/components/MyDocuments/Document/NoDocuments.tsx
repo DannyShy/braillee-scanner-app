@@ -1,17 +1,13 @@
 import { Button } from '@mantine/core';
 import classes from './NoDocuments.module.css';
 import { Text } from '@mantine/core';
-import React, { useEffect } from 'react';
+import React from 'react';
+import useLogMount from 'hooks/useLogMount';
 
 type Props = { onCreateDocument: () => void };
 
 const NoDocuments: React.FC<Props> = ({ onCreateDocument }) => {
-  useEffect(() => {
-    window.electronAPI.log('debug', 'NoDocuments component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'NoDocuments component unmounted.');
-    };
-  }, []);
+  useLogMount('NoDocuments');
   return (
     <div className={classes.main}>
       <div className={classes.centeredDiv}>
