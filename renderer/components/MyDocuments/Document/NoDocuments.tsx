@@ -11,7 +11,7 @@ const NoDocuments: React.FC<Props> = ({ onCreateDocument }) => {
   return (
     <div className={classes.main}>
       <div className={classes.centeredDiv}>
-        <Text className={classes.centeredText}>
+        <Text className={classes.centeredText} tabIndex={0}>
           You have no documents. Use the button bellow to create your first document.
         </Text>
         <Button

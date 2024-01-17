@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classes from './DocumentTitle.module.css';
-import { Button, TextInput, Title } from '@mantine/core';
+import { Button, TextInput, Title, VisuallyHidden } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
 import useLogMount from 'hooks/useLogMount';
@@ -66,6 +66,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
     <div className={classes.documentTitle}>
       <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButtonClick}>
         <IconArrowLeft></IconArrowLeft>
+        <VisuallyHidden>Return to MyDocuments</VisuallyHidden>
       </Button>
       {editTitleState ? (
         <div className={classes.editTitle}>
@@ -85,6 +86,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
                 color="green"
               >
                 <IconCheck></IconCheck>
+                <VisuallyHidden>Confirm edited document title value</VisuallyHidden>
               </Button>
             </div>
             <div>
@@ -96,6 +98,9 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
                 color="red"
               >
                 <IconX></IconX>
+                <VisuallyHidden>
+                  Reject edited document title value and return to original document title
+                </VisuallyHidden>
               </Button>
             </div>
           </div>
@@ -103,11 +108,12 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
       ) : (
         <div className={classes.notEditStateContent}>
           <div className={classes.titleAndEditButton}>
-            <Title className={classes.title} size="h2">
+            <Title className={classes.title} size="h2" tabIndex={0}>
               {activeDocument.title}
             </Title>
             <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditTitleButtonClick}>
               <IconPencil></IconPencil>
+              <VisuallyHidden>Edit document title</VisuallyHidden>
             </Button>
           </div>
           <Button
@@ -118,7 +124,8 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
             onClick={handleExportButtonClick}
           >
             <IconFileExport></IconFileExport>
-            <p>Export</p>
+            <p aria-hidden>Export</p>
+            <VisuallyHidden>Export document</VisuallyHidden>
           </Button>
         </div>
       )}

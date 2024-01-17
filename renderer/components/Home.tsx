@@ -52,7 +52,11 @@ const Home: React.FC = () => {
         <div className={classes.navbarMain}>
           <div className={classes.header}>
             <div className={classes.appLogoAndAppName}>
-              <Image className={classes.appLogo} src={'images/icon.png'} />
+              <Image
+                className={classes.appLogo}
+                src={'images/icon.png'}
+                alt="Logo of DotSight application. Picture of eye surrounded by dots."
+              />
               <Text className={classes.appName}>DotSight</Text>
             </div>
             {/* <Code className={classes.appVersion} fw={700}>

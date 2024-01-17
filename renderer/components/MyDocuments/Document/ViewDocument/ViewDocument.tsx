@@ -1,6 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import classes from '../ViewDocument/ViewDocument.module.css';
-import { Button, Text, Container, Image, Tabs, Paper, Loader, Pagination, Tooltip, FileButton } from '@mantine/core';
+import {
+  Button,
+  Text,
+  Container,
+  Image,
+  Tabs,
+  Paper,
+  Loader,
+  Pagination,
+  Tooltip,
+  FileButton,
+  VisuallyHidden,
+} from '@mantine/core';
 import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
@@ -94,9 +106,18 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
         onClick={() => handleClickMiniPage(index)}
         withBorder
       >
+        <VisuallyHidden tabIndex={0}>Miniature of page {index + 1}.</VisuallyHidden>
         {activeDocument.pages[index].file && activeDocument.pages[index].file !== 'scanInProgress' ? (
-          <Image src={activeDocument.pages[index].file} className={classes.miniImage}></Image>
-        ) : null}
+          <div>
+            <Image
+              src={activeDocument.pages[index].file}
+              className={classes.miniImage}
+              alt="This contains uploaded or scanned data."
+            ></Image>
+          </div>
+        ) : (
+          <VisuallyHidden tabIndex={0}>This page is empty.</VisuallyHidden>
+        )}
       </Paper>
     ));
   };
@@ -105,7 +126,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     return activeDocument.pages[activePage].file === 'scanInProgress' ? (
       <Container className={classes.docPreviewEmpty}>
         <Loader color="blue" />
-        <Text>Scan in progress...</Text>
+        <Text tabIndex={0}>Scan in progress...</Text>
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
@@ -113,13 +134,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           Scan
         </Button>
         <Text>or</Text>
-        <FileButton
-          onChange={() => {
-            setUploadedFile;
-            window.electronAPI.log('debug', `Upload file button clicked by user.`);
-          }}
-          accept="image/png,image/jpeg"
-        >
+        <FileButton onChange={setUploadedFile} accept="image/png,image/jpeg">
           {(props) => (
             <Button size="xl" {...props}>
               Upload file
@@ -129,7 +144,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : (
       <div className={classes.imageAndButtonDiv}>
-        <Image src={activeDocument.pages[activePage].file} className={classes.imagePreview} />
+        <Image
+          src={activeDocument.pages[activePage].file}
+          alt="View of current page."
+          className={classes.imagePreview}
+          tabIndex={0}
+        />
         <Tooltip label="Clear page">
           <Button
             className={classes.rejectScannedDocument}
@@ -139,6 +159,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             color="red"
           >
             <IconX size={35}></IconX>
+            <VisuallyHidden>Clear page</VisuallyHidden>
           </Button>
         </Tooltip>
       </div>
@@ -157,10 +178,11 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             color="red"
           >
             <IconX size={35}></IconX>
+            <VisuallyHidden>Cancel recognition</VisuallyHidden>
           </Button>
         </Tooltip>
         <Loader color="blue" />
-        <Text>Recognition in progress...</Text>
+        <Text tabIndex={0}>Recognition in progress...</Text>
       </div>
     ) : activeDocument.pages[activePage].brailleStatus === 'brailleTextAvailable' ? (
       activeDocument.pages[activePage].brailleText
@@ -210,10 +232,14 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           <div className={classes.addDocButtonCont}>
             <Button className={classes.addDocButton} size="xl" variant="transparent" onClick={handleAddPage}>
               <IconPlus className={classes.iconPlus}></IconPlus>
+              <VisuallyHidden>Add page</VisuallyHidden>
             </Button>
           </div>
         </div>
         <div className={classes.paginationWrapper}>
+          <VisuallyHidden>
+            Below is pagination component used to navigate through pages. Button number represents page number.
+          </VisuallyHidden>
           <Pagination
             value={activePage + 1}
             total={activeDocument.pages.length}
@@ -236,10 +262,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
                 <Tabs.Tab value="unicode">Unicode</Tabs.Tab>
                 <Tabs.Tab value="text">Text</Tabs.Tab>
               </Tabs.List>
-              <Tabs.Panel value="unicode" className={classes.brailleText}>
+              <Tabs.Panel value="unicode" className={classes.brailleText} tabIndex={0}>
                 {renderRecognizedBraille()}
               </Tabs.Panel>
-              <Tabs.Panel value="text">Coming soon...</Tabs.Panel>
+              <Tabs.Panel value="text" tabIndex={0}>
+                Coming soon...
+              </Tabs.Panel>
             </Tabs>
           </div>
         </div>
