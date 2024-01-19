@@ -3,16 +3,16 @@ import { useEffect, useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
-import { useTranslation } from 'react-i18next';
+import { useTranslation } from 'next-i18next';
 
 enum Pages {
-  MY_DOCUMENTS = 'My Documents',
+  MY_DOCUMENTS = 'my_documents',
 }
 
 const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
   const links = data.map((item) => (
@@ -27,7 +27,7 @@ const Home: React.FC = () => {
       }}
     >
       <item.icon className={classes.linkIcon} stroke={1.5} />
-      <span>{item.label}</span>
+      <span>{t(`${item.label}`)}</span>
     </a>
   ));
 
@@ -59,11 +59,7 @@ const Home: React.FC = () => {
         <div className={classes.navbarMain}>
           <div className={classes.header}>
             <div className={classes.appLogoAndAppName}>
-              <Image
-                className={classes.appLogo}
-                src={'images/icon.png'}
-                alt="Logo of DotSight application. Picture of eye surrounded by dots."
-              />
+              <Image className={classes.appLogo} src={'images/icon.png'} alt={t('logo')} />
               <Text className={classes.appName}>DotSight</Text>
             </div>
             {/* <Code className={classes.appVersion} fw={700}>
@@ -76,7 +72,7 @@ const Home: React.FC = () => {
         <div className={classes.footer}>
           <a href="#" className={classes.link} onClick={handleCloseApp}>
             <IconLogout className={classes.linkIcon} stroke={1.5} />
-            <span>Exit</span>
+            <span>{t('exit_button')}</span>
           </a>
         </div>
       </div>
