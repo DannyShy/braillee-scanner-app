@@ -7,15 +7,12 @@ import { LoadingOverlay, MantineProvider } from '@mantine/core';
 import { NextPage } from 'next';
 
 import './global.css';
-import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { appWithTranslation } from 'next-i18next';
 
-export async function getStaticProps({ locale }) {
-  return {
-    pageProps: {
-      ...(await serverSideTranslations(locale, ['common'])),
-    },
-  };
+declare global {
+  interface Window {
+    electronAPI: any;
+  }
 }
 
 const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
