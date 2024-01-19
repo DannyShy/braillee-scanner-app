@@ -1,13 +1,17 @@
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import winston, { transports, format } from 'winston';
-import { IS_PROD, LOGS_PATH } from './constants';
+import { APP_DATA_PATH, IS_PROD, LOGS_PATH } from './constants';
 
 const { combine, printf } = format;
 
 const myFormat = printf(({ level, message, timestamp }) => {
   return `${timestamp} [${level.toUpperCase()}]: ${message}`;
 });
+
+if (!fs.existsSync(APP_DATA_PATH)) {
+  mkdirSync(APP_DATA_PATH);
+}
 
 if (!fs.existsSync(LOGS_PATH)) {
   mkdirSync(LOGS_PATH);
