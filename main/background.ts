@@ -17,6 +17,7 @@ if (IS_PROD) {
 } else {
   app.setPath('userData', `${app.getPath('userData')}(development)`);
 }
+app.commandLine.appendSwitch('lang', 'SK');
 
 (async () => {
   await app.whenReady();
