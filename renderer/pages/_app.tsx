@@ -8,6 +8,7 @@ import { NextPage } from 'next';
 
 import './global.css';
 import { appWithTranslation } from 'next-i18next';
+import '../i18n/i18n';
 
 declare global {
   interface Window {

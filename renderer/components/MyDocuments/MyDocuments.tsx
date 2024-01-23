@@ -9,7 +9,7 @@ import MainContent from '@renderer/components/MainContent';
 import { useTranslation } from 'next-i18next';
 
 const MyDocuments: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation();
   // contains data from all documents
   const [documents, setDocuments] = useState<Document[]>(null);
   // contains data from active document

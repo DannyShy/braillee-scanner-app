@@ -4,6 +4,7 @@ import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
 import { useTranslation } from 'next-i18next';
+import { LanguagePicker } from './LanguagePicker/LanguagePicker';
 
 enum Pages {
   MY_DOCUMENTS = 'my_documents',
@@ -12,7 +13,7 @@ enum Pages {
 const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
 const Home: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation();
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
   const links = data.map((item) => (
@@ -65,6 +66,7 @@ const Home: React.FC = () => {
             {/* <Code className={classes.appVersion} fw={700}>
               v1.0.0
             </Code> */}
+            <LanguagePicker />
           </div>
           {links}
         </div>

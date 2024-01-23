@@ -19,7 +19,7 @@ import { useDisclosure } from '@mantine/hooks';
 import { useTranslation } from 'next-i18next';
 
 const Welcome: React.FC = () => {
-  const { t } = useTranslation('common');
+  const { t } = useTranslation();
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
