@@ -1,12 +1,13 @@
 import twain, { TwainSDK } from 'node-twain';
-import tmp from 'tmp';
 import { logger } from '../logger';
+import { MY_DOCUMENTS_PATH } from './constants';
+import path from 'path';
 
 let app: TwainSDK;
 let defaultSource: string;
 let sources: string[];
 
-const performScan = async (): Promise<string> => {
+const performScan = async (documentID: number, pageID: string): Promise<string> => {
   logger.debug(`Scanner util opened.`);
   if (!app) {
     app = new twain.TwainSDK({
@@ -35,19 +36,15 @@ const performScan = async (): Promise<string> => {
   app.setCallback();
   logger.info(`Scanner callback executed.`);
   return new Promise<string>((resolve, reject) => {
-    const options = {};
-
-    tmp.tmpName(options, (err, path) => {
-      if (err) {
-        logger.error(`Error occured during tmp file creation: ${err}`);
-        reject(err);
-      } else {
-        app.scan(twain.TWSX_FILE, path);
-        logger.info(`Scanning executed.`);
-        logger.debug(`Scanner util closed.`);
-        resolve(path + '.bmp');
-      }
-    });
+    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), pageID.toString() + '.bmp');
+    try {
+      app.scan(twain.TWSX_FILE, scannedImagePath);
+      logger.info(`Scanning executed for document ${documentID}, page ${pageID}.`);
+      resolve(scannedImagePath + '.bmp'); // Resolve with the path to the scanned image
+    } catch (error) {
+      logger.error(`Error occurred during scanning for document ${documentID}, page ${pageID}: ${error}`);
+      reject(error); // Reject with the error
+    }
   });
 };
 

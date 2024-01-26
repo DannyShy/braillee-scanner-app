@@ -43,7 +43,10 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     try {
       window.electronAPI.log('debug', 'Scan button clicked by user.');
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
-      const scannedOutput = await window.electronAPI.scanFile();
+      const scannedOutput = await window.electronAPI.scanFile(
+        activeDocument.documentID,
+        activeDocument.pages[activePage].pageID,
+      );
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
       await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
@@ -72,6 +75,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     const pathToUploadedFile = (uploadedFile as any).path;
     const correctedPathToFile = 'file:///' + pathToUploadedFile.replace(/\\/g, '/');
     window.electronAPI.log('debug', `User uploaded file ${correctedPathToFile}.`);
+    window.electronAPI.copyImage(correctedPathToFile, activeDocument.documentID);
     await onUpdate('editFile', correctedPathToFile, activeDocument.pages[activePage].pageID);
     await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     setUploadedFile(null);

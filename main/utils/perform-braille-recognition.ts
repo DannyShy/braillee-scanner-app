@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, TEMP_OUTPUT } from './constants';
+import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, MY_DOCUMENTS_PATH } from './constants';
 import path from 'path';
 import { spawn } from 'child_process';
 import treeKill from 'tree-kill';
@@ -8,20 +8,30 @@ import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
 
-const getBrailleFilePath = (scannedFilePath: string) => {
-  const brailleInputFileName = path.basename(scannedFilePath);
-  return path.join(TEMP_OUTPUT, brailleInputFileName.replace(/\.[^.]+$/, '.marked.brl'));
+const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
+  const brailleInputFileName = path.basename(inputFileAbsolutePath);
+  return path.join(recognizedBraillesDirectoryPath, brailleInputFileName.replace(/\.[^.]+$/, '.marked.brl'));
 };
 
-const fixFileFormat = (brailleInput: string): string => {
-  const pathWithForwardSlashes = brailleInput.replace('file:///', '');
+const fixFileFormat = (inputFileAbsolutePath: string): string => {
+  const pathWithForwardSlashes = inputFileAbsolutePath.replace('file:///', '');
   return pathWithForwardSlashes.replace(/\//g, '\\');
 };
 
 const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
   return new Promise<number>((resolve, reject) => {
     process.on('close', (code) => {
+      if (code !== 0) {
+        logger.error(
+          `Child process in waitUntilFinished exited with non-zero status code: ${code}. This means spawn process failed`,
+        );
+      }
       resolve(code);
+    });
+
+    process.on('error', (error) => {
+      logger.error(`Error occurred while waiting for child process in waitUntilFinished to finish: ${error.message}`);
+      reject(error);
     });
   });
 };
@@ -29,19 +39,27 @@ const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promi
 let recognizeBraille: ChildProcessWithoutNullStreams;
 
 const performRecognizeBraille = async (
-  fileName: string,
+  inputFileAbsolutePath: string,
   documentID: number,
   pageID: number,
   mainWindow: BrowserWindow,
 ) => {
-  const brailleFilePath = getBrailleFilePath(fileName);
-  if (!fs.existsSync(brailleFilePath)) {
+  const recognizedBraillesDirectoryPath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'recognized-files');
+  const recognizedBrailleFilePath = getRecognizedBrailleFilePath(
+    inputFileAbsolutePath,
+    recognizedBraillesDirectoryPath,
+  );
+  if (!fs.existsSync(recognizedBrailleFilePath)) {
     logger.info(`Started braille recognition for document: ${documentID} page: ${pageID}`);
-    const fixedInput = fixFileFormat(fileName);
+    const fixedInput = fixFileFormat(inputFileAbsolutePath);
     try {
-      recognizeBraille = spawn(PYTHON_EXE, [ANGELINA_READER_CODE, fixedInput, TEMP_OUTPUT, PATH_TO_MODEL], {
-        detached: false,
-      });
+      recognizeBraille = spawn(
+        PYTHON_EXE,
+        [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
+        {
+          detached: false,
+        },
+      );
       await waitUntilFinished(recognizeBraille);
       logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
     } catch (error) {
@@ -50,8 +68,9 @@ const performRecognizeBraille = async (
     }
   }
   try {
-    const brailleOutput = await fs.promises.readFile(brailleFilePath, 'utf8');
+    const brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
+    logger.info(`File ${recognizedBrailleFilePath} read successfully.`);
   } catch (error) {
     logger.error(`Error in reading Recognized Braille Output file: ${error.message}`);
     throw error;
@@ -61,7 +80,11 @@ const performRecognizeBraille = async (
 
 const performCancelRecognizeBraille = () => {
   if (recognizeBraille !== null) {
-    treeKill(recognizeBraille.pid, 9);
+    try {
+      treeKill(recognizeBraille.pid, 9);
+    } catch (error) {
+      logger.error(`Error in cancelling braille recognition: ${error.message}`);
+    }
   }
 };
 
@@ -72,6 +95,7 @@ const addFileToQueue = (fileName: string, documentID: number, pageID: number, ma
   logger.info(`Document ${documentID} with ${pageID} added to queue for Braille recognition.`);
   scriptQueue.push({ fileName, documentID, pageID });
   if (!isQueueRunning) {
+    logger.debug(`Braille recognition queue execution started.`);
     executeRecognizeBrailleQueue(mainWindow);
   }
 };
@@ -80,6 +104,7 @@ const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
   if (scriptQueue.length === 0) {
     logger.debug(`Braille recognition finished.`);
     isQueueRunning = false;
+    logger.debug(`Braille recognition queue execution finished.`);
     return;
   }
   isQueueRunning = true;
