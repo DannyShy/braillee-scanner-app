@@ -1,6 +1,6 @@
 const images = {
   english: 'images/english.png',
-  german: 'images/german.png',
+  slovak: 'images/slovak.png',
 };
 
 export default images;

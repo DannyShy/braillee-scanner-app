@@ -1,10 +1,5 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
-import resourcesToBackend from 'i18next-resources-to-backend';
-import { useParams } from 'next/navigation';
-import { useTranslation as useTranslationOrg } from 'next-i18next';
-import { useState, useEffect } from 'react';
 import { InitOptions } from 'i18next';
 import Fetch from 'i18next-fetch-backend';
 
@@ -16,6 +11,8 @@ const i18nConfig: InitOptions = {
   fallbackLng: 'sk',
   debug: process.env.NODE_ENV !== 'production',
   lowerCaseLng: true,
+  ns: [DEFAULT_INTL_NAMESPACE],
+  defaultNS: DEFAULT_INTL_NAMESPACE,
   interpolation: {
     escapeValue: false, // react escapes by default
   },
@@ -24,12 +21,7 @@ const i18nConfig: InitOptions = {
     loadPath: 'locales/{{lng}}/{{ns}}.json',
   },
 };
-i18n
-  .use(initReactI18next)
-  // .use(LanguageDetector)
-  // .use(
-  //   resourcesToBackend((language: string, namespace: string) => import(`public/locales/${language}/${namespace}.json`)),
-  // )
-  .init(i18nConfig);
+
+i18n.use(initReactI18next).use(Fetch).init(i18nConfig);
 
 export default i18n;

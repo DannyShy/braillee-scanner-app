@@ -6,7 +6,7 @@ import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
 import { Document } from '../types';
 import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'react-i18next';
 
 const MyDocuments: React.FC = () => {
   const { t } = useTranslation();
@@ -75,7 +75,7 @@ const MyDocuments: React.FC = () => {
             {t('my_documents')}
           </Title>
           <Button className={classes.createDocButton} radius="sm" size="md" onClick={onCreateDocument} tabIndex={0}>
-            + Create Document
+            + {t('create_document')}
           </Button>
         </div>
       }

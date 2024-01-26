@@ -16,7 +16,7 @@ import {
 import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from 'react-i18next';
 
 const Welcome: React.FC = () => {
   const { t } = useTranslation();

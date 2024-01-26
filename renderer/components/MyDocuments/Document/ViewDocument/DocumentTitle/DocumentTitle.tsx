@@ -3,6 +3,7 @@ import classes from './DocumentTitle.module.css';
 import { Button, TextInput, Title, VisuallyHidden } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
 import { Document } from '../../../../types';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   activeDocument: Document;
@@ -11,6 +12,7 @@ type Props = {
 };
 
 const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) => {
+  const { t } = useTranslation();
   const [value, setValue] = useState<string>(activeDocument.title);
   // editTitleState serves for rendering EditDocumentTitleComponent
   const [editTitleState, setEditTitleState] = useState<boolean>(false);
@@ -71,7 +73,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
     <div className={classes.documentTitle}>
       <Button className={classes.returnButton} size="md" variant="transparent" onClick={handleReturnButtonClick}>
         <IconArrowLeft></IconArrowLeft>
-        <VisuallyHidden>Return to MyDocuments</VisuallyHidden>
+        <VisuallyHidden>{t('document_title.hidden_return_button')}</VisuallyHidden>
       </Button>
       {editTitleState ? (
         <div className={classes.editTitle}>
@@ -91,7 +93,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
                 color="green"
               >
                 <IconCheck></IconCheck>
-                <VisuallyHidden>Confirm edited document title value</VisuallyHidden>
+                <VisuallyHidden>{t('document_title.hidden_confirm_button')}</VisuallyHidden>
               </Button>
             </div>
             <div>
@@ -103,9 +105,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
                 color="red"
               >
                 <IconX></IconX>
-                <VisuallyHidden>
-                  Reject edited document title value and return to original document title
-                </VisuallyHidden>
+                <VisuallyHidden>{t('document_title.hidden_cancel_button')}</VisuallyHidden>
               </Button>
             </div>
           </div>
@@ -118,7 +118,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
             </Title>
             <Button className={classes.editButton} size="md" variant="transparent" onClick={handleEditTitleButtonClick}>
               <IconPencil></IconPencil>
-              <VisuallyHidden>Edit document title</VisuallyHidden>
+              <VisuallyHidden>{t('document_title.hidden_edit_title_button')}</VisuallyHidden>
             </Button>
           </div>
           <Button
@@ -130,7 +130,7 @@ const DocumentTitle: React.FC<Props> = ({ activeDocument, onUpdate, onClose }) =
           >
             <IconFileExport></IconFileExport>
             <p aria-hidden>Export</p>
-            <VisuallyHidden>Export document</VisuallyHidden>
+            <VisuallyHidden>{t('document_title.hidden_export_button')}</VisuallyHidden>
           </Button>
         </div>
       )}

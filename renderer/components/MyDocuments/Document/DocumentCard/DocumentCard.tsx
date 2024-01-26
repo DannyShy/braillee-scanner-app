@@ -2,6 +2,7 @@ import classes from '../DocumentCard/DocumentCard.module.css';
 import { Text, Button, Title, Card, VisuallyHidden } from '@mantine/core';
 import React, { useEffect } from 'react';
 import { Document } from '../../../types';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   document: Document;
@@ -9,6 +10,7 @@ type Props = {
 };
 
 const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
+  const { t } = useTranslation();
   //opens the card
   const handleClickDocumentCard = () => {
     window.electronAPI.log('debug', `Document: ${document.documentID} clicked by user and set to active.`);
@@ -26,13 +28,13 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
     <Card className={classes.documentCard} withBorder radius="sm" padding="lg" shadow="sm">
       <div tabIndex={0}>
         <VisuallyHidden>
-          Document card with document title: {document.title} which contains {document.pages.length} pages.
+          {t('document_card.hidden_card_description', { title: document.title, pageCount: document.pages.length })}
         </VisuallyHidden>
         <Title className={classes.cardTitle} size="h4" aria-hidden="true">
           {document.title}
         </Title>
         <Text className={classes.cardText} c="dimmed" aria-hidden="true">
-          Pages: {document.pages.length}
+          {t('document_card.pages', { pageCount: document.pages.length })}
         </Text>
       </div>
       <Button
@@ -42,8 +44,8 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
         variant="light"
         size="md"
       >
-        Open
-        <VisuallyHidden>Document</VisuallyHidden>
+        {t('document_card.open')}
+        <VisuallyHidden>{t('document_card.hidden_document')}</VisuallyHidden>
       </Button>
     </Card>
   );

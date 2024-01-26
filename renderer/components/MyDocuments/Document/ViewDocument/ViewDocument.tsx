@@ -17,6 +17,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   activeDocument: Document;
@@ -24,6 +25,7 @@ type Props = {
 };
 
 const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
+  const { t } = useTranslation();
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
 
@@ -104,17 +106,17 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
         onClick={() => handleClickMiniPage(index)}
         withBorder
       >
-        <VisuallyHidden tabIndex={0}>Miniature of page {index + 1}.</VisuallyHidden>
+        <VisuallyHidden tabIndex={0}>{t('view_document.mini_page_number', { pageIndex: index + 1 })}</VisuallyHidden>
         {activeDocument.pages[index].file && activeDocument.pages[index].file !== 'scanInProgress' ? (
           <div>
             <Image
               src={activeDocument.pages[index].file}
               className={classes.miniImage}
-              alt="This contains uploaded or scanned data."
+              alt={t('view_document.mini_page_description_filled')}
             ></Image>
           </div>
         ) : (
-          <VisuallyHidden tabIndex={0}>This page is empty.</VisuallyHidden>
+          <VisuallyHidden tabIndex={0}>{t('view_document.mini_page_description_empty')}</VisuallyHidden>
         )}
       </Paper>
     ));
@@ -124,18 +126,18 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     return activeDocument.pages[activePage].file === 'scanInProgress' ? (
       <Container className={classes.docPreviewEmpty}>
         <Loader color="blue" />
-        <Text tabIndex={0}>Scan in progress...</Text>
+        <Text tabIndex={0}>{t('view_document.scan_runs')}</Text>
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
         <Button onClick={handleScan} size="xl">
-          Scan
+          {t('view_document.scan_button')}
         </Button>
-        <Text>or</Text>
+        <Text>{t('view_document.or')}</Text>
         <FileButton onChange={setUploadedFile} accept="image/png,image/jpeg">
           {(props) => (
             <Button size="xl" {...props}>
-              Upload file
+              {t('view_document.upload_button')}
             </Button>
           )}
         </FileButton>
@@ -144,11 +146,11 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       <div className={classes.imageAndButtonDiv}>
         <Image
           src={activeDocument.pages[activePage].file}
-          alt="View of current page."
+          alt={t('view_document.image_description')}
           className={classes.imagePreview}
           tabIndex={0}
         />
-        <Tooltip label="Clear page">
+        <Tooltip label={t('view_document.clear_button')}>
           <Button
             className={classes.rejectScannedDocument}
             size="xl"
@@ -157,7 +159,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             color="red"
           >
             <IconX size={35}></IconX>
-            <VisuallyHidden>Clear page</VisuallyHidden>
+            <VisuallyHidden>{t('view_document.clear_button')}</VisuallyHidden>
           </Button>
         </Tooltip>
       </div>
@@ -167,7 +169,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const renderRecognizedBraille = () => {
     return activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress' ? (
       <div className={classes.brailleTextContainer}>
-        <Tooltip label="Cancel recognition">
+        <Tooltip label={t('view_document.cancel_recognition_button')}>
           <Button
             className={classes.cancelRecognition}
             size="xl"
@@ -176,11 +178,11 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             color="red"
           >
             <IconX size={35}></IconX>
-            <VisuallyHidden>Cancel recognition</VisuallyHidden>
+            <VisuallyHidden>{t('view_document.cancel_recognition_button')}</VisuallyHidden>
           </Button>
         </Tooltip>
         <Loader color="blue" />
-        <Text tabIndex={0}>Recognition in progress...</Text>
+        <Text tabIndex={0}>{t('view_document.recognition_runs')}</Text>
       </div>
     ) : activeDocument.pages[activePage].brailleStatus === 'brailleTextAvailable' ? (
       activeDocument.pages[activePage].brailleText
@@ -237,14 +239,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           <div className={classes.addDocButtonCont}>
             <Button className={classes.addDocButton} size="xl" variant="transparent" onClick={handleAddPage}>
               <IconPlus className={classes.iconPlus}></IconPlus>
-              <VisuallyHidden>Add page</VisuallyHidden>
+              <VisuallyHidden>{t('view_document.add_page')}</VisuallyHidden>
             </Button>
           </div>
         </div>
         <div className={classes.paginationWrapper}>
-          <VisuallyHidden>
-            Below is pagination component used to navigate through pages. Button number represents page number.
-          </VisuallyHidden>
+          <VisuallyHidden>{t('view_document.hidden_pagination_description')}</VisuallyHidden>
           <Pagination
             value={activePage + 1}
             total={activeDocument.pages.length}

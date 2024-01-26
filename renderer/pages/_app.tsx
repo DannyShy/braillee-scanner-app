@@ -1,14 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Head from 'next/head';
-import { useDisclosure } from '@mantine/hooks';
 import type { AppProps } from 'next/app';
 import '@mantine/core/styles.css';
-import { LoadingOverlay, MantineProvider } from '@mantine/core';
+import { MantineProvider } from '@mantine/core';
 import { NextPage } from 'next';
 
 import './global.css';
-import { appWithTranslation } from 'next-i18next';
-import '../i18n/i18n';
+import i18n from '../i18n/i18n';
+import { I18nextProvider } from 'react-i18next';
 
 declare global {
   interface Window {
@@ -17,12 +16,17 @@ declare global {
 }
 
 const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
-  const [visible] = useDisclosure(false);
+  // Added to avoid SSR on first load of page. SSR caused hydration error caused probably due to combination of using Electron with Next.js.
+  // This solution is proposed by Next.js: https://nextjs.org/docs/messages/react-hydration-error
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
-    <React.Suspense
-      fallback={<LoadingOverlay visible={visible} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />}
-    >
-      <MantineProvider>
+    <MantineProvider>
+      <I18nextProvider i18n={i18n} defaultNS={'common'}>
         <Head>
           <title>Braille scanner</title>
           <meta charSet="UTF-8" />
@@ -36,10 +40,10 @@ const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
             rel="stylesheet"
           />
         </Head>
-        <Component {...pageProps} />
-      </MantineProvider>
-    </React.Suspense>
+        {isClient ? <Component {...pageProps} /> : null}
+      </I18nextProvider>
+    </MantineProvider>
   );
 };
 
-export default appWithTranslation(MyApp);
+export default MyApp;
