@@ -36,7 +36,7 @@ const performScan = async (documentID: number, pageID: string): Promise<string> 
   app.setCallback();
   logger.info(`Scanner callback executed.`);
   return new Promise<string>((resolve, reject) => {
-    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), pageID.toString() + '.bmp');
+    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), pageID + '.bmp');
     try {
       app.scan(twain.TWSX_FILE, scannedImagePath);
       logger.info(`Scanning executed for document ${documentID}, page ${pageID}.`);
