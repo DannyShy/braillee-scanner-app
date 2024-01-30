@@ -5,6 +5,7 @@ import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
 import { BrailleStatus, Document, UpdateDocumentAction } from './types';
 import * as crypto from 'node:crypto';
+import { logger } from '../logger';
 
 const getDocPathFromDocID = (documentID: number | string): string => {
   return path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
@@ -64,7 +65,27 @@ const performUpdateDocument = (
         });
       }
       documentID = Date.now();
-      mkdirSync(path.resolve(MY_DOCUMENTS_PATH, String(documentID)));
+      const documentDirectoryPath = path.resolve(MY_DOCUMENTS_PATH, String(documentID));
+      try {
+        mkdirSync(documentDirectoryPath);
+        logger.info(`Document directory created successfully for document number: ${documentID}`);
+      } catch (error) {
+        logger.error(`Error creating document directory: ${error.message}`);
+      }
+
+      try {
+        mkdirSync(path.resolve(documentDirectoryPath, 'recognized-files'));
+        logger.info(`Recognized-files directory created successfully for document number: ${documentID}`);
+      } catch (error) {
+        logger.error(`Error creating recognized-files directory: ${error.message}`);
+      }
+
+      try {
+        mkdirSync(path.resolve(documentDirectoryPath, 'images'));
+        logger.info(`Images directory created successfully for document number: ${documentID}`);
+      } catch (error) {
+        logger.error(`Error creating images directory: ${error.message}`);
+      }
       jsonData = createDocumentData(documentID);
       mainWindow.webContents.send('create-document-output', jsonData);
       break;
