@@ -11,7 +11,7 @@ import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
-import { store } from './utils/perform-store-user-settings';
+import { store } from './utils/store';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -39,12 +39,10 @@ if (IS_PROD) {
   }
 
   ipcMain.handle('getStoreValue', (event, key) => {
-    console.log('getted value', store.get(key));
     return store.get(key);
   });
   ipcMain.on('setStoreValue', (event, key, value) => {
     store.set(key, value);
-    console.log('setted to:', store.get(key));
   });
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {

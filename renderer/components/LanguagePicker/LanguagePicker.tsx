@@ -3,33 +3,29 @@ import { UnstyledButton, Menu, Image, Group, VisuallyHidden } from '@mantine/cor
 import { IconChevronDown } from '@tabler/icons-react';
 import images from './images/images';
 import classes from './LanguagePicker.module.css';
-import i18n from '../../i18n/i18n';
 import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
+import { LanguagePickerData } from 'components/types';
 
-const data = [
+const data: LanguagePickerData[] = [
   { label: 'en', image: images.english, description: 'english' },
   { label: 'sk', image: images.slovak, description: 'slovenský' },
 ];
 
-const findLanguageByLabel = (storedLanguage) => {
+const findLanguageByLabel = (storedLanguage: string) => {
   return data.findIndex((item) => item.label === storedLanguage);
 };
 
-const LanguagePicker: React.FC = () => {
-  const { t } = useTranslation();
-  const [opened, setOpened] = useState(false);
-  const [storedLanguage, setStoredLanguage] = useState(null);
-  const [selected, setSelected] = useState(data[1]);
+interface LanguagePickerProps {
+  i18n: typeof i18n;
+}
 
-  const getStoredLanguage = async () => {
-    const readedValueOfStoredLanguage = await window.electronAPI.getStoreValue('language');
-    if (readedValueOfStoredLanguage !== storedLanguage) {
-      setStoredLanguage(readedValueOfStoredLanguage);
-    }
-  };
-  getStoredLanguage();
-  const languageLabel = findLanguageByLabel(storedLanguage);
-  console.log('languagelabel:', languageLabel);
+const LanguagePicker: React.FC<LanguagePickerProps> = ({ i18n }) => {
+  const { t } = useTranslation();
+  const [opened, setOpened] = useState<boolean>(false);
+  const currentLanguage = i18n.language;
+  const languageLabel = findLanguageByLabel(currentLanguage);
+  const [selected, setSelected] = useState<LanguagePickerData>(data[languageLabel]);
 
   const items = data.map((item) => (
     <Menu.Item
@@ -48,12 +44,6 @@ const LanguagePicker: React.FC = () => {
     i18n.changeLanguage(selected.label);
     window.electronAPI.setStoreValue('language', selected.label);
   }, [selected]);
-
-  useEffect(() => {
-    if (languageLabel > -1 && storedLanguage !== selected.label) {
-      i18n.changeLanguage(data[languageLabel].label);
-    }
-  }, []);
 
   return (
     <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>

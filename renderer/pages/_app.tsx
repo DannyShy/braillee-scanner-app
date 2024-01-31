@@ -4,9 +4,9 @@ import type { AppProps } from 'next/app';
 import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import { NextPage } from 'next';
-
+import i18n from 'i18next';
 import './global.css';
-import i18n from '../i18n/i18n';
+import { fetchStoredLanguage } from 'i18n/configureI18n';
 import { I18nextProvider } from 'react-i18next';
 
 declare global {
@@ -18,15 +18,21 @@ declare global {
 const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
   // Added to avoid SSR on first load of page. SSR caused hydration error caused probably due to combination of using Electron with Next.js.
   // This solution is proposed by Next.js: https://nextjs.org/docs/messages/react-hydration-error
-  const [isClient, setIsClient] = useState(false);
+  const [isClient, setIsClient] = useState<boolean>(false);
+  const [configuredI18n, setConfiguredI18n] = useState<typeof i18n>(i18n);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  //getting stored language and then configuring it to i18n
+  useEffect(() => {
+    fetchStoredLanguage(setConfiguredI18n);
+  }, []);
+
   return (
     <MantineProvider>
-      <I18nextProvider i18n={i18n} defaultNS={'common'}>
+      <I18nextProvider i18n={configuredI18n} defaultNS={'common'}>
         <Head>
           <title>Braille scanner</title>
           <meta charSet="UTF-8" />
@@ -40,7 +46,7 @@ const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
             rel="stylesheet"
           />
         </Head>
-        {isClient ? <Component {...pageProps} /> : null}
+        {isClient ? <Component {...pageProps} i18n={configuredI18n} /> : null}
       </I18nextProvider>
     </MantineProvider>
   );

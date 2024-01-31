@@ -5,6 +5,7 @@ import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
 import { useTranslation } from 'react-i18next';
 import LanguagePicker from './LanguagePicker/LanguagePicker';
+import i18n from 'i18next';
 
 enum Pages {
   MY_DOCUMENTS = 'my_documents',
@@ -12,7 +13,11 @@ enum Pages {
 
 const data = [{ link: '', label: Pages.MY_DOCUMENTS, icon: IconFolderOpen }];
 
-const Home: React.FC = () => {
+interface HomeProps {
+  i18n: typeof i18n;
+}
+
+const Home: React.FC<HomeProps> = ({ i18n }) => {
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
@@ -66,7 +71,7 @@ const Home: React.FC = () => {
             {/* <Code className={classes.appVersion} fw={700}>
               v1.0.0
             </Code> */}
-            <LanguagePicker />
+            <LanguagePicker i18n={i18n} />
           </div>
           {links}
         </div>
