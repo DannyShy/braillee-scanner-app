@@ -6,6 +6,8 @@ import Fetch from 'i18next-fetch-backend';
 const languages = ['sk', 'en'];
 const DEFAULT_INTL_NAMESPACE = 'common';
 
+// const storedLanguage = await window.electronAPI.getStoreValue('language');
+
 const i18nConfig: InitOptions = {
   supportedLngs: languages,
   fallbackLng: 'sk',

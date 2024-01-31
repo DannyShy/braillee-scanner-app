@@ -4,7 +4,7 @@ import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
 import { useTranslation } from 'react-i18next';
-import { LanguagePicker } from './LanguagePicker/LanguagePicker';
+import LanguagePicker from './LanguagePicker/LanguagePicker';
 
 enum Pages {
   MY_DOCUMENTS = 'my_documents',

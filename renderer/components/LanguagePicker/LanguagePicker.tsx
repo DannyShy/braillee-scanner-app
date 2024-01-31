@@ -11,17 +11,25 @@ const data = [
   { label: 'sk', image: images.slovak, description: 'slovenský' },
 ];
 
-// const findLanguageByLabel = (storedLanguage) => {
-//   return data.findIndex((item) => item.label === storedLanguage);
-// };
+const findLanguageByLabel = (storedLanguage) => {
+  return data.findIndex((item) => item.label === storedLanguage);
+};
 
-export function LanguagePicker() {
+const LanguagePicker: React.FC = () => {
   const { t } = useTranslation();
   const [opened, setOpened] = useState(false);
-
-  // const languageLabel = findLanguageByLabel(storedLanguage);
-
+  const [storedLanguage, setStoredLanguage] = useState(null);
   const [selected, setSelected] = useState(data[1]);
+
+  const getStoredLanguage = async () => {
+    const readedValueOfStoredLanguage = await window.electronAPI.getStoreValue('language');
+    if (readedValueOfStoredLanguage !== storedLanguage) {
+      setStoredLanguage(readedValueOfStoredLanguage);
+    }
+  };
+  getStoredLanguage();
+  const languageLabel = findLanguageByLabel(storedLanguage);
+  console.log('languagelabel:', languageLabel);
 
   const items = data.map((item) => (
     <Menu.Item
@@ -38,7 +46,14 @@ export function LanguagePicker() {
 
   useEffect(() => {
     i18n.changeLanguage(selected.label);
+    window.electronAPI.setStoreValue('language', selected.label);
   }, [selected]);
+
+  useEffect(() => {
+    if (languageLabel > -1 && storedLanguage !== selected.label) {
+      i18n.changeLanguage(data[languageLabel].label);
+    }
+  }, []);
 
   return (
     <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
@@ -55,4 +70,6 @@ export function LanguagePicker() {
       <Menu.Dropdown>{items}</Menu.Dropdown>
     </Menu>
   );
-}
+};
+
+export default LanguagePicker;
