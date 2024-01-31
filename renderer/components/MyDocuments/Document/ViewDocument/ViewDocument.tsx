@@ -28,6 +28,19 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   useLogMount('ViewDocument');
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
+  const [isScanner, setIsScanner] = useState<boolean>(false);
+  const [isMoreScanners, setIsMoreScanners] = useState<boolean>(false);
+  const [isSelectedScanner, setIsSelectedScanner] = useState<boolean>(false);
+  const [scannersList, setScannersList] = useState<string[]>([]);
+
+  if (scannersList.length === 0) {
+    setIsScanner(false);
+  } else if (scannersList.length === 1) {
+    setIsScanner(true);
+    setIsMoreScanners(false);
+  } else if (scannersList.length > 1) {
+    setIsMoreScanners(true);
+  }
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
     window.electronAPI.updateDocument(action, activeDocument.documentID, data, activePage);
@@ -221,6 +234,13 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       `Created Page: ${activeDocument.pages[newestPageIndex].pageID} and set it to be active.`,
     );
   }, [newestPageIndex]);
+
+  useEffect(() => {
+    window.electronAPI.addScannersListListener((scannersList) => {
+      setScannersList(scannersList);
+      //remove listener?
+    });
+  }, []);
 
   return (
     <MainContent

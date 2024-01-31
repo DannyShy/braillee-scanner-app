@@ -49,7 +49,7 @@ if (IS_PROD) {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID) => {
-    performScan(documentID, pageID);
+    performScan(documentID, pageID, mainWindow);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);

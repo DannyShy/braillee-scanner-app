@@ -3,6 +3,23 @@ import { Document } from './utils/types';
 
 window.global = window;
 
+let scannersListListener: any;
+
+const addScannersListListener = (listener) => {
+  scannersListListener = (event, scannersList) => {
+    listener(scannersList);
+  };
+  ipcRenderer.on('scanners-list', scannersListListener);
+};
+
+const removeScannersListListener = () => {
+  if (!scannersListListener) {
+    return;
+  }
+  ipcRenderer.removeListener('scanners-list', scannersListListener);
+  scannersListListener = null;
+};
+
 let initialSetupProgressListener: any;
 
 const addInitialSetupProgressListener = (listener) => {
@@ -118,4 +135,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   log: (level: string, message: string) => {
     ipcRenderer.send('log-from-renderer', level, message);
   },
+  addScannersListListener: addScannersListListener,
+  removeScannersListListener: removeScannersListListener,
 });
