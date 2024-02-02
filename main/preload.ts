@@ -3,7 +3,7 @@ import { Document } from './utils/types';
 
 window.global = window;
 
-let scannersListListener: any;
+let scannersListListener;
 
 const addScannersListListener = (listener) => {
   scannersListListener = (event, scannersList) => {
@@ -105,7 +105,8 @@ const removeBrailleTextListener = () => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  scanFile: (documentID: number, pageID: string) => ipcRenderer.invoke('scan-file', documentID, pageID),
+  scanFile: (documentID: number, pageID: string, selectedScanner: string) =>
+    ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner),
   copyImage: (imagePath: string, documentID: number) => ipcRenderer.send('copy-image', imagePath, documentID),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
@@ -137,4 +138,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   addScannersListListener: addScannersListListener,
   removeScannersListListener: removeScannersListListener,
+  getScannersList: () => ipcRenderer.invoke('get-scanners-list'),
 });

@@ -12,12 +12,17 @@ import {
   Tooltip,
   FileButton,
   VisuallyHidden,
+  useCombobox,
+  Combobox,
+  InputBase,
+  Input,
 } from '@mantine/core';
 import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
+import { IconRefresh } from '@tabler/icons-react';
 
 type Props = {
   activeDocument: Document;
@@ -32,15 +37,17 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const [isMoreScanners, setIsMoreScanners] = useState<boolean>(false);
   const [isSelectedScanner, setIsSelectedScanner] = useState<boolean>(false);
   const [scannersList, setScannersList] = useState<string[]>([]);
+  const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
 
-  if (scannersList.length === 0) {
-    setIsScanner(false);
-  } else if (scannersList.length === 1) {
-    setIsScanner(true);
-    setIsMoreScanners(false);
-  } else if (scannersList.length > 1) {
-    setIsMoreScanners(true);
-  }
+  const combobox = useCombobox({
+    onDropdownClose: () => combobox.resetSelectedOption(),
+  });
+
+  const options = scannersList.map((item) => (
+    <Combobox.Option value={item} key={item}>
+      {item}
+    </Combobox.Option>
+  ));
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
     window.electronAPI.updateDocument(action, activeDocument.documentID, data, activePage);
@@ -52,13 +59,22 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     onUpdate('addPage');
   };
 
+  const fetchScannersList = async () => {
+    window.electronAPI.getScannersList();
+    await window.electronAPI.addScannersListListener((scannersList) => {
+      setScannersList(scannersList);
+    });
+  };
+
   const handleScan = async () => {
     try {
       window.electronAPI.log('debug', 'Scan button clicked by user.');
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
+      console.log('selectedScanner at renderer:', selectedScanner);
       const scannedOutput = await window.electronAPI.scanFile(
         activeDocument.documentID,
         activeDocument.pages[activePage].pageID,
+        selectedScanner,
       );
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
@@ -147,6 +163,36 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
+        <div className={classes.scannerSelection}>
+          <Combobox
+            store={combobox}
+            withinPortal={false}
+            onOptionSubmit={(val) => {
+              setSelectedScanner(val);
+              combobox.closeDropdown();
+            }}
+          >
+            <Combobox.Target>
+              <InputBase
+                component="button"
+                type="button"
+                pointer
+                rightSection={<Combobox.Chevron />}
+                onClick={() => combobox.toggleDropdown()}
+                rightSectionPointerEvents="none"
+              >
+                {selectedScanner || <Input.Placeholder>Select scanner</Input.Placeholder>}
+              </InputBase>
+            </Combobox.Target>
+            <Combobox.Dropdown>
+              <Combobox.Options>{options}</Combobox.Options>
+            </Combobox.Dropdown>
+          </Combobox>
+          <Button className={classes.returnButton} size="md" variant="transparent" onClick={fetchScannersList}>
+            <IconRefresh></IconRefresh>
+            <VisuallyHidden>Refresh scanners list</VisuallyHidden>
+          </Button>
+        </div>
         <Button onClick={handleScan} size="xl">
           Scan
         </Button>
@@ -236,11 +282,25 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   }, [newestPageIndex]);
 
   useEffect(() => {
-    window.electronAPI.addScannersListListener((scannersList) => {
-      setScannersList(scannersList);
-      //remove listener?
-    });
+    fetchScannersList();
+    return () => {
+      window.electronAPI.removeScannersListListener();
+    };
   }, []);
+
+  //  const handleRefreshScannersList = () => {}
+
+  useEffect(() => {
+    if (scannersList.length === 0) {
+      setIsScanner(false);
+    } else if (scannersList.length === 1) {
+      setIsScanner(true);
+      setIsMoreScanners(false);
+    } else if (scannersList.length > 1) {
+      setIsScanner(true);
+      setIsMoreScanners(true);
+    }
+  }, [scannersList]);
 
   return (
     <MainContent
