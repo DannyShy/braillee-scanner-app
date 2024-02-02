@@ -12,6 +12,7 @@ import { performReadDocuments, performUpdateDocument } from './utils/perform-man
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
+import { store } from './utils/store';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -38,6 +39,12 @@ if (IS_PROD) {
     firstPage = 'home-screen';
   }
 
+  ipcMain.handle('getStoreValue', (event, key) => {
+    return store.get(key);
+  });
+  ipcMain.on('setStoreValue', (event, key, value) => {
+    store.set(key, value);
+  });
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);

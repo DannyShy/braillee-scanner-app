@@ -3,16 +3,18 @@ import classes from './NoDocuments.module.css';
 import { Text } from '@mantine/core';
 import React from 'react';
 import useLogMount from 'hooks/useLogMount';
+import { useTranslation } from 'react-i18next';
 
 type Props = { onCreateDocument: () => void };
 
 const NoDocuments: React.FC<Props> = ({ onCreateDocument }) => {
+  const { t } = useTranslation();
   useLogMount('NoDocuments');
   return (
     <div className={classes.main}>
       <div className={classes.centeredDiv}>
         <Text className={classes.centeredText} tabIndex={0}>
-          You have no documents. Use the button bellow to create your first document.
+          {t('no_documents_text')}
         </Text>
         <Button
           className={classes.createDocButtonCentered}
@@ -21,7 +23,7 @@ const NoDocuments: React.FC<Props> = ({ onCreateDocument }) => {
           size="lg"
           onClick={onCreateDocument}
         >
-          + Create Document
+          + {t('create_document')}
         </Button>
       </div>
     </div>

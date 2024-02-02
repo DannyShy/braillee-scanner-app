@@ -84,6 +84,7 @@
   padding-left: 0%;
   padding-right: 0%;
   padding-bottom: 0px;
+  padding: var(--mantine-spacing-xs);
   overflow: visible;
 }
 

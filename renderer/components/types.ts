@@ -10,3 +10,9 @@ export type Page = {
   brailleStatus?: null | 'brailleTextAvailable' | 'recognitionCanceled' | 'recognitionInProgress';
   brailleText?: null | string;
 };
+
+export type LanguagePickerData = {
+  label: string;
+  image: string;
+  description: string;
+};

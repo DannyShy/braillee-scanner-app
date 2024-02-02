@@ -1,0 +1,58 @@
+{
+  "welcome": {
+    "welcome_title": "Welcome to Braille Scanner",
+    "welcome_text_1": "In order to continue, additional data has to be downloaded.",
+    "welcome_text_2": "This is one time setup. Do you want to continue?",
+    "continue_button": "Continue and download",
+    "progress": {
+      "python": "Installing Python library...",
+      "requirements": "Installing requirements...",
+      "model": "Downloading recognition model...",
+      "percentage": "of braille model has been downloaded."
+    },
+    "cancel_button": "Cancel",
+    "finished_text": "Additional data has been successfully downloaded and application is ready to use.",
+    "proceed_button": "Continue",
+    "modal_text": "Are you sure you want to cancel the data download?",
+    "yes_button": "Yes",
+    "no_button": "No"
+  },
+  "logo": "Logo of DotSight application. Picture of eye surrounded by dots.",
+  "my_documents": "My Documents",
+  "exit_button": "Exit",
+  "create_document": "Create document",
+  "no_documents_text": "You have no documents. Use the button bellow to create your first document.",
+  "search_bar": "Search by name...",
+  "document_card": {
+    "hidden_card_description": "Document card with document title: {{title}}, which contains {{pageCount}} pages.",
+    "pages": "Pages: {{pageCount}}",
+    "open": "Open",
+    "hidden_document": "Document"
+  },
+  "view_document": {
+    "mini_page_number": "Miniature of page {{pageIndex}}",
+    "mini_page_description_filled": "This page contains uploaded or scanned file.",
+    "mini_page_description_empty": "This page is empty.",
+    "scan_runs": "Scan in progress...",
+    "scan_button": "Scan",
+    "or": "or",
+    "upload_button": "Upload file",
+    "image_description": "View of current page.",
+    "clear_button": "Clear page",
+    "cancel_recognition_button": "Cancel recognition",
+    "recognition_runs": "Recognition in progress...",
+    "add_page": "Add page",
+    "hidden_pagination_description": "Below is pagination component used to navigate through pages. Button number represents page number, which will be shown after click."
+  },
+  "document_title": {
+    "hidden_return_button": "Return to MyDocuments",
+    "hidden_confirm_button": "Confirm edited document title value",
+    "hidden_cancel_button": "Cancel edited document title value and return to original document title",
+    "hidden_edit_title_button": "Edit document title",
+    "hidden_export_button": "Export document"
+  },
+  "language_picker": {
+    "hidden_language_description": "{{language}} language",
+    "hidden_menu_description": "Menu for changing language in app"
+  }
+}

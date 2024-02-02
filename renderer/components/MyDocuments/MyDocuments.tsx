@@ -7,9 +7,11 @@ import { Document } from '../types';
 import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
+import { useTranslation } from 'react-i18next';
 
 const MyDocuments: React.FC = () => {
   useLogMount('MyDocuments');
+  const { t } = useTranslation();
   // contains data from all documents
   const [documents, setDocuments] = useState<Document[]>(null);
   // contains data from active document
@@ -65,10 +67,10 @@ const MyDocuments: React.FC = () => {
       header={
         <div className={classes.header}>
           <Title className={classes.title} size="h2" tabIndex={0}>
-            My Documents
+            {t('my_documents')}
           </Title>
           <Button className={classes.createDocButton} radius="sm" size="md" onClick={onCreateDocument} tabIndex={0}>
-            + Create Document
+            + {t('create_document')}
           </Button>
         </div>
       }

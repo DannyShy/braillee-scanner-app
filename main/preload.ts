@@ -118,4 +118,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   log: (level: string, message: string) => {
     ipcRenderer.send('log-from-renderer', level, message);
   },
+  setStoreValue: (key: string, value: string) => ipcRenderer.send('setStoreValue', key, value),
+  getStoreValue: (key: string) => ipcRenderer.invoke('getStoreValue', key),
 });
