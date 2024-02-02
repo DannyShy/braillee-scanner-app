@@ -142,3 +142,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setStoreValue: (key: string, value: string) => ipcRenderer.send('setStoreValue', key, value),
   getStoreValue: (key: string) => ipcRenderer.invoke('getStoreValue', key),
 });
+
+contextBridge.exposeInMainWorld('process', {
+  arch: process.arch,
+});

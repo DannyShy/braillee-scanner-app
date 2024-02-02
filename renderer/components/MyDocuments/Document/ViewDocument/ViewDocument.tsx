@@ -35,11 +35,10 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
-  const [isScanner, setIsScanner] = useState<boolean>(false);
-  const [isMoreScanners, setIsMoreScanners] = useState<boolean>(false);
-  const [isSelectedScanner, setIsSelectedScanner] = useState<boolean>(false);
   const [scannersList, setScannersList] = useState<string[]>([]);
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
+  const [appVersion, setAppVersion] = useState<string>('not defined');
+  const [clicked, setClicked] = useState<boolean>(false);
 
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
@@ -72,7 +71,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     try {
       window.electronAPI.log('debug', 'Scan button clicked by user.');
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
-      console.log('selectedScanner at renderer:', selectedScanner);
       const scannedOutput = await window.electronAPI.scanFile(
         activeDocument.documentID,
         activeDocument.pages[activePage].pageID,
@@ -133,6 +131,14 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     setActivePage(index);
   };
 
+  const handleRefreshButtonClick = () => {
+    fetchScannersList();
+    setClicked(true);
+    setTimeout(() => {
+      setClicked(false);
+    }, 100); // match transition duration
+  };
+
   const renderMiniPages = () => {
     return activeDocument.pages.map((page, index) => (
       <Paper
@@ -165,37 +171,52 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
-        <div className={classes.scannerSelection}>
-          <Combobox
-            store={combobox}
-            withinPortal={false}
-            onOptionSubmit={(val) => {
-              setSelectedScanner(val);
-              window.electronAPI.setStoreValue('scanner', val);
-              combobox.closeDropdown();
-            }}
-          >
-            <Combobox.Target>
-              <InputBase
-                component="button"
-                type="button"
-                pointer
-                rightSection={<Combobox.Chevron />}
-                onClick={() => combobox.toggleDropdown()}
-                rightSectionPointerEvents="none"
+        {scannersList.length === 0 ? (
+          <Text>
+            Scanner is not available. Press refresh button or try to use {appVersion}-bit version of app instead of
+            current one
+          </Text>
+        ) : scannersList.length === 1 ? null : (
+          <div className={classes.scannerSelection}>
+            <div className={classes.combobox}>
+              <Combobox
+                store={combobox}
+                withinPortal={false}
+                onOptionSubmit={(val) => {
+                  setSelectedScanner(val);
+                  window.electronAPI.setStoreValue('scanner', val);
+                  combobox.closeDropdown();
+                }}
               >
-                {selectedScanner || <Input.Placeholder>Select scanner</Input.Placeholder>}
-              </InputBase>
-            </Combobox.Target>
-            <Combobox.Dropdown>
-              <Combobox.Options>{options}</Combobox.Options>
-            </Combobox.Dropdown>
-          </Combobox>
-          <Button className={classes.returnButton} size="md" variant="transparent" onClick={fetchScannersList}>
-            <IconRefresh></IconRefresh>
-            <VisuallyHidden>Refresh scanners list</VisuallyHidden>
-          </Button>
-        </div>
+                <Combobox.Target>
+                  <InputBase
+                    component="button"
+                    type="button"
+                    pointer
+                    rightSection={<Combobox.Chevron />}
+                    onClick={() => combobox.toggleDropdown()}
+                    rightSectionPointerEvents="none"
+                  >
+                    {selectedScanner || <Input.Placeholder>Select scanner</Input.Placeholder>}
+                  </InputBase>
+                </Combobox.Target>
+                <Combobox.Dropdown>
+                  <Combobox.Options>{options}</Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </div>
+            <Button
+              className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
+              size="md"
+              variant="transparent"
+              onClick={handleRefreshButtonClick}
+            >
+              <IconRefresh></IconRefresh>
+              <VisuallyHidden>Refresh scanners list</VisuallyHidden>
+            </Button>
+          </div>
+        )}
+
         <Button onClick={handleScan} size="xl">
           {t('view_document.scan_button')}
         </Button>
@@ -284,36 +305,31 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     );
   }, [newestPageIndex]);
 
-  // get list of available scanners and checks if the stored scanner is available
+  // get list of available scanners
   useEffect(() => {
     fetchScannersList();
-    const fetchStoredScanner = async () => {
-      const storedScanner: string = await window.electronAPI.getStoreValue('scanner');
-      return storedScanner as string;
+    return () => {
+      window.electronAPI.removeScannersListListener();
     };
+  }, []);
+  //checks if the stored scanner is available
+  useEffect(() => {
     const checkStoredScannerAvailability = async () => {
-      const storedScanner = await fetchStoredScanner();
+      const storedScanner = await window.electronAPI.getStoreValue('scanner');
       if (scannersList.includes(storedScanner)) {
         setSelectedScanner(storedScanner);
       }
     };
     checkStoredScannerAvailability();
-    return () => {
-      window.electronAPI.removeScannersListListener();
-    };
-  }, []);
+  }, [scannersList]);
 
   useEffect(() => {
-    if (scannersList.length === 0) {
-      setIsScanner(false);
-    } else if (scannersList.length === 1) {
-      setIsScanner(true);
-      setIsMoreScanners(false);
-    } else if (scannersList.length > 1) {
-      setIsScanner(true);
-      setIsMoreScanners(true);
+    if (window.process.arch === 'x64') {
+      setAppVersion('64');
+    } else if (window.process.arch === 'ia32') {
+      setAppVersion('32');
     }
-  }, [scannersList]);
+  }, []);
 
   return (
     <MainContent
