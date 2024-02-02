@@ -1,0 +1,117 @@
+diff --git a/node_modules/node-twain/src/TwainSDK.cpp b/node_modules/node-twain/src/TwainSDK.cpp
+index d722323..a1d72a5 100644
+--- a/node_modules/node-twain/src/TwainSDK.cpp
++++ b/node_modules/node-twain/src/TwainSDK.cpp
+@@ -5,7 +5,7 @@
+ #include "TwainSDK.h"
+
+ TwainSDK::TwainSDK(const Napi::CallbackInfo &info) : Napi::ObjectWrap<TwainSDK>(info) {
+-    Napi::Object configure = info[0].As<Napi::Object>();
++    Napi::Object configure = info[static_cast<size_t>(0)].As<Napi::Object>();
+
+     Napi::Object version = configure.Get("version").As<Napi::Object>();
+
+@@ -84,11 +84,11 @@ Napi::Value TwainSDK::setDefaultSource(const Napi::CallbackInfo &info) {
+         Napi::TypeError::New(env, "Wrong number of arguments").ThrowAsJavaScriptException();
+         return env.Null();
+     }
+-    if (!info[0].IsString()) {
++    if (!info[static_cast<size_t>(0)].IsString()) {
+         Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+         return env.Null();
+     }
+-    std::string productName = info[0].As<Napi::String>().Utf8Value();
++    std::string productName = info[static_cast<size_t>(0)].As<Napi::String>().Utf8Value();
+
+     TW_UINT16 rc = session.setDefaultDS(productName);
+
+@@ -103,11 +103,11 @@ Napi::Value TwainSDK::openDataSource(const Napi::CallbackInfo &info) {
+     if (info.Length() < 1) {
+         rc = session.openDS();
+     } else {
+-        if (!info[0].IsString()) {
++        if (!info[static_cast<size_t>(0)].IsString()) {
+             Napi::TypeError::New(env, "Wrong arguments").ThrowAsJavaScriptException();
+             return env.Null();
+         }
+-        std::string productName = info[0].As<Napi::String>().Utf8Value();
++        std::string productName = info[static_cast<size_t>(0)].As<Napi::String>().Utf8Value();
+         rc = session.openDS(productName);
+     }
+
+@@ -122,7 +122,7 @@ Napi::Value TwainSDK::setCallback(const Napi::CallbackInfo &info) {
+
+ Napi::Value TwainSDK::getCapability(const Napi::CallbackInfo &info) {
+     Napi::Env env = info.Env();
+-    TW_UINT16 CAP = info[0].As<Napi::Number>().Uint32Value();
++    TW_UINT16 CAP = info[static_cast<size_t>(0)].As<Napi::Number>().Uint32Value();
+
+     TW_CAPABILITY cap;
+     cap.Cap = CAP;
+@@ -212,37 +212,37 @@ Napi::Value TwainSDK::getCapability(const Napi::CallbackInfo &info) {
+         switch (pEnum->ItemType) {
+             case TWTY_INT8:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_INT8)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_INT8)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_INT16:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_INT16)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_INT16)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_INT32:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_INT32)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_INT32)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_UINT8:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_UINT8)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_UINT8)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_UINT16:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_UINT16)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_UINT16)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_UINT32:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = ((pTW_UINT32)(&pEnum->ItemList))[index];
++                    list[static_cast<size_t>(index)] = ((pTW_UINT32)(&pEnum->ItemList))[index];
+                 }
+                 break;
+             case TWTY_BOOL:
+                 for (TW_UINT16 index = 0; index < pEnum->NumItems; index++) {
+-                    list[index] = pEnum->ItemList[index];
++                    list[static_cast<size_t>(index)] = pEnum->ItemList[index];
+                 }
+         }
+         enumResult.Set("currentIndex", pEnum->CurrentIndex);
+@@ -255,8 +255,8 @@ Napi::Value TwainSDK::getCapability(const Napi::CallbackInfo &info) {
+
+ Napi::Value TwainSDK::setCapability(const Napi::CallbackInfo &info) {
+     Napi::Env env = info.Env();
+-    TW_UINT16 CAP = info[0].As<Napi::Number>().Uint32Value();
+-    TW_UINT16 ITEM_TYPE = info[0].As<Napi::Number>().Uint32Value();
++    TW_UINT16 CAP = info[static_cast<size_t>(0)].As<Napi::Number>().Uint32Value();
++    TW_UINT16 ITEM_TYPE = info[static_cast<size_t>(0)].As<Napi::Number>().Uint32Value();
+     TW_HANDLE hResult = NULL;
+     switch (ITEM_TYPE) {
+         case TWTY_STR32:
+@@ -295,8 +295,8 @@ Napi::Value TwainSDK::enableDataSource(const Napi::CallbackInfo &info) {
+
+ Napi::Value TwainSDK::scan(const Napi::CallbackInfo &info) {
+     Napi::Env env = info.Env();
+-    TW_UINT16 transfer = info[0].As<Napi::Number>().Uint32Value();
+-    std::string fileName = info[1].As<Napi::String>().Utf8Value();
++    TW_UINT16 transfer = info[static_cast<size_t>(0)].As<Napi::Number>().Uint32Value();
++    std::string fileName = info[static_cast<size_t>(1)].As<Napi::String>().Utf8Value();
+
+     session.enableDS();
+     session.scan(transfer, fileName);
