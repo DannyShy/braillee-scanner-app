@@ -30,7 +30,7 @@ const waitUntilFinished = async (process) => {
 
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   logger.debug(`Initial Setup util opened.`);
-  mainWindow.webContents.send('initial-setup-progress', 'Installing Python library...', null, false);
+  mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
   pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
     detached: false,
@@ -40,7 +40,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   pipUpgrade = null;
   logger.info(`Pip installations finished.`);
 
-  mainWindow.webContents.send('initial-setup-progress', 'Installing requirements...', null, false);
+  mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
   logger.info(`Requirements installations started.`);
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
@@ -51,7 +51,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
 
   logger.info(`Model download started.`);
   let progressPercentage = 0;
-  mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
+  mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
 
   let offset = 0;
   if (!fs.existsSync(APP_DATA_PATH)) {
@@ -79,7 +79,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         logger.info(`Model download finished.`);
         break;
       }
-      mainWindow.webContents.send('initial-setup-progress', 'Downloading model...', progressPercentage, false);
+      mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
     } catch (error) {
       if (error.code === 'ERR_CANCELED') {
         logger.error('Download cancelled by user.');

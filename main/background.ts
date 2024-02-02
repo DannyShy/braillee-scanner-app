@@ -14,6 +14,7 @@ import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { scannerApp, performDetectScanners } from './utils/perform-detect-scanners';
 import { store } from './utils/store';
+import { store } from './utils/store';
 
 if (IS_PROD) {
   serve({ directory: 'app' });

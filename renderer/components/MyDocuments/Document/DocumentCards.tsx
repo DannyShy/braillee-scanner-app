@@ -4,6 +4,7 @@ import React, { useMemo, useState } from 'react';
 import DocumentCardComponent from './DocumentCard/DocumentCard';
 import { Document } from '../../types';
 import useLogMount from 'hooks/useLogMount';
+import { useTranslation } from 'react-i18next';
 
 type Props = {
   documents: Document[];
@@ -12,6 +13,7 @@ type Props = {
 
 const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
   useLogMount('DocumentCards');
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
 
   // Filter documents based on the search term
@@ -36,7 +38,7 @@ const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
     <div className={classes.cards}>
       <TextInput
         className={classes.searchDocument}
-        placeholder="Search by name..."
+        placeholder={t('search_bar')}
         value={searchTerm}
         onChange={handleSearchChange}
       />

@@ -17,9 +17,11 @@ import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import useLogMount from 'hooks/useLogMount';
+import { useTranslation } from 'react-i18next';
 
 const Welcome: React.FC = () => {
   useLogMount('Welcome');
+  const { t } = useTranslation();
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
@@ -94,21 +96,21 @@ const Welcome: React.FC = () => {
           <Container>
             <div className={classes.inner}>
               <Title className={classes.title} tabIndex={0}>
-                Welcome to Braille Scanner
+                {t('welcome.welcome_title')}
               </Title>
               <Container p={0} size={600}>
                 <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
-                  In order to continue, additional data has to be downloaded.
+                  {t('welcome.welcome_text_1')}
                   <br />
-                  This is one time setup. Do you want to continue?
+                  {t('welcome.welcome_text_2')}
                 </Text>
               </Container>
               <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
                 <Button className={classes.control} size="lg" variant="default" color="gray" onClick={handleCloseApp}>
-                  Exit
+                  {t('exit_button')}
                 </Button>
                 <Button className={classes.control} size="lg" onClick={handlecheckDiskSpace}>
-                  Continue and download
+                  {t('welcome.continue_button')}
                 </Button>
               </Flex>
             </div>
@@ -119,7 +121,7 @@ const Welcome: React.FC = () => {
           <Container>
             <Container p={0} size={1000}>
               <Text size="lg" c="dimmed" className={classes.initialSetupProgress} aria-live="assertive" tabIndex={0}>
-                {progressMessage}
+                {t(`welcome.progress.${progressMessage}`)}
               </Text>
             </Container>
             <>
@@ -133,7 +135,7 @@ const Welcome: React.FC = () => {
                           {downloadModelProgress}%
                         </Text>
                         <VisuallyHidden aria-live="polite">
-                          {roundedProgress}% of braille model has been downloaded.
+                          {roundedProgress}% {t('welcome.progress.percentage')}
                         </VisuallyHidden>
                       </Center>
                     }
@@ -155,7 +157,7 @@ const Welcome: React.FC = () => {
                   window.electronAPI.log('debug', `Modal for cancelling initial setup opened.`);
                 }}
               >
-                Cancel
+                {t('welcome.cancel_button')}
               </Button>
             </Center>
           </Container>
@@ -164,11 +166,11 @@ const Welcome: React.FC = () => {
         {isFinishedState && (
           <Container>
             <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
-              Additional data has been successfully downloaded and application is ready to use.
+              {t('welcome.finished_text')}
             </Text>
             <Center>
               <Button className={classes.control} size={'lg'} onClick={handleGoHome}>
-                Continue
+                {t('welcome.proceed_button')}
               </Button>
             </Center>
           </Container>
@@ -186,7 +188,7 @@ const Welcome: React.FC = () => {
           <SimpleGrid>
             <Center>
               <Text className={classes.modalText} tabIndex={0}>
-                Are you sure you want to cancel the data download?
+                {t('welcome.modal_text')}
               </Text>
             </Center>
             <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
@@ -200,7 +202,7 @@ const Welcome: React.FC = () => {
                   );
                 }}
               >
-                Yes
+                {t('welcome.yes_button')}
               </Button>
               <Button
                 onClick={() => {
@@ -208,7 +210,7 @@ const Welcome: React.FC = () => {
                   window.electronAPI.log('debug', `Button for closing modal clicked.`);
                 }}
               >
-                No
+                {t('welcome.no_button')}
               </Button>
             </Flex>
           </SimpleGrid>
