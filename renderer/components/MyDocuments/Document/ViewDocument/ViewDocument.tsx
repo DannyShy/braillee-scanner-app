@@ -169,6 +169,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             withinPortal={false}
             onOptionSubmit={(val) => {
               setSelectedScanner(val);
+              window.electronAPI.setStoreValue('scanner', val);
               combobox.closeDropdown();
             }}
           >
@@ -283,6 +284,13 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
 
   useEffect(() => {
     fetchScannersList();
+    const fetchStoredScanner = async () => {
+      return await window.electronAPI.getStoredValue('scanner');
+    };
+    const storedScanner = fetchStoredScanner();
+    if (storedScanner) {
+      // setSelectedScanner(scannersList);
+    }
     return () => {
       window.electronAPI.removeScannersListListener();
     };
