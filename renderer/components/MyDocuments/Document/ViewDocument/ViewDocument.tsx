@@ -282,21 +282,24 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     );
   }, [newestPageIndex]);
 
+  // get list of available scanners and checks if the stored scanner is available
   useEffect(() => {
     fetchScannersList();
     const fetchStoredScanner = async () => {
-      return await window.electronAPI.getStoredValue('scanner');
+      const storedScanner: string = await window.electronAPI.getStoreValue('scanner');
+      return storedScanner as string;
     };
-    const storedScanner = fetchStoredScanner();
-    if (storedScanner) {
-      // setSelectedScanner(scannersList);
-    }
+    const checkStoredScannerAvailability = async () => {
+      const storedScanner = await fetchStoredScanner();
+      if (scannersList.includes(storedScanner)) {
+        setSelectedScanner(storedScanner);
+      }
+    };
+    checkStoredScannerAvailability();
     return () => {
       window.electronAPI.removeScannersListListener();
     };
   }, []);
-
-  //  const handleRefreshScannersList = () => {}
 
   useEffect(() => {
     if (scannersList.length === 0) {
