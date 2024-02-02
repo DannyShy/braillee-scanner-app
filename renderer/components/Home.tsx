@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';
+import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 import LanguagePicker from './LanguagePicker/LanguagePicker';
 import i18n from 'i18next';
@@ -18,6 +19,7 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({ i18n }) => {
+  useLogMount('Home');
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
 
@@ -51,13 +53,6 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
     window.electronAPI.log('debug', 'User clicked on Exit/Logout button.');
     window.electronAPI.closeApp();
   };
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'Home component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'Home component unmounted.');
-    };
-  }, []);
 
   return (
     <div className={classes.parent}>

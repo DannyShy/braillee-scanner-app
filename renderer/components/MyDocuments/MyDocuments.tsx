@@ -6,9 +6,11 @@ import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
 import { Document } from '../types';
 import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
+import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 
 const MyDocuments: React.FC = () => {
+  useLogMount('MyDocuments');
   const { t } = useTranslation();
   // contains data from all documents
   const [documents, setDocuments] = useState<Document[]>(null);
@@ -57,13 +59,6 @@ const MyDocuments: React.FC = () => {
       setActiveDocument(doc);
     }
   }, [documents]);
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'MyDocuments component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'MyDocuments component unmounted.');
-    };
-  }, []);
 
   return activeDocument ? (
     <ViewDocument activeDocument={activeDocument} onClose={onClose} />

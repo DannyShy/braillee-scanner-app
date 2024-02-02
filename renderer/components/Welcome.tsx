@@ -16,9 +16,11 @@ import {
 import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
+import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 
 const Welcome: React.FC = () => {
+  useLogMount('Welcome');
   const { t } = useTranslation();
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
@@ -86,13 +88,6 @@ const Welcome: React.FC = () => {
   useEffect(() => {
     window.electronAPI.log('debug', `isFinishedState value changed to: ${isFinishedState}.`);
   }, [isFinishedState]);
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'Welcome component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'Welcome component unmounted.');
-    };
-  }, []);
 
   return (
     <Container className={classes.wrapper} size={1400}>

@@ -88,7 +88,8 @@ const removeBrailleTextListener = () => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  scanFile: () => ipcRenderer.invoke('scan-file'),
+  scanFile: (documentID: number, pageID: string) => ipcRenderer.invoke('scan-file', documentID, pageID),
+  copyImage: (imagePath: string, documentID: number) => ipcRenderer.send('copy-image', imagePath, documentID),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
     ipcRenderer.send('recognize-braille', file, documentID, pageID);

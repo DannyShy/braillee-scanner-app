@@ -17,6 +17,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
+import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -25,6 +26,7 @@ type Props = {
 };
 
 const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
+  useLogMount('ViewDocument');
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
@@ -43,7 +45,10 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     try {
       window.electronAPI.log('debug', 'Scan button clicked by user.');
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
-      const scannedOutput = await window.electronAPI.scanFile();
+      const scannedOutput = await window.electronAPI.scanFile(
+        activeDocument.documentID,
+        activeDocument.pages[activePage].pageID,
+      );
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
       await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
@@ -72,6 +77,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     const pathToUploadedFile = (uploadedFile as any).path;
     const correctedPathToFile = 'file:///' + pathToUploadedFile.replace(/\\/g, '/');
     window.electronAPI.log('debug', `User uploaded file ${correctedPathToFile}.`);
+    window.electronAPI.copyImage(correctedPathToFile, activeDocument.documentID);
     await onUpdate('editFile', correctedPathToFile, activeDocument.pages[activePage].pageID);
     await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     setUploadedFile(null);
@@ -217,13 +223,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       `Created Page: ${activeDocument.pages[newestPageIndex].pageID} and set it to be active.`,
     );
   }, [newestPageIndex]);
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'ViewDocument component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'ViewDocument component unmounted.');
-    };
-  }, []);
 
   return (
     <MainContent

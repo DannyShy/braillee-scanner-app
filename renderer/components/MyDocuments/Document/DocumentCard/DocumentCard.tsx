@@ -1,7 +1,8 @@
 import classes from '../DocumentCard/DocumentCard.module.css';
 import { Text, Button, Title, Card, VisuallyHidden } from '@mantine/core';
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Document } from '../../../types';
+import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -10,19 +11,13 @@ type Props = {
 };
 
 const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
+  useLogMount('DocumentCard');
   const { t } = useTranslation();
   //opens the card
   const handleClickDocumentCard = () => {
     window.electronAPI.log('debug', `Document: ${document.documentID} clicked by user and set to active.`);
     onOpen(document);
   };
-
-  useEffect(() => {
-    window.electronAPI.log('debug', 'DocumentCard component mounted.');
-    return () => {
-      window.electronAPI.log('debug', 'DocumentCard component unmounted.');
-    };
-  }, []);
 
   return (
     <Card className={classes.documentCard} withBorder radius="sm" padding="lg" shadow="sm">

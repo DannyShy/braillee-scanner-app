@@ -11,6 +11,7 @@ import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
+import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { store } from './utils/store';
 
 if (IS_PROD) {
@@ -48,11 +49,15 @@ if (IS_PROD) {
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
   });
-
+  ipcMain.on('copy-image', async (event, imagePath, documentID) => {
+    performCopyUploadedImage(imagePath, documentID);
+  });
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
-  ipcMain.handle('scan-file', performScan);
+  ipcMain.handle('scan-file', async (event, documentID, pageID) => {
+    performScan(documentID, pageID);
+  });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);
   });
