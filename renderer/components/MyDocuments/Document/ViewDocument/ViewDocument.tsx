@@ -37,7 +37,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const [uploadedFile, setUploadedFile] = useState<File>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
-  const [appVersion, setAppVersion] = useState<string>('not defined');
+  const [anotherAppVersion, setAnotherAppVersion] = useState<string>('not defined');
   const [clicked, setClicked] = useState<boolean>(false);
 
   const combobox = useCombobox({
@@ -47,6 +47,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const options = scannersList.map((item) => (
     <Combobox.Option value={item} key={item}>
       {item}
+      {/* <VisuallyHidden>{t('view_document.hidden_scanner_description', { scanner: item })}</VisuallyHidden> */}
     </Combobox.Option>
   ));
 
@@ -171,52 +172,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
-        {scannersList.length === 0 ? (
-          <Text>
-            Scanner is not available. Press refresh button or try to use {appVersion}-bit version of app instead of
-            current one
-          </Text>
-        ) : scannersList.length === 1 ? null : (
-          <div className={classes.scannerSelection}>
-            <div className={classes.combobox}>
-              <Combobox
-                store={combobox}
-                withinPortal={false}
-                onOptionSubmit={(val) => {
-                  setSelectedScanner(val);
-                  window.electronAPI.setStoreValue('scanner', val);
-                  combobox.closeDropdown();
-                }}
-              >
-                <Combobox.Target>
-                  <InputBase
-                    component="button"
-                    type="button"
-                    pointer
-                    rightSection={<Combobox.Chevron />}
-                    onClick={() => combobox.toggleDropdown()}
-                    rightSectionPointerEvents="none"
-                  >
-                    {selectedScanner || <Input.Placeholder>Select scanner</Input.Placeholder>}
-                  </InputBase>
-                </Combobox.Target>
-                <Combobox.Dropdown>
-                  <Combobox.Options>{options}</Combobox.Options>
-                </Combobox.Dropdown>
-              </Combobox>
-            </div>
-            <Button
-              className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
-              size="md"
-              variant="transparent"
-              onClick={handleRefreshButtonClick}
-            >
-              <IconRefresh></IconRefresh>
-              <VisuallyHidden>Refresh scanners list</VisuallyHidden>
-            </Button>
-          </div>
-        )}
-
+        {renderDetectedScanners()}
         <Button onClick={handleScan} size="xl">
           {t('view_document.scan_button')}
         </Button>
@@ -249,6 +205,60 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             <VisuallyHidden>{t('view_document.clear_button')}</VisuallyHidden>
           </Button>
         </Tooltip>
+      </div>
+    );
+  };
+
+  const renderDetectedScanners = () => {
+    return (
+      <div className={classes.detectedScanners}>
+        {scannersList.length === 0 ? (
+          <Text>{t('view_document.scanner_not_available_text', { anotherAppVersion: anotherAppVersion })}</Text>
+        ) : scannersList.length === 1 ? (
+          <Text>{t('view_document.one_scanner_text', { selectedScanner: selectedScanner })}</Text>
+        ) : (
+          <div className={classes.scannerSelection}>
+            <div className={classes.combobox}>
+              <Combobox
+                store={combobox}
+                withinPortal={false}
+                onOptionSubmit={(val) => {
+                  setSelectedScanner(val);
+                  window.electronAPI.setStoreValue('scanner', val);
+                  combobox.closeDropdown();
+                }}
+              >
+                <Combobox.Target withKeyboardNavigation withExpandedAttribute targetType="input">
+                  <InputBase
+                    component="button"
+                    type="button"
+                    pointer
+                    rightSection={<Combobox.Chevron />}
+                    onClick={() => combobox.toggleDropdown()}
+                    rightSectionPointerEvents="none"
+                    aria-label={t('view_document.combobox_input_placeholder')}
+                  >
+                    {selectedScanner || (
+                      <Input.Placeholder>{t('view_document.combobox_input_placeholder')}</Input.Placeholder>
+                    )}
+                  </InputBase>
+                </Combobox.Target>
+                <Combobox.Dropdown>
+                  <Combobox.Options>{options}</Combobox.Options>
+                </Combobox.Dropdown>
+              </Combobox>
+            </div>
+          </div>
+        )}
+        <Button
+          className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
+          size="md"
+          variant="transparent"
+          onClick={handleRefreshButtonClick}
+        >
+          <IconRefresh></IconRefresh>
+          <VisuallyHidden>{t('view_document.hidden_refresh_button')}</VisuallyHidden>
+        </Button>
       </div>
     );
   };
@@ -318,6 +328,8 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       const storedScanner = await window.electronAPI.getStoreValue('scanner');
       if (scannersList.includes(storedScanner)) {
         setSelectedScanner(storedScanner);
+      } else if (scannersList.length === 1) {
+        setSelectedScanner(scannersList[0]);
       }
     };
     checkStoredScannerAvailability();
@@ -325,9 +337,9 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
 
   useEffect(() => {
     if (window.process.arch === 'x64') {
-      setAppVersion('64');
+      setAnotherAppVersion('32');
     } else if (window.process.arch === 'ia32') {
-      setAppVersion('32');
+      setAnotherAppVersion('64');
     }
   }, []);
 

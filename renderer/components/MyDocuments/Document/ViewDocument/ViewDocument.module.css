@@ -117,7 +117,7 @@
   border-radius: 1%;
 }
 
-.scannerSelection {
+.detectedScanners {
   display: flex;
   align-items: center;
   margin-left: 28px;

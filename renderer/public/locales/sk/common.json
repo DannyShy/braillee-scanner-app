@@ -42,7 +42,12 @@
     "cancel_recognition_button": "Zrušiť rozpoznávanie",
     "recognition_runs": "Prebieha rozpoznávanie...",
     "add_page": "Pridať stranu",
-    "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami. Číslo tlačidla reprezentuje číslo strany, ktorá sa zobrazí po kliknutí."
+    "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami. Číslo tlačidla reprezentuje číslo strany, ktorá sa zobrazí po kliknutí.",
+    "scanner_not_available_text": " Skener nie je dostupný. Stlačte tlačidlo obnoviť alebo skúste použiť {{anotherAppVersion}}-bitovú verziu verziu tejto aplikácie.",
+    "one_scanner_text": "Načítaný skener: {{selectedScanner}}. Pre nájdenie ďalších zariadení stlač tlačidlo obnoviť.",
+    "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení.",
+    "combobox_input_placeholder": "Vybrať skener",
+    "hidden_scanner_description": "Vybrať skener {{scanner}}"
   },
   "document_title": {
     "hidden_return_button": "Vrátiť sa späť na moje dokumenty.",
