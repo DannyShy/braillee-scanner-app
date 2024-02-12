@@ -1,0 +1,87 @@
+import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { UnstyledButton, Menu, Group, VisuallyHidden, Button, Text } from '@mantine/core';
+import { IconChevronDown, IconRefresh } from '@tabler/icons-react';
+import classes from './ScannerPicker.module.css';
+import { useTranslation } from 'react-i18next';
+
+type Props = {
+  selectedScanner: string | null;
+  setSelectedScanner: Dispatch<SetStateAction<string>>;
+  fetchScannersList: () => void;
+  scannersList: string[];
+};
+
+const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, fetchScannersList, scannersList }) => {
+  const { t } = useTranslation();
+  const [opened, setOpened] = useState<boolean>(false);
+  const [clicked, setClicked] = useState<boolean>(false);
+  const [anotherAppVersion, setAnotherAppVersion] = useState<string>('not defined');
+
+  const items = scannersList.map((item) => (
+    <Menu.Item onClick={() => setSelectedScanner(item)} key={item}>
+      {item}
+      {/* <VisuallyHidden>{t('language_picker.hidden_language_description', { language: item })}</VisuallyHidden> */}
+    </Menu.Item>
+  ));
+
+  const handleRefreshButtonClick = () => {
+    fetchScannersList();
+    setClicked(true);
+    setTimeout(() => {
+      setClicked(false);
+    }, 100); // match transition duration
+  };
+
+  useEffect(() => {
+    if (window.process.arch === 'x64') {
+      setAnotherAppVersion('32');
+    } else if (window.process.arch === 'ia32') {
+      setAnotherAppVersion('64');
+    }
+  }, []);
+
+  return (
+    <div className={classes.detectedScanners}>
+      {scannersList.length === 0 ? (
+        <Text>{t('scanner_picker.scanner_not_available_text', { anotherAppVersion: anotherAppVersion })}</Text>
+      ) : scannersList.length === 1 ? (
+        <Text>{t('scanner_picker.one_scanner_text', { selectedScanner: selectedScanner })}</Text>
+      ) : (
+        <div className={classes.scannerSelection}>
+          <div className={classes.combobox}>
+            <Menu
+              onOpen={() => setOpened(true)}
+              onClose={() => setOpened(false)}
+              radius="md"
+              width="target"
+              withinPortal
+            >
+              <Menu.Target>
+                <UnstyledButton className={classes.control} data-expanded={opened || undefined}>
+                  <Group gap="xs">
+                    <VisuallyHidden>{t('scanner_picker.hidden_menu_description')}</VisuallyHidden>
+
+                    <span className={classes.label}>{selectedScanner}</span>
+                  </Group>
+                  <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
+                </UnstyledButton>
+              </Menu.Target>
+              <Menu.Dropdown>{items}</Menu.Dropdown>
+            </Menu>
+          </div>
+        </div>
+      )}
+      <Button
+        className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
+        size="md"
+        variant="transparent"
+        onClick={handleRefreshButtonClick}
+      >
+        <IconRefresh></IconRefresh>
+        <VisuallyHidden>{t('scanner_picker.hidden_refresh_button')}</VisuallyHidden>
+      </Button>
+    </div>
+  );
+};
+
+export default ScannerPicker;

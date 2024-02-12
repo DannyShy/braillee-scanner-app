@@ -43,20 +43,23 @@
     "recognition_runs": "Prebieha rozpoznávanie...",
     "add_page": "Pridať stranu",
     "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami. Číslo tlačidla reprezentuje číslo strany, ktorá sa zobrazí po kliknutí.",
-    "scanner_not_available_text": " Skener nie je dostupný. Stlačte tlačidlo obnoviť alebo skúste použiť {{anotherAppVersion}}-bitovú verziu verziu tejto aplikácie.",
-    "one_scanner_text": "Načítaný skener: {{selectedScanner}}. Pre nájdenie ďalších zariadení stlač tlačidlo obnoviť.",
-    "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení.",
-    "combobox_input_placeholder": "Vybrať skener",
     "hidden_scanner_description": "Vybrať skener {{scanner}}"
   },
   "document_title": {
     "hidden_return_button": "Vrátiť sa späť na moje dokumenty.",
     "hidden_confirm_button": "Potvrdiť zmenený názov dokumentu",
+    "hidden_cancel_button": "Cancel edited document title value and return to original document title",
     "hidden_edit_title_button": "Zmeniť názov dokumentu",
     "hidden_export_button": "Exportovať dokument"
   },
   "language_picker": {
     "hidden_language_description": "{{language}} jazyk",
     "hidden_menu_description": "Menu na zmenu jazyka v aplikácii"
+  },
+  "scanner_picker": {
+    "hidden_menu_description": "Menu obsahujúce nájdené skenery. Menu je určené na výber skenera na skenovanie.",
+    "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení.",
+    "scanner_not_available_text": "Skener nie je dostupný. Stlačte tlačidlo obnoviť alebo skúste použiť {{anotherAppVersion}}-bitovú verziu verziu tejto aplikácie.",
+    "one_scanner_text": "Načítaný skener: {{selectedScanner}}. Pre nájdenie ďalších zariadení stlačte tlačidlo obnoviť."
   }
 }

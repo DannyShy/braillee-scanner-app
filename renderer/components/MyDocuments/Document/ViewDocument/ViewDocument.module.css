@@ -117,21 +117,6 @@
   border-radius: 1%;
 }
 
-.detectedScanners {
-  display: flex;
-  align-items: center;
-  margin-left: 28px;
-}
-
-.refreshButton {
-  padding: 2px;
-}
-.refreshButtonClicked {
-  padding: 2px;
-  transform: rotate(-360deg);
-  transition: transform 0.3s ease-out;
-}
-
 .docPreviewEmpty p,
 .docPreviewEmpty button {
   margin: 7px;

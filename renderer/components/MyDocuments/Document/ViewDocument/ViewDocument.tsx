@@ -12,18 +12,14 @@ import {
   Tooltip,
   FileButton,
   VisuallyHidden,
-  useCombobox,
-  Combobox,
-  InputBase,
-  Input,
 } from '@mantine/core';
 import { IconPlus, IconX } from '@tabler/icons-react';
 import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
-import { IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import ScannerPicker from './ScannerPicker/ScannerPicker';
 
 type Props = {
   activeDocument: Document;
@@ -35,30 +31,11 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
-  const [scannersList, setScannersList] = useState<string[]>([]);
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
-  const [anotherAppVersion, setAnotherAppVersion] = useState<string>('not defined');
-  const [clicked, setClicked] = useState<boolean>(false);
-
-  const combobox = useCombobox({
-    onDropdownClose: () => combobox.resetSelectedOption(),
-  });
-
-  const options = scannersList.map((item) => (
-    <Combobox.Option value={item} key={item}>
-      {item}
-      {/* <VisuallyHidden>{t('view_document.hidden_scanner_description', { scanner: item })}</VisuallyHidden> */}
-    </Combobox.Option>
-  ));
+  const [scannersList, setScannersList] = useState<string[]>([]);
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
     window.electronAPI.updateDocument(action, activeDocument.documentID, data, activePage);
-  };
-
-  //adds page and reads updated document
-  const handleAddPage = async () => {
-    window.electronAPI.log('debug', 'Add new page button clicked by user.');
-    onUpdate('addPage');
   };
 
   const fetchScannersList = async () => {
@@ -66,6 +43,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     await window.electronAPI.addScannersListListener((scannersList) => {
       setScannersList(scannersList);
     });
+  };
+
+  //adds page and reads updated document
+  const handleAddPage = async () => {
+    window.electronAPI.log('debug', 'Add new page button clicked by user.');
+    onUpdate('addPage');
   };
 
   const handleScan = async () => {
@@ -132,14 +115,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     setActivePage(index);
   };
 
-  const handleRefreshButtonClick = () => {
-    fetchScannersList();
-    setClicked(true);
-    setTimeout(() => {
-      setClicked(false);
-    }, 100); // match transition duration
-  };
-
   const renderMiniPages = () => {
     return activeDocument.pages.map((page, index) => (
       <Paper
@@ -172,7 +147,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
-        {renderDetectedScanners()}
+        <ScannerPicker
+          selectedScanner={selectedScanner}
+          setSelectedScanner={setSelectedScanner}
+          fetchScannersList={fetchScannersList}
+          scannersList={scannersList}
+        />
         <Button onClick={handleScan} size="xl">
           {t('view_document.scan_button')}
         </Button>
@@ -209,60 +189,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     );
   };
 
-  const renderDetectedScanners = () => {
-    return (
-      <div className={classes.detectedScanners}>
-        {scannersList.length === 0 ? (
-          <Text>{t('view_document.scanner_not_available_text', { anotherAppVersion: anotherAppVersion })}</Text>
-        ) : scannersList.length === 1 ? (
-          <Text>{t('view_document.one_scanner_text', { selectedScanner: selectedScanner })}</Text>
-        ) : (
-          <div className={classes.scannerSelection}>
-            <div className={classes.combobox}>
-              <Combobox
-                store={combobox}
-                withinPortal={false}
-                onOptionSubmit={(val) => {
-                  setSelectedScanner(val);
-                  window.electronAPI.setStoreValue('scanner', val);
-                  combobox.closeDropdown();
-                }}
-              >
-                <Combobox.Target withKeyboardNavigation withExpandedAttribute targetType="input">
-                  <InputBase
-                    component="button"
-                    type="button"
-                    pointer
-                    rightSection={<Combobox.Chevron />}
-                    onClick={() => combobox.toggleDropdown()}
-                    rightSectionPointerEvents="none"
-                    aria-label={t('view_document.combobox_input_placeholder')}
-                  >
-                    {selectedScanner || (
-                      <Input.Placeholder>{t('view_document.combobox_input_placeholder')}</Input.Placeholder>
-                    )}
-                  </InputBase>
-                </Combobox.Target>
-                <Combobox.Dropdown>
-                  <Combobox.Options>{options}</Combobox.Options>
-                </Combobox.Dropdown>
-              </Combobox>
-            </div>
-          </div>
-        )}
-        <Button
-          className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
-          size="md"
-          variant="transparent"
-          onClick={handleRefreshButtonClick}
-        >
-          <IconRefresh></IconRefresh>
-          <VisuallyHidden>{t('view_document.hidden_refresh_button')}</VisuallyHidden>
-        </Button>
-      </div>
-    );
-  };
-
   const renderRecognizedBraille = () => {
     return activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress' ? (
       <div className={classes.brailleTextContainer}>
@@ -286,6 +212,33 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     ) : null;
   };
 
+  // get list of available scanners
+  useEffect(() => {
+    fetchScannersList();
+    return () => {
+      window.electronAPI.removeScannersListListener();
+    };
+  }, []);
+  //checks if the stored scanner is available
+  useEffect(() => {
+    const checkStoredScannerAvailability = async () => {
+      const storedScanner = await window.electronAPI.getStoreValue('scanner');
+      if (scannersList.includes(storedScanner)) {
+        setSelectedScanner(storedScanner);
+      } else if (scannersList.length > 0) {
+        setSelectedScanner(scannersList[0]);
+      }
+    };
+    checkStoredScannerAvailability();
+  }, [scannersList]);
+
+  // stores value of selectedScanner
+  useEffect(() => {
+    if (selectedScanner) {
+      window.electronAPI.setStoreValue('scanner', selectedScanner);
+    }
+  }, [selectedScanner]);
+
   // makes recognition (only if needed) and reads braille file
   useEffect(() => {
     if (
@@ -297,7 +250,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     }
   }, [activeDocument?.pages[activePage]?.file, activePage, activeDocument.pages[activePage].brailleStatus]);
 
-  // updates the value of file in doccument after update of file
+  // updates the value of file in document after update of file
   useEffect(() => {
     if (uploadedFile) {
       handleUploadFile();
@@ -314,34 +267,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       `Created Page: ${activeDocument.pages[newestPageIndex].pageID} and set it to be active.`,
     );
   }, [newestPageIndex]);
-
-  // get list of available scanners
-  useEffect(() => {
-    fetchScannersList();
-    return () => {
-      window.electronAPI.removeScannersListListener();
-    };
-  }, []);
-  //checks if the stored scanner is available
-  useEffect(() => {
-    const checkStoredScannerAvailability = async () => {
-      const storedScanner = await window.electronAPI.getStoreValue('scanner');
-      if (scannersList.includes(storedScanner)) {
-        setSelectedScanner(storedScanner);
-      } else if (scannersList.length === 1) {
-        setSelectedScanner(scannersList[0]);
-      }
-    };
-    checkStoredScannerAvailability();
-  }, [scannersList]);
-
-  useEffect(() => {
-    if (window.process.arch === 'x64') {
-      setAnotherAppVersion('32');
-    } else if (window.process.arch === 'ia32') {
-      setAnotherAppVersion('64');
-    }
-  }, []);
 
   return (
     <MainContent

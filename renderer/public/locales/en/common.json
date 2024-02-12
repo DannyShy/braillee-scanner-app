@@ -43,10 +43,6 @@
     "recognition_runs": "Recognition in progress...",
     "add_page": "Add page",
     "hidden_pagination_description": "Below is pagination component used to navigate through pages. Button number represents page number, which will be shown after click.",
-    "scanner_not_available_text": " Scanner is not available. Press refresh button or try to use {{anotherAppVersion}}-bit version of this app instead of current one.",
-    "one_scanner_text": "Loaded scanner: {{selectedScanner}}. To find another devices press refresh button.",
-    "hidden_refresh_button": "Refresh scanners list",
-    "combobox_input_placeholder": "Select scanner",
     "hidden_scanner_description": "Select scanner {{scanner}}"
   },
   "document_title": {
@@ -59,5 +55,11 @@
   "language_picker": {
     "hidden_language_description": "{{language}} language",
     "hidden_menu_description": "Menu for changing language in app"
+  },
+  "scanner_picker": {
+    "hidden_menu_description": "Menu for selecting one of detected scanners to scan document with.",
+    "hidden_refresh_button": "Refresh scanners list",
+    "scanner_not_available_text": "Scanner is not available. Press refresh button or try to use {{anotherAppVersion}}-bit version of this app instead of current one.",
+    "one_scanner_text": "Loaded scanner: {{selectedScanner}}. To find another devices press refresh button."
   }
 }
