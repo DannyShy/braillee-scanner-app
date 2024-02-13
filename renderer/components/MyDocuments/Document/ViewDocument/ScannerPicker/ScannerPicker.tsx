@@ -19,8 +19,8 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
 
   const items = scannersList.map((item) => (
     <Menu.Item onClick={() => setSelectedScanner(item)} key={item}>
+      <VisuallyHidden>{t('scanner_picker.scanner')}</VisuallyHidden>
       {item}
-      {/* <VisuallyHidden>{t('language_picker.hidden_language_description', { language: item })}</VisuallyHidden> */}
     </Menu.Item>
   ));
 
@@ -43,12 +43,23 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
   return (
     <div className={classes.detectedScanners}>
       {scannersList.length === 0 ? (
-        <Text>{t('scanner_picker.scanner_not_available_text', { anotherAppVersion: anotherAppVersion })}</Text>
+        <Text>
+          {t('scanner_picker.scanner_text_zero', {
+            anotherAppVersion: anotherAppVersion,
+          })}
+        </Text>
       ) : scannersList.length === 1 ? (
-        <Text>{t('scanner_picker.one_scanner_text', { selectedScanner: selectedScanner })}</Text>
+        <Text>
+          {t('scanner_picker.scanner_text_one', {
+            selectedScanner: selectedScanner,
+          })}
+        </Text>
       ) : (
         <div className={classes.scannerSelection}>
           <div className={classes.combobox}>
+            <VisuallyHidden>
+              {t('scanner_picker.scanner_text_multiple', { scannersCount: scannersList.length })}
+            </VisuallyHidden>
             <Menu
               onOpen={() => setOpened(true)}
               onClose={() => setOpened(false)}
@@ -59,8 +70,6 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
               <Menu.Target>
                 <UnstyledButton className={classes.control} data-expanded={opened || undefined}>
                   <Group gap="xs">
-                    <VisuallyHidden>{t('scanner_picker.hidden_menu_description')}</VisuallyHidden>
-
                     <span className={classes.label}>{selectedScanner}</span>
                   </Group>
                   <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
