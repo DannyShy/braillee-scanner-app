@@ -202,7 +202,7 @@ const Welcome: React.FC = () => {
                   );
                 }}
               >
-                {t('welcome.yes_button')}
+                {t('yes_button')}
               </Button>
               <Button
                 onClick={() => {
@@ -210,7 +210,7 @@ const Welcome: React.FC = () => {
                   window.electronAPI.log('debug', `Button for closing modal clicked.`);
                 }}
               >
-                {t('welcome.no_button')}
+                {t('no_button')}
               </Button>
             </Flex>
           </SimpleGrid>

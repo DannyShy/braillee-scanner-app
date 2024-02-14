@@ -1,7 +1,7 @@
 import classes from './DocumentCards.module.css';
 import { TextInput } from '@mantine/core';
 import React, { useMemo, useState } from 'react';
-import DocumentCardComponent from './DocumentCard/DocumentCard';
+import DocumentCard from './DocumentCard/DocumentCard';
 import { Document } from '../../types';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
@@ -30,7 +30,7 @@ const DocumentCards: React.FC<Props> = ({ documents, onOpen }) => {
 
   const renderDocumentCards = () => {
     return filteredDocuments.map((document, index) => (
-      <DocumentCardComponent key={document.documentID} onOpen={onOpen} document={document} />
+      <DocumentCard key={document.documentID} onOpen={onOpen} document={document} />
     ));
   };
 

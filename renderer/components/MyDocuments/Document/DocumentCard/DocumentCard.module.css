@@ -4,6 +4,7 @@
   justify-content: space-between;
   max-width: 350px;
   max-height: 200px;
+  position: relative;
 }
 
 .group {
@@ -27,4 +28,11 @@
   justify-content: center;
   margin-top: 10px;
   margin-bottom: 0px;
+}
+
+.deleteDocumentButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 15px 15px 0px 0px;
 }

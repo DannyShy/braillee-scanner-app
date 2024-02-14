@@ -13,9 +13,7 @@
     "cancel_button": "Cancel",
     "finished_text": "Additional data has been successfully downloaded and application is ready to use.",
     "proceed_button": "Continue",
-    "modal_text": "Are you sure you want to cancel the data download?",
-    "yes_button": "Yes",
-    "no_button": "No"
+    "modal_text": "Are you sure you want to cancel the data download?"
   },
   "logo": "Logo of DotSight application. Picture of eye surrounded by dots.",
   "my_documents": "My Documents",
@@ -23,11 +21,15 @@
   "create_document": "Create document",
   "no_documents_text": "You have no documents. Use the button bellow to create your first document.",
   "search_bar": "Search by name...",
+  "yes_button": "Yes",
+  "no_button": "No",
   "document_card": {
     "hidden_card_description": "Document card with document title: {{title}}, which contains {{pageCount}} pages.",
     "pages": "Pages: {{pageCount}}",
     "open": "Open",
-    "hidden_document": "Document"
+    "hidden_document": "Document",
+    "modal_text": "Are you sure you want to delete this document?",
+    "hidden_delete_button": "Delete document"
   },
   "view_document": {
     "mini_page_number": "Miniature of page {{pageIndex}}",

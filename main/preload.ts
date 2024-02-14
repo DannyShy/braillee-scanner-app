@@ -141,6 +141,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getScannersList: () => ipcRenderer.invoke('get-scanners-list'),
   setStoreValue: (key: string, value: string) => ipcRenderer.send('setStoreValue', key, value),
   getStoreValue: (key: string) => ipcRenderer.invoke('getStoreValue', key),
+  deleteDocument: (documentID: number) => ipcRenderer.send('delete-document', documentID),
 });
 
 contextBridge.exposeInMainWorld('process', {

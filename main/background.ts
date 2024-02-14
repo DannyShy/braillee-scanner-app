@@ -14,6 +14,7 @@ import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { scannerApp, performDetectScanners } from './utils/perform-detect-scanners';
 import { store } from './utils/store';
+import { performDeleteDocument } from './utils/perform-delete-document';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -45,6 +46,7 @@ if (IS_PROD) {
   ipcMain.on('setStoreValue', (event, key, value) => {
     store.set(key, value);
   });
+  ipcMain.on('delete-document', (event, documentID) => performDeleteDocument(documentID));
   ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
