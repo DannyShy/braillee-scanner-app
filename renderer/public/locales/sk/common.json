@@ -29,7 +29,11 @@
     "open": "Otvoriť",
     "hidden_document": "Dokument",
     "modal_text": "Ste si istý, že chcete vymazať tento dokument?",
-    "hidden_delete_button": "Vymazať dokument"
+    "hidden_delete_button": "Vymazať dokument",
+    "hidden_document_deletion": "Dokument {{document}}} bol úspešne vymazaný.",
+    "notification_title": "Dokument nebol vymazaný!",
+    "notification_text": "Vyskytol sa problem so zmazaním súboru/priečinka s cestou: {{path}}. Prosím skúste znovu, reštartujte aplikáciu alebo kontaktujte podporu.",
+    "close_button": "Zatvoriť notifikáciu"
   },
   "view_document": {
     "mini_page_number": "Miniatúrne zobrazenie strany číslo {{pageIndex}}",

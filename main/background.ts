@@ -46,7 +46,7 @@ if (IS_PROD) {
   ipcMain.on('setStoreValue', (event, key, value) => {
     store.set(key, value);
   });
-  ipcMain.on('delete-document', (event, documentID) => performDeleteDocument(documentID));
+  ipcMain.on('delete-document', (event, documentID) => performDeleteDocument(documentID, mainWindow));
   ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
@@ -76,8 +76,8 @@ if (IS_PROD) {
   ipcMain.handle('export-document', (event, activeDocument) => {
     performExportDocument(activeDocument);
   });
-  ipcMain.on('log-from-renderer', (event, status, text) => {
-    performLogFromRenderer(status, text);
+  ipcMain.on('log-from-renderer', (event, level, message) => {
+    performLogFromRenderer(level, message);
   });
   ipcMain.handle('close-app', () => {
     app.quit();

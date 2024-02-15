@@ -20,6 +20,23 @@ const removeScannersListListener = () => {
   scannersListListener = null;
 };
 
+let deleteDocumentStatusListener;
+
+const addDeleteDocumentStatusListener = (listener) => {
+  deleteDocumentStatusListener = (event, deletionSuccessful, errorMessage) => {
+    listener(deletionSuccessful, errorMessage);
+  };
+  ipcRenderer.on('delete-document-status', deleteDocumentStatusListener);
+};
+
+const removeDeleteDocumentStatusListener = () => {
+  if (!deleteDocumentStatusListener) {
+    return;
+  }
+  ipcRenderer.removeListener('delete-document-status', deleteDocumentStatusListener);
+  deleteDocumentStatusListener = null;
+};
+
 let initialSetupProgressListener: any;
 
 const addInitialSetupProgressListener = (listener) => {
@@ -142,6 +159,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setStoreValue: (key: string, value: string) => ipcRenderer.send('setStoreValue', key, value),
   getStoreValue: (key: string) => ipcRenderer.invoke('getStoreValue', key),
   deleteDocument: (documentID: number) => ipcRenderer.send('delete-document', documentID),
+  addDeleteDocumentStatusListener: addDeleteDocumentStatusListener,
+  removeDeleteDocumentStatusListener: removeDeleteDocumentStatusListener,
 });
 
 contextBridge.exposeInMainWorld('process', {

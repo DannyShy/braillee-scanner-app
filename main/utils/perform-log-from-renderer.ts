@@ -18,7 +18,7 @@ if (!fs.existsSync(LOGS_PATH)) {
 }
 
 const rendererLogger = winston.createLogger({
-  level: 'info',
+  level: 'debug',
   format: combine(format.timestamp(), myFormat),
   transports: [
     new winston.transports.File({

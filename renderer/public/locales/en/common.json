@@ -29,7 +29,11 @@
     "open": "Open",
     "hidden_document": "Document",
     "modal_text": "Are you sure you want to delete this document?",
-    "hidden_delete_button": "Delete document"
+    "hidden_delete_button": "Delete document",
+    "hidden_document_deletion": "Document {{document}}} was successfully deleted.",
+    "notification_title": "Document was not deleted!",
+    "notification_text": "There was problem with deletion of file/folder with path: {{path}}. Please try again, restart app or contact support.",
+    "close_button": "Close notification"
   },
   "view_document": {
     "mini_page_number": "Miniature of page {{pageIndex}}",

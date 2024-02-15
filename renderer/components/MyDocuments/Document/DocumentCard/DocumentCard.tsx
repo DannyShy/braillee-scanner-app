@@ -1,6 +1,18 @@
 import classes from '../DocumentCard/DocumentCard.module.css';
-import { Text, Button, Title, Card, VisuallyHidden, Tooltip, Modal, SimpleGrid, Center, Flex } from '@mantine/core';
-import React from 'react';
+import {
+  Text,
+  Button,
+  Title,
+  Card,
+  VisuallyHidden,
+  Tooltip,
+  Modal,
+  SimpleGrid,
+  Center,
+  Flex,
+  Notification,
+} from '@mantine/core';
+import React, { useEffect, useState } from 'react';
 import { Document } from '../../../types';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +28,8 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
   useLogMount('DocumentCard');
   const { t } = useTranslation();
   const [opened, { open, close }] = useDisclosure(false);
+  const [deletionSuccessful, setDeletionSuccessful] = useState<null | boolean>(null);
+  const [errorMessage, setErrorMessage] = useState<null | string>(null);
 
   //opens the card
   const handleClickDocumentCard = () => {
@@ -23,9 +37,24 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
     onOpen(document);
   };
 
-  const handleDeleteDocument = (documentID) => {
-    window.electronAPI.deleteDocument(documentID);
+  const handleDeleteDocument = (document) => {
+    window.electronAPI.log('debug', `Document: ${document.documentID} deleted by user.`);
+    window.electronAPI.deleteDocument(document.documentID);
+    // Fetch the updated list of documents
+    window.electronAPI.readDocuments();
   };
+
+  const xIcon = <IconX style={{ width: 20, height: 20 }} />;
+
+  useEffect(() => {
+    window.electronAPI.addDeleteDocumentStatusListener((deletionStatus, error) => {
+      setDeletionSuccessful(deletionStatus);
+      setErrorMessage(error);
+    });
+    return () => {
+      window.electronAPI.removeDeleteDocumentStatusListener();
+    };
+  }, []);
 
   return (
     <Card className={classes.documentCard} withBorder radius="sm" padding="lg" shadow="sm">
@@ -65,7 +94,21 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
           <VisuallyHidden>{t('document_card.hidden_delete_button')}</VisuallyHidden>
         </Button>
       </Tooltip>
-      <Modal opened={opened} onClose={close}>
+      {!deletionSuccessful && errorMessage && (
+        <Notification
+          className={classes.notification}
+          icon={xIcon}
+          color="red"
+          title={t('document_card.notification_title')}
+          onClose={() => {
+            setErrorMessage(null);
+          }}
+          closeButtonProps={{ 'aria-label': t('document_card.close_button') }}
+        >
+          {t('document_card.notification_text', { path: errorMessage })}
+        </Notification>
+      )}
+      <Modal opened={opened} onClose={close} centered>
         <SimpleGrid>
           <Center>
             <Text className={classes.modalText} tabIndex={0}>
@@ -75,13 +118,21 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
           <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
             <Button
               onClick={() => {
-                handleDeleteDocument(document.documentID);
+                handleDeleteDocument(document);
                 close();
                 window.electronAPI.log('debug', `Button for confirming deletion of document clicked in modal.`);
+                setDeletionSuccessful(true);
+                setTimeout(() => setDeletionSuccessful(false), 2000);
               }}
             >
               {t('yes_button')}
             </Button>
+            <div
+              aria-live="polite"
+              style={{ position: 'absolute', height: 0, overflow: 'hidden', clip: 'rect(0, 0, 0, 0)' }}
+            >
+              {deletionSuccessful && <p>{t('document_card.hidden_document_deletion', { document: document.title })}</p>}
+            </div>
             <Button
               onClick={() => {
                 close();
