@@ -3,6 +3,23 @@ import { Document } from './utils/types';
 
 window.global = window;
 
+let scannersListListener;
+
+const addScannersListListener = (listener) => {
+  scannersListListener = (event, scannersList) => {
+    listener(scannersList);
+  };
+  ipcRenderer.on('scanners-list', scannersListListener);
+};
+
+const removeScannersListListener = () => {
+  if (!scannersListListener) {
+    return;
+  }
+  ipcRenderer.removeListener('scanners-list', scannersListListener);
+  scannersListListener = null;
+};
+
 let initialSetupProgressListener: any;
 
 const addInitialSetupProgressListener = (listener) => {
@@ -88,7 +105,8 @@ const removeBrailleTextListener = () => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  scanFile: (documentID: number, pageID: string) => ipcRenderer.invoke('scan-file', documentID, pageID),
+  scanFile: (documentID: number, pageID: string, selectedScanner: string) =>
+    ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner),
   copyImage: (imagePath: string, documentID: number) => ipcRenderer.send('copy-image', imagePath, documentID),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
@@ -118,6 +136,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   log: (level: string, message: string) => {
     ipcRenderer.send('log-from-renderer', level, message);
   },
+  addScannersListListener: addScannersListListener,
+  removeScannersListListener: removeScannersListListener,
+  getScannersList: () => ipcRenderer.invoke('get-scanners-list'),
   setStoreValue: (key: string, value: string) => ipcRenderer.send('setStoreValue', key, value),
   getStoreValue: (key: string) => ipcRenderer.invoke('getStoreValue', key),
+});
+
+contextBridge.exposeInMainWorld('process', {
+  arch: process.arch,
 });

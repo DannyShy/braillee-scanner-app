@@ -42,7 +42,8 @@
     "cancel_recognition_button": "Cancel recognition",
     "recognition_runs": "Recognition in progress...",
     "add_page": "Add page",
-    "hidden_pagination_description": "Below is pagination component used to navigate through pages. Button number represents page number, which will be shown after click."
+    "hidden_pagination_description": "Below is pagination component used to navigate through pages. Button number represents page number, which will be shown after click.",
+    "hidden_scanner_description": "Select scanner {{scanner}}"
   },
   "document_title": {
     "hidden_return_button": "Return to MyDocuments",
@@ -54,5 +55,12 @@
   "language_picker": {
     "hidden_language_description": "{{language}} language",
     "hidden_menu_description": "Menu for changing language in app"
+  },
+  "scanner_picker": {
+    "scanner": "scanner:",
+    "scanner_text_zero": "Scanner is not available. Press refresh button or try to use {{anotherAppVersion}}-bit version of this app instead of current one.",
+    "scanner_text_one": "Loaded scanner: {{selectedScanner}}. To find another devices press refresh button.",
+    "scanner_text_multiple": "Found {{scannersCount}} scanners. Below is menu for selecting scanner to work with.",
+    "hidden_refresh_button": "Refresh scanners list"
   }
 }

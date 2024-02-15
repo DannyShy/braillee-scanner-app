@@ -1,5 +1,5 @@
 import classes from './Home.module.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Image, Text } from '@mantine/core';
 import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
 import MyDocuments from './MyDocuments/MyDocuments';

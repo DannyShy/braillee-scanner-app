@@ -12,6 +12,7 @@ import { performReadDocuments, performUpdateDocument } from './utils/perform-man
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
+import { scannerApp, performDetectScanners } from './utils/perform-detect-scanners';
 import { store } from './utils/store';
 
 if (IS_PROD) {
@@ -38,13 +39,13 @@ if (IS_PROD) {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
   }
-
   ipcMain.handle('getStoreValue', (event, key) => {
     return store.get(key);
   });
   ipcMain.on('setStoreValue', (event, key, value) => {
     store.set(key, value);
   });
+  ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
@@ -55,8 +56,8 @@ if (IS_PROD) {
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
-  ipcMain.handle('scan-file', async (event, documentID, pageID) => {
-    performScan(documentID, pageID);
+  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner) => {
+    performScan(documentID, pageID, scannerApp, selectedScanner);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);

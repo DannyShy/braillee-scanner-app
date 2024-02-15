@@ -19,6 +19,7 @@ import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import ScannerPicker from './ScannerPicker/ScannerPicker';
 
 type Props = {
   activeDocument: Document;
@@ -30,9 +31,18 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const { t } = useTranslation();
   const [activePage, setActivePage] = useState<number>(0);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
+  const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
+  const [scannersList, setScannersList] = useState<string[]>([]);
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
     window.electronAPI.updateDocument(action, activeDocument.documentID, data, activePage);
+  };
+
+  const fetchScannersList = async () => {
+    window.electronAPI.getScannersList();
+    await window.electronAPI.addScannersListListener((scannersList) => {
+      setScannersList(scannersList);
+    });
   };
 
   //adds page and reads updated document
@@ -48,6 +58,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       const scannedOutput = await window.electronAPI.scanFile(
         activeDocument.documentID,
         activeDocument.pages[activePage].pageID,
+        selectedScanner,
       );
       const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
@@ -136,6 +147,12 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </Container>
     ) : activeDocument.pages[activePage].file === null ? (
       <Container className={classes.docPreviewEmpty}>
+        <ScannerPicker
+          selectedScanner={selectedScanner}
+          setSelectedScanner={setSelectedScanner}
+          fetchScannersList={fetchScannersList}
+          scannersList={scannersList}
+        />
         <Button onClick={handleScan} size="xl">
           {t('view_document.scan_button')}
         </Button>
@@ -195,6 +212,33 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     ) : null;
   };
 
+  // get list of available scanners
+  useEffect(() => {
+    fetchScannersList();
+    return () => {
+      window.electronAPI.removeScannersListListener();
+    };
+  }, []);
+  //checks if the stored scanner is available
+  useEffect(() => {
+    const checkStoredScannerAvailability = async () => {
+      const storedScanner = await window.electronAPI.getStoreValue('scanner');
+      if (scannersList.includes(storedScanner)) {
+        setSelectedScanner(storedScanner);
+      } else if (scannersList.length > 0) {
+        setSelectedScanner(scannersList[0]);
+      }
+    };
+    checkStoredScannerAvailability();
+  }, [scannersList]);
+
+  // stores value of selectedScanner
+  useEffect(() => {
+    if (selectedScanner) {
+      window.electronAPI.setStoreValue('scanner', selectedScanner);
+    }
+  }, [selectedScanner]);
+
   // makes recognition (only if needed) and reads braille file
   useEffect(() => {
     if (
@@ -206,7 +250,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     }
   }, [activeDocument?.pages[activePage]?.file, activePage, activeDocument.pages[activePage].brailleStatus]);
 
-  // updates the value of file in doccument after update of file
+  // updates the value of file in document after update of file
   useEffect(() => {
     if (uploadedFile) {
       handleUploadFile();
