@@ -19,6 +19,20 @@ const fixFileFormat = (inputFileAbsolutePath: string): string => {
 };
 
 const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
+  process.stdout.on('data', (data) => {
+    logger.info(`stdout from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
+  });
+  process.stderr.on('data', (data) => {
+    logger.error(`stderr from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
+  });
+  process.on('exit', (code, signal) => {
+    if (signal) {
+      logger.error(`Child process was killed by signal: ${signal}`);
+    }
+  });
+  process.on('uncaughtException', (error) => {
+    logger.error(`Uncaught exception in child process: ${error.message}`);
+  });
   return new Promise<number>((resolve, reject) => {
     process.on('close', (code) => {
       if (code !== 0) {

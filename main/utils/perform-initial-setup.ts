@@ -20,10 +20,23 @@ const controller = new AbortController();
 let pipUpgrade;
 let installRequirements;
 
-const waitUntilFinished = async (process) => {
+const waitUntilFinished = async (process, processName) => {
+  process.stdout.on('data', (data) => {
+    logger.info(`${processName} stdout: ${data}`);
+  });
+  process.stderr.on('data', (data) => {
+    logger.error(`${processName} stderr: ${data}`);
+  });
   return new Promise((resolve, reject) => {
     process.on('close', (code) => {
+      if (code !== 0) {
+        logger.error(`${processName} exited with non-zero status code: ${code}`);
+      }
       resolve(code);
+    });
+    process.on('error', (error) => {
+      logger.error(`Error occurred while waiting for ${processName} to finish: ${error.message}`);
+      reject(error);
     });
   });
 };
@@ -32,11 +45,11 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   logger.debug(`Initial Setup util opened.`);
   mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
-  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `--upgrade pip`], {
+  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
     detached: false,
   });
   logger.info(`Pip installations started.`);
-  await waitUntilFinished(pipUpgrade);
+  await waitUntilFinished(pipUpgrade, 'pipUpgrade');
   pipUpgrade = null;
   logger.info(`Pip installations finished.`);
 
@@ -45,7 +58,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
-  await waitUntilFinished(installRequirements);
+  await waitUntilFinished(installRequirements, 'installRequirements');
   installRequirements = null;
   logger.info(`Requirements installations finished.`);
 
