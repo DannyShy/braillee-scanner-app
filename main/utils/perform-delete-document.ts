@@ -38,6 +38,7 @@ const deleteDirectory = (directory: string, mainWindow: BrowserWindow) => {
   return errorOccurred;
 };
 
+// Function to delete a document by its ID
 const performDeleteDocument = (documentID: number, mainWindow: BrowserWindow) => {
   const directory = path.join(MY_DOCUMENTS_PATH, documentID.toString());
   const errorOccurred = deleteDirectory(directory, mainWindow);
