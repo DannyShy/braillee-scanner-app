@@ -37,3 +37,7 @@
   right: 0;
   padding: 15px 15px 0px 0px;
 }
+
+.modalText {
+  margin-bottom: var(--mantine-spacing-xs);
+}
