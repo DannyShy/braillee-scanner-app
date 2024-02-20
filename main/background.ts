@@ -15,6 +15,7 @@ import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { scannerApp, performDetectScanners } from './utils/perform-detect-scanners';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
+import { logger } from './logger';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -39,6 +40,12 @@ if (IS_PROD) {
   } else {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
+  }
+
+  if (process.arch === 'x64') {
+    logger.info('The app is running in a 64-bit environment.');
+  } else if (process.arch === 'ia32') {
+    logger.info('The app is running in a 32-bit environment.');
   }
   ipcMain.handle('getStoreValue', (event, key) => {
     return store.get(key);
