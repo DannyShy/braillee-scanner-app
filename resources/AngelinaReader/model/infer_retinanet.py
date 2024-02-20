@@ -12,7 +12,6 @@ import sys
 import local_config
 sys.path.append(local_config.global_3rd_party)
 from os.path import join
-from ovotools.params import AttrDict
 import numpy as np
 from collections import OrderedDict
 import torch
@@ -30,6 +29,10 @@ from model import create_model_retinanet
 import pytorch_retinanet
 import pytorch_retinanet.encoder
 import braille_utils.postprocess as postprocess
+current_dir = os.path.dirname(os.path.realpath(__file__))
+ovotools_dir = os.path.join(current_dir, 'ovotools')
+sys.path.append(ovotools_dir)
+from ovotools.params import AttrDict
 
 VALID_IMAGE_EXTENTIONS = tuple('.jpg,.jpe,.jpeg,.png,.gif,.svg,.bmp,.tiff,.tif,.jfif'.split(','))
 inference_width = 1024
