@@ -13,21 +13,34 @@
     "cancel_button": "Zrušiť",
     "finished_text": "Dodatočné dáta boli úspešne stiahnuté a aplikácia je pripravená na použitie.",
     "proceed_button": "Pokračovať",
-    "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?",
-    "yes_button": "Áno",
-    "no_button": "Nie"
+    "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?"
   },
   "logo": "Logo DotSight aplikácie. Zobrazenie oka obklopeného bodkami.",
   "my_documents": "Moje Dokumenty",
   "exit_button": "Ukončiť",
   "create_document": "Vytvoriť dokument",
   "no_documents_text": "Nemáte žiadne dokumenty. Na vytvorenie prvého dokumentu použite tlačidlo nižšie.",
-  "search_bar": "Hľadať podľa názvu...",
+  "yes_button": "Áno",
+  "no_button": "Nie",
   "document_card": {
     "hidden_card_description": "Karta dokumentu s názvom: {{title}}, ktorá obsahuje {{pageCount}} strán.",
     "pages": "Strany: {{pageCount}}",
     "open": "Otvoriť",
-    "hidden_document": "Dokument"
+    "hidden_document": "Dokument",
+    "modal_text": "Ste si istý, že chcete vymazať tento dokument?",
+    "hidden_delete_button": "Vymazať dokument",
+    "hidden_document_deletion": "Dokument {{document}}} bol úspešne vymazaný."
+  },
+  "document_cards": {
+    "search_bar": "Hľadať podľa názvu...",
+    "close_button": "Zatvoriť notifikáciu",
+    "deletion_error": {
+      "notification_title": "Dokument nebol vymazaný!",
+      "notification_text": "Vyskytol sa problem so zmazaním súboru/priečinka s cestou: {{path}}. Prosím skúste znovu, reštartujte aplikáciu alebo kontaktujte podporu."
+    },
+    "deletion_success": {
+      "notification_title": "Dokument bol úspešne vymazaný!"
+    }
   },
   "view_document": {
     "mini_page_number": "Miniatúrne zobrazenie strany číslo {{pageIndex}}",
