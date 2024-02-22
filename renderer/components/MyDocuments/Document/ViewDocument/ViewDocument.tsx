@@ -53,7 +53,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
 
   const handleScan = async () => {
     try {
-      window.electronAPI.log('debug', 'Scan button clicked by user.');
+      window.electronAPI.log('debug', `Scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
       await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
       const scannedOutput = await window.electronAPI.scanFile(
         activeDocument.documentID,

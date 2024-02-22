@@ -1,7 +1,7 @@
 import { app } from 'electron';
 import serve from 'electron-serve';
 import { createWindow } from './helpers';
-import { performScan } from './utils/perform-scan';
+import { performScan, performDetectScanners } from './utils/perform-manage-scanning';
 import { ipcMain } from 'electron';
 import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
@@ -12,9 +12,9 @@ import { performReadDocuments, performUpdateDocument } from './utils/perform-man
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
-import { scannerApp, performDetectScanners } from './utils/perform-detect-scanners';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
+import { logger } from './logger';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -40,6 +40,12 @@ if (IS_PROD) {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
   }
+
+  if (process.arch === 'x64') {
+    logger.info('The app is running in a 64-bit environment.');
+  } else if (process.arch === 'ia32') {
+    logger.info('The app is running in a 32-bit environment.');
+  }
   ipcMain.handle('getStoreValue', (event, key) => {
     return store.get(key);
   });
@@ -59,7 +65,7 @@ if (IS_PROD) {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner) => {
-    performScan(documentID, pageID, scannerApp, selectedScanner);
+    return performScan(documentID, pageID, selectedScanner);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);
