@@ -300,6 +300,23 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
               );
             }}
             withEdges
+            getControlProps={(control) => {
+              switch (control) {
+                case 'first':
+                  return { 'aria-label': 'First page' };
+                case 'previous':
+                  return { 'aria-label': 'Previous page' };
+                case 'next':
+                  return { 'aria-label': 'Next page' };
+                case 'last':
+                  return { 'aria-label': 'Last page' };
+                default:
+                  return {};
+              }
+            }}
+            getItemProps={(page) => ({
+              'aria-label': `Page ${page}`,
+            })}
           />
         </div>
         <div className={classes.scannedDocs}>
