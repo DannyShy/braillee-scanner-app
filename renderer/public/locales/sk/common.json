@@ -55,7 +55,7 @@
     "cancel_recognition_button": "Zrušiť rozpoznávanie",
     "recognition_runs": "Prebieha rozpoznávanie...",
     "add_page": "Pridať stranu",
-    "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami. Číslo tlačidla reprezentuje číslo strany, ktorá sa zobrazí po kliknutí.",
+    "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami.",
     "hidden_scanner_description": "Vybrať skener {{scanner}}"
   },
   "document_title": {

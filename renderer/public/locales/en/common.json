@@ -55,7 +55,7 @@
     "cancel_recognition_button": "Cancel recognition",
     "recognition_runs": "Recognition in progress...",
     "add_page": "Add page",
-    "hidden_pagination_description": "Below is pagination component used to navigate through pages. Button number represents page number, which will be shown after click.",
+    "hidden_pagination_description": "Below is pagination component used to navigate through pages.",
     "hidden_scanner_description": "Select scanner {{scanner}}"
   },
   "document_title": {
