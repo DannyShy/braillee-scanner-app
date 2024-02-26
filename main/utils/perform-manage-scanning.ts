@@ -1,62 +1,47 @@
-import twain, { TwainSDK } from 'node-twain';
-import { logger } from '../logger';
-import { MY_DOCUMENTS_PATH } from './constants';
-import path from 'path';
 import { BrowserWindow } from 'electron';
+import { MY_DOCUMENTS_PATH, NAPS_SCAN_CLI_PATH } from './constants';
+import { exec } from 'child_process';
+import path from 'path';
+import { logger } from '../logger';
 
-let scannerApp: TwainSDK;
-let sourceSetAndOpened: boolean;
-
-const createScannerApp = () => {
-  scannerApp = new twain.TwainSDK({
-    productName: 'DotSight',
-    productFamily: 'tools',
-    manufacturer: 'Hotovo',
-    version: {
-      country: twain.TWCY_SLOVAKIA,
-      language: twain.TWLG_SLOVAK,
-      majorNum: 0,
-      minorNum: 1,
-      info: '0.1.0',
-    },
+const performScan = (documentID: number, pageID: string, selectedScanner: string): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const trimmedScanner = selectedScanner.trim();
+    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID, '.jpg');
+    exec(
+      `${NAPS_SCAN_CLI_PATH} -o ${scannedImagePath} --noprofile --driver twain --device "${trimmedScanner}" --source feeder --dpi 300 --pagesize a4 -f`,
+      (error, stdout, stderr) => {
+        if (error) {
+          logger.error(`In performScan, error occurred: ${error.message}`);
+          reject(error);
+          return;
+        }
+        if (stderr) {
+          logger.error(`In performScan, stderr is: ${stderr}`);
+          reject(new Error(stderr));
+          return;
+        }
+        logger.info(`In performScan, stdout is: ${stdout}`);
+        resolve(scannedImagePath);
+      },
+    );
   });
-  logger.info(`Created Scanner identity in scannerApp.`);
 };
 
-const performDetectScanners = async (mainWindow: BrowserWindow) => {
-  logger.debug(`Detect scanners util opened.`);
-  if (!scannerApp) {
-    createScannerApp();
-  }
-  const sources: string[] = scannerApp.getDataSources();
-  mainWindow.webContents.send('scanners-list', sources);
-};
-
-const performScan = async (documentID: number, pageID: string, selectedScanner: string): Promise<string> => {
-  logger.debug(`Scanner util opened.`);
-  if (!scannerApp) {
-    createScannerApp();
-  }
-  if (!sourceSetAndOpened) {
-    scannerApp.setDefaultSource(selectedScanner);
-    logger.info(`Setted Scanner Data Source to:`);
-    logger.info(selectedScanner);
-    await scannerApp.openDataSource(selectedScanner);
-    sourceSetAndOpened = true;
-  }
-  scannerApp.setCallback();
-  logger.info(`Scanner callback executed.`);
-  return new Promise<string>((resolve, reject) => {
-    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID);
-    try {
-      scannerApp.scan(twain.TWSX_FILE, scannedImagePath);
-      logger.info(`Scanning executed for document ${documentID}, page ${pageID}.`);
-      resolve(scannedImagePath + '.bmp'); // Resolve with the path to the scanned image
-    } catch (error) {
-      logger.error(`Error occurred during scanning for document ${documentID}, page ${pageID}: ${error}`);
-      reject(error); // Reject with the error
+const performDetectScanners = (mainWindow: BrowserWindow) => {
+  const args: string = '--listdevices --driver twain';
+  exec(`${NAPS_SCAN_CLI_PATH} ${args}`, (error, stdout, stderr) => {
+    if (error) {
+      logger.error(`In performDetectScanners, error occurred: ${error.message}`);
+      return;
     }
+    if (stderr) {
+      logger.error(`In performDetectScanners, stderr is: ${stderr}`);
+      return;
+    }
+    const sources: string[] = stdout.split('\n');
+    mainWindow.webContents.send('scanners-list', sources);
   });
 };
 
-export { performDetectScanners, performScan };
+export { performScan, performDetectScanners };
