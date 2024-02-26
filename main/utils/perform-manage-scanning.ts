@@ -6,10 +6,10 @@ import { logger } from '../logger';
 
 const performScan = (documentID: number, pageID: string, selectedScanner: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const trimmedScanner = selectedScanner.trim();
+    selectedScanner = selectedScanner.trim();
     const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID, '.jpg');
     exec(
-      `${NAPS_SCAN_CLI_PATH} -o ${scannedImagePath} --noprofile --driver twain --device "${trimmedScanner}" --source feeder --dpi 300 --pagesize a4 -f`,
+      `${NAPS_SCAN_CLI_PATH} -o ${scannedImagePath} --noprofile --driver twain --device "${selectedScanner}" --source feeder --dpi 300 --pagesize a4 -f`,
       (error, stdout, stderr) => {
         if (error) {
           logger.error(`In performScan, error occurred: ${error.message}`);
@@ -29,8 +29,7 @@ const performScan = (documentID: number, pageID: string, selectedScanner: string
 };
 
 const performDetectScanners = (mainWindow: BrowserWindow) => {
-  const args: string = '--listdevices --driver twain';
-  exec(`${NAPS_SCAN_CLI_PATH} ${args}`, (error, stdout, stderr) => {
+  exec(`${NAPS_SCAN_CLI_PATH} --listdevices --driver twain`, (error, stdout, stderr) => {
     if (error) {
       logger.error(`In performDetectScanners, error occurred: ${error.message}`);
       return;
