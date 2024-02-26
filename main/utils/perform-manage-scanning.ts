@@ -38,6 +38,7 @@ const performDetectScanners = (mainWindow: BrowserWindow) => {
       logger.error(`In performDetectScanners, stderr is: ${stderr}`);
       return;
     }
+    logger.info(`In performDetectScanners, stdout is: ${stdout}`);
     const sources: string[] = stdout.split('\n');
     mainWindow.webContents.send('scanners-list', sources);
   });
