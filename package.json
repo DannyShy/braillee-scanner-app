@@ -10,7 +10,7 @@
     "dev": "nextron",
     "build": "nextron build",
     "build32": "nextron build --ia32",
-    "postinstall": "patch-package && npm --prefix node_modules/node-twain install node-addon-api@7.1.0 && electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps",
     "install32": "electron-builder install-app-deps --arch=ia32"
   },
   "dependencies": {
@@ -29,7 +29,6 @@
     "fs-finder": "^1.8.1",
     "i18next": "^23.7.16",
     "i18next-fetch-backend": "^5.0.2",
-    "node-twain": "^0.0.16",
     "python-shell": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
