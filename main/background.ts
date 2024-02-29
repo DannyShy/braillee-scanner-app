@@ -35,12 +35,10 @@ if (IS_PROD) {
   let firstPage: string;
 
   let localPath = LIBLOUIS_TABLES_PATH.replace(/\\/g, '/');
-  let urlPath = 'file:///' + localPath;
-  console.log('urlPath:', urlPath);
+  liblouis.setLogLevel(liblouis.LOG.ALL);
+  liblouis.enableOnDemandTableLoading(localPath);
 
-  liblouis.enableOnDemandTableLoading(urlPath);
-
-  const unicode_braille = liblouis.translateString('unicode.dis', '10 Ziegen');
+  const unicode_braille = liblouis.translateString('tables/en_GB.tbl', 'Hello World!');
   console.log('unicode_braille', unicode_braille);
 
   if (!fs.existsSync(PATH_TO_MODEL)) {
