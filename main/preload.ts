@@ -162,7 +162,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addDeleteDocumentStatusListener: addDeleteDocumentStatusListener,
   removeDeleteDocumentStatusListener: removeDeleteDocumentStatusListener,
 });
-
-contextBridge.exposeInMainWorld('process', {
-  arch: process.arch,
-});
