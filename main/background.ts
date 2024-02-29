@@ -6,7 +6,7 @@ import { ipcMain } from 'electron';
 import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
-import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
+import { PATH_TO_MODEL, IS_PROD, LIBLOUIS_TABLES_PATH } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
@@ -15,6 +15,7 @@ import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { logger } from './logger';
+import liblouis from 'liblouis';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -32,6 +33,15 @@ if (IS_PROD) {
 
   let firstPageHtml: string;
   let firstPage: string;
+
+  let localPath = LIBLOUIS_TABLES_PATH.replace(/\\/g, '/');
+  let urlPath = 'file:///' + localPath;
+  console.log('urlPath:', urlPath);
+
+  liblouis.enableOnDemandTableLoading(urlPath);
+
+  const unicode_braille = liblouis.translateString('unicode.dis', '10 Ziegen');
+  console.log('unicode_braille', unicode_braille);
 
   if (!fs.existsSync(PATH_TO_MODEL)) {
     firstPageHtml = 'welcome-screen.html';

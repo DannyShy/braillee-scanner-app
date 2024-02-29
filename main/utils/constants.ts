@@ -6,11 +6,11 @@ export const IS_PROD = process.env.NODE_ENV === 'production';
 
 let pathToResources: string;
 let userDataPathAppendix;
+const parentDir = path.join(__dirname, '..');
 if (IS_PROD) {
   pathToResources = process.resourcesPath;
   userDataPathAppendix = '';
 } else {
-  const parentDir = path.join(__dirname, '..');
   pathToResources = path.join(parentDir, 'resources');
   userDataPathAppendix = '(development)';
 }
@@ -33,3 +33,4 @@ export const TEMP_OUTPUT = os.tmpdir();
 export const DISK_NAME = path.parse(__dirname).root;
 export const MODEL_AND_DEPENDENCIES_SIZE: number = 1773117056;
 export const NAPS_SCAN_CLI_PATH = path.join(pathToResources, 'naps2-7.3.1-win/App/NAPS2.Console.exe');
+export const LIBLOUIS_TABLES_PATH = path.join(parentDir, '/node_modules/liblouis-build/');
