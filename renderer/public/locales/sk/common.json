@@ -71,8 +71,8 @@
   },
   "scanner_picker": {
     "scanner": "skener:",
-    "scanner_text_zero": "Skener nie je dostupný. Stlačte tlačidlo obnoviť alebo skúste použiť {{anotherAppVersion}}-bitovú verziu verziu tejto aplikácie.",
-    "scanner_text_one": "Načítaný skener: {{selectedScanner}}. Pre nájdenie ďalších zariadení stlačte tlačidlo obnoviť.",
+    "scanner_text_zero": "Skener nie je dostupný. \n Stlačte tlačidlo obnoviť alebo skúste opraviť spojenie so skenerom.",
+    "scanner_text_one": "Načítaný skener: {{selectedScanner}}. \n Pre nájdenie ďalších zariadení stlačte tlačidlo obnoviť.",
     "scanner_text_multiple": "Bolo nájdených {{scannersCount}} skenerov. Nižšie je menu na výber skeneru, s ktorým chcete pracovať.",
     "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení."
   }

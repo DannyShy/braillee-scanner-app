@@ -7,7 +7,7 @@ import { logger } from '../logger';
 const performScan = (documentID: number, pageID: string, selectedScanner: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     selectedScanner = selectedScanner.trim();
-    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID, '.jpg');
+    const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID, 'scan.jpg');
     exec(
       `${NAPS_SCAN_CLI_PATH} -o ${scannedImagePath} --noprofile --driver twain --device "${selectedScanner}" --source feeder --dpi 300 --pagesize a4 -f`,
       (error, stdout, stderr) => {

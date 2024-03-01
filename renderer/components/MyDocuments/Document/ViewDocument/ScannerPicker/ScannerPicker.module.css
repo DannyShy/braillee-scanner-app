@@ -34,7 +34,10 @@
 }
 
 .refreshButton {
+  min-width: 20px;
+  min-height: 20px;
   padding: 2px;
+  flex-grow: 1;
 }
 .refreshButtonClicked {
   padding: 2px;
@@ -42,7 +45,9 @@
   transition: transform 0.3s ease-out;
 }
 .detectedScanners {
+  white-space: pre-line;
   display: flex;
   align-items: center;
   margin-left: 28px;
+  text-align: center;
 }

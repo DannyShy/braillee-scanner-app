@@ -15,7 +15,6 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
   const { t } = useTranslation();
   const [opened, setOpened] = useState<boolean>(false);
   const [clicked, setClicked] = useState<boolean>(false);
-  const [anotherAppVersion, setAnotherAppVersion] = useState<string>('not defined');
 
   const items = scannersList.map((item) => (
     <Menu.Item onClick={() => setSelectedScanner(item)} key={item}>
@@ -32,22 +31,10 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
     }, 100); // match transition duration
   };
 
-  useEffect(() => {
-    if (window.process.arch === 'x64') {
-      setAnotherAppVersion('32');
-    } else if (window.process.arch === 'ia32') {
-      setAnotherAppVersion('64');
-    }
-  }, []);
-
   return (
     <div className={classes.detectedScanners}>
       {scannersList.length === 0 ? (
-        <Text>
-          {t('scanner_picker.scanner_text_zero', {
-            anotherAppVersion: anotherAppVersion,
-          })}
-        </Text>
+        <Text>{t('scanner_picker.scanner_text_zero')}</Text>
       ) : scannersList.length === 1 ? (
         <Text>
           {t('scanner_picker.scanner_text_one', {
@@ -82,11 +69,10 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
       )}
       <Button
         className={clicked ? `${classes.refreshButton}` : `${classes.refreshButtonClicked}`}
-        size="md"
         variant="transparent"
         onClick={handleRefreshButtonClick}
       >
-        <IconRefresh></IconRefresh>
+        <IconRefresh size={25}></IconRefresh>
         <VisuallyHidden>{t('scanner_picker.hidden_refresh_button')}</VisuallyHidden>
       </Button>
     </div>
