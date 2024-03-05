@@ -18,29 +18,33 @@ extraResources:
     to: icons
     filter:
       - '**/*'
+  - from: ./resources/python-liblouis
+    to: python-liblouis
+    filter:
+      - '**/*'
 publish: null
 
 linux:
-  category: "Office"
+  category: 'Office'
   target:
     - AppImage
-  maintainer: "Hotovo <dotsight@hotovo.com>"
-  synopsis: "Braille Document Scanner and Recognizer"
-  executableName: "dotsight"
+  maintainer: 'Hotovo <dotsight@hotovo.com>'
+  synopsis: 'Braille Document Scanner and Recognizer'
+  executableName: 'dotsight'
   desktop:
-    Name: "DotSight"
-    Comment: "Braille Document Scanner and Recognizer"
-    Terminal: "false"
-    Type: "Application"
-    Categories: "Office;"
-    StartupWMClass: "dotsight"
+    Name: 'DotSight'
+    Comment: 'Braille Document Scanner and Recognizer'
+    Terminal: 'false'
+    Type: 'Application'
+    Categories: 'Office;'
+    StartupWMClass: 'dotsight'
 
 win:
   target:
     - nsis
-  icon: "resources/icons/icon.png"
-  publisherName: "Hotovo"
-  legalTrademarks: "s.r.o."
+  icon: 'resources/icons/icon.png'
+  publisherName: 'Hotovo'
+  legalTrademarks: 's.r.o.'
   extraResources:
     - from: ./resources/python-3.11.6-embed-amd64
       to: python-3.11.6-embed-amd64

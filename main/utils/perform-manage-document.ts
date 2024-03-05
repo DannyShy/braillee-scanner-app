@@ -3,7 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
-import { BrailleStatus, Document, UpdateDocumentAction } from './types';
+import { BrailleStatus, Document, UpdateDocumentAction, TranslatedTextStatus } from './types';
 import * as crypto from 'node:crypto';
 import { logger } from '../logger';
 
@@ -34,6 +34,10 @@ const createDocumentData = (documentID): Document => {
         file: null,
         brailleStatus: null,
         brailleText: null,
+        translatedTextStatus: null,
+        translations: {
+          slovak: null,
+        },
       },
     ],
   };
@@ -86,6 +90,14 @@ const performUpdateDocument = (
       } catch (error) {
         logger.error(`Error creating images directory: ${error.message}`);
       }
+
+      try {
+        mkdirSync(path.resolve(documentDirectoryPath, 'translated-files'));
+        logger.info(`Translated-files directory created successfully for document number: ${documentID}`);
+      } catch (error) {
+        logger.error(`Error Translated-files directory: ${error.message}`);
+      }
+
       jsonData = createDocumentData(documentID);
       mainWindow.webContents.send('create-document-output', jsonData);
       break;
@@ -98,6 +110,10 @@ const performUpdateDocument = (
         file: null,
         brailleStatus: null,
         brailleText: null,
+        translatedTextStatus: null,
+        translations: {
+          slovak: null,
+        },
       };
       jsonData.pages.push(newPage);
       break;
@@ -114,6 +130,10 @@ const performUpdateDocument = (
     case 'editBrailleText':
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].brailleText = data;
+      }
+    case 'editTranslatedTextStatus':
+      if (pageIndex !== -1) {
+        jsonData.pages[pageIndex].translatedTextStatus = data as TranslatedTextStatus;
       }
       break;
   }

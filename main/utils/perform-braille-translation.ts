@@ -1,0 +1,36 @@
+import { spawn } from 'child_process';
+import { logger } from '../logger';
+import { waitUntilFinished } from './wait-until-finished';
+import { ChildProcessWithoutNullStreams } from 'child_process';
+import { PYTHON_EXE, LIBLOUIS_PYTHON_PATH, MY_DOCUMENTS_PATH } from './constants';
+import path from 'path';
+import { performUpdateDocument } from './perform-manage-document';
+import fs from 'fs';
+
+let translateBraille: ChildProcessWithoutNullStreams;
+
+const performBrailleTranslation = async (brailleText, documentID, pageID, mainWindow) => {
+  logger.info(`Starting Braille translation for document: ${documentID} page: ${pageID}`);
+  const resultsDir = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'translated-files');
+  // Spawn a new child process to run the Python script
+  translateBraille = spawn(PYTHON_EXE, [LIBLOUIS_PYTHON_PATH, brailleText, resultsDir]);
+
+  await waitUntilFinished(translateBraille);
+
+  // Listen for any response from the Python script
+  translateBraille.stdout.on('data', (data) => {
+    logger.info(`Python script response: ${data}`);
+  });
+
+  // Listen for any error from the Python script
+  translateBraille.stderr.on('data', (data) => {
+    logger.error(`Python script error: ${data}`);
+  });
+  const recognizedBrailleFilePath = path.join(resultsDir, 'translatedBrailleDots.txt');
+  const translationOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
+  await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
+  await performUpdateDocument(mainWindow, 'editTranslatedTextStatus', documentID, 'translatedTextAvailable', pageID);
+  logger.info(`Finished Braille translation for document: ${documentID} page: ${pageID}`);
+};
+
+export { performBrailleTranslation };

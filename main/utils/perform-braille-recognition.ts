@@ -7,6 +7,7 @@ import { performUpdateDocument } from './perform-manage-document';
 import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
+import { waitUntilFinished } from './wait-until-finished';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -16,38 +17,6 @@ const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedB
 const fixFileFormat = (inputFileAbsolutePath: string): string => {
   const pathWithForwardSlashes = inputFileAbsolutePath.replace('file:///', '');
   return pathWithForwardSlashes.replace(/\//g, '\\');
-};
-
-const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
-  process.stdout.on('data', (data) => {
-    logger.info(`stdout from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
-  });
-  process.stderr.on('data', (data) => {
-    logger.error(`stderr from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
-  });
-  process.on('exit', (code, signal) => {
-    if (signal) {
-      logger.error(`Child process was killed by signal: ${signal}`);
-    }
-  });
-  process.on('uncaughtException', (error) => {
-    logger.error(`Uncaught exception in child process: ${error.message}`);
-  });
-  return new Promise<number>((resolve, reject) => {
-    process.on('close', (code) => {
-      if (code !== 0) {
-        logger.error(
-          `Child process in waitUntilFinished exited with non-zero status code: ${code}. This means spawn process failed`,
-        );
-      }
-      resolve(code);
-    });
-
-    process.on('error', (error) => {
-      logger.error(`Error occurred while waiting for child process in waitUntilFinished to finish: ${error.message}`);
-      reject(error);
-    });
-  });
 };
 
 let recognizeBraille: ChildProcessWithoutNullStreams;
