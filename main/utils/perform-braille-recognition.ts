@@ -8,6 +8,7 @@ import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
 import { waitUntilFinished } from './wait-until-finished';
+import { performBrailleTranslation } from './perform-braille-translation';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -54,6 +55,7 @@ const performRecognizeBraille = async (
     const brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
     logger.info(`File ${recognizedBrailleFilePath} read successfully.`);
+    await performBrailleTranslation(brailleOutput, documentID, pageID, mainWindow);
   } catch (error) {
     logger.error(`Error in reading Recognized Braille Output file: ${error.message}`);
     throw error;

@@ -71,9 +71,6 @@ if (IS_PROD) {
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
     addFileToQueue(fileName, documentID, pageID, mainWindow);
   });
-  ipcMain.on('translate-braille', async (event, brailleText, documentID, pageID) => {
-    performBrailleTranslation(brailleText, documentID, pageID, mainWindow);
-  });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();
   });

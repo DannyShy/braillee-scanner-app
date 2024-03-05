@@ -212,6 +212,13 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     ) : null;
   };
 
+  const renderTranslatedText = () => {
+    return activeDocument.pages[activePage].translatedTextStatus === 'translatedTextAvailable' &&
+      activeDocument.pages[activePage].translations.slovak !== null ? (
+      <Text tabIndex={0}>{activeDocument.pages[activePage].translations.slovak}</Text>
+    ) : null;
+  };
+
   // get list of available scanners
   useEffect(() => {
     fetchScannersList();
@@ -331,7 +338,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
                 {renderRecognizedBraille()}
               </Tabs.Panel>
               <Tabs.Panel value="text" tabIndex={0}>
-                Coming soon...
+                {renderTranslatedText()}
               </Tabs.Panel>
             </Tabs>
           </div>

@@ -27,9 +27,13 @@ const performBrailleTranslation = async (brailleText, documentID, pageID, mainWi
     logger.error(`Python script error: ${data}`);
   });
   const recognizedBrailleFilePath = path.join(resultsDir, 'translatedBrailleDots.txt');
-  const translationOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
-  await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
-  await performUpdateDocument(mainWindow, 'editTranslatedTextStatus', documentID, 'translatedTextAvailable', pageID);
+  try {
+    const translationOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
+    await performUpdateDocument(mainWindow, 'editTranslatedText', documentID, translationOutput, pageID);
+    await performUpdateDocument(mainWindow, 'editTranslatedTextStatus', documentID, 'translatedTextAvailable', pageID);
+  } catch (error) {
+    logger.error(`Error reading file: ${error.message}`);
+  }
   logger.info(`Finished Braille translation for document: ${documentID} page: ${pageID}`);
 };
 

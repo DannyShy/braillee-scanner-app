@@ -24,4 +24,5 @@ export type UpdateDocumentAction =
   | 'editFile'
   | 'editBrailleText'
   | 'editBrailleStatus'
-  | 'editTranslatedTextStatus';
+  | 'editTranslatedTextStatus'
+  | 'editTranslatedText';

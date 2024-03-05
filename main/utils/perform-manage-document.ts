@@ -135,6 +135,10 @@ const performUpdateDocument = (
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].translatedTextStatus = data as TranslatedTextStatus;
       }
+    case 'editTranslatedText':
+      if (pageIndex !== -1) {
+        jsonData.pages[pageIndex].translations.slovak = data;
+      }
       break;
   }
   writeJsonToFile(jsonData, documentID);
