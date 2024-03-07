@@ -126,8 +126,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner),
   copyImage: (imagePath: string, documentID: number) => ipcRenderer.send('copy-image', imagePath, documentID),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
-  recognizeBraille: (file: string | null, documentID: number | null, pageID: string | null) => {
-    ipcRenderer.send('recognize-braille', file, documentID, pageID);
+  recognizeBraille: (file: string | null, documentID: number, pageID: string, translationLanguage: string) => {
+    ipcRenderer.send('recognize-braille', file, documentID, pageID, translationLanguage);
   },
   addBrailleTextListener: addBrailleTextListener,
   removeBrailleTextListener: removeBrailleTextListener,
@@ -161,6 +161,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteDocument: (documentID: number) => ipcRenderer.send('delete-document', documentID),
   addDeleteDocumentStatusListener: addDeleteDocumentStatusListener,
   removeDeleteDocumentStatusListener: removeDeleteDocumentStatusListener,
+  translateText: (brailleText: string, documentID: number, pageID: string, translationLanguage: string) =>
+    ipcRenderer.send('translate-text', brailleText, documentID, pageID, translationLanguage),
+  clearPage: (documentID: number, file: string) => ipcRenderer.send('clear-page', documentID, file),
 });
 
 contextBridge.exposeInMainWorld('process', {

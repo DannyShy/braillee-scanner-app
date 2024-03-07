@@ -16,6 +16,7 @@ import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { logger } from './logger';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
+import { performDeletePage } from './utils/perform-delete-page';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -54,6 +55,10 @@ if (IS_PROD) {
     store.set(key, value);
   });
   ipcMain.on('delete-document', (event, documentID) => performDeleteDocument(documentID, mainWindow));
+  ipcMain.on('translate-text', (event, brailleText, documentID, pageID, translationLanguage) => {
+    performBrailleTranslation(brailleText, documentID, pageID, translationLanguage, mainWindow);
+  });
+  ipcMain.on('clear-page', (event, documentID, file) => performDeletePage(documentID, file));
   ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
@@ -68,8 +73,8 @@ if (IS_PROD) {
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner) => {
     return performScan(documentID, pageID, selectedScanner);
   });
-  ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID) => {
-    addFileToQueue(fileName, documentID, pageID, mainWindow);
+  ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
+    addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();

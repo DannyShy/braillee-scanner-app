@@ -8,12 +8,18 @@ import { performUpdateDocument } from './perform-manage-document';
 import fs from 'fs';
 
 let translateBraille: ChildProcessWithoutNullStreams;
+let translationTable: string;
 
-const performBrailleTranslation = async (brailleText, documentID, pageID, mainWindow) => {
+const performBrailleTranslation = async (brailleText, documentID, pageID, translationLanguage, mainWindow) => {
   logger.info(`Starting Braille translation for document: ${documentID} page: ${pageID}`);
   const resultsDir = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'translated-files');
+  if (translationLanguage === 'slovenský') {
+    translationTable = 'sk-g1.ctb';
+  } else if (translationLanguage === 'english') {
+    translationTable = 'en-ueb-g2.ctb';
+  }
   // Spawn a new child process to run the Python script
-  translateBraille = spawn(PYTHON_EXE, [LIBLOUIS_PYTHON_PATH, brailleText, resultsDir]);
+  translateBraille = spawn(PYTHON_EXE, [LIBLOUIS_PYTHON_PATH, brailleText, resultsDir, translationTable]);
 
   await waitUntilFinished(translateBraille);
 

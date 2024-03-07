@@ -173,7 +173,6 @@
 .brailleTextContainer {
   position: relative;
   flex-grow: 1;
-  /* display: inline-block; */
   display: flex;
   flex-direction: column;
   justify-content: center;

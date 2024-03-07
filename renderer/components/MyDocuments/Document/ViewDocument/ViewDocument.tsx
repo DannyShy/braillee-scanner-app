@@ -20,6 +20,7 @@ import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 import ScannerPicker from './ScannerPicker/ScannerPicker';
+import ViewTranslation from './ViewTranslation/ViewTranslation';
 
 type Props = {
   activeDocument: Document;
@@ -33,6 +34,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   const [uploadedFile, setUploadedFile] = useState<File>(null);
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
+  const [translationLanguage, setTranslationLanguage] = useState<string>(null);
 
   const onUpdate = async (action: string, data?: string, activePage?: number | string) => {
     window.electronAPI.updateDocument(action, activeDocument.documentID, data, activePage);
@@ -68,14 +70,17 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     }
   };
 
-  const handleClickRejectScan = async () => {
-    window.electronAPI.log('debug', 'Reject scan button clicked by user.');
+  const handleClickRejectImage = async () => {
+    window.electronAPI.log('debug', 'Reject image button clicked by user.');
+    window.electronAPI.clearPage(activeDocument.documentID, activeDocument.pages[activePage].file);
     await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
     if (activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress') {
       window.electronAPI.cancelRecognition();
     }
     await onUpdate('editBrailleStatus', null, activeDocument.pages[activePage].pageID);
     await onUpdate('editBrailleText', null, activeDocument.pages[activePage].pageID);
+    await onUpdate('editTranslatedTextStatus', null, activeDocument.pages[activePage].pageID);
+    await onUpdate('editTranslatedText', null, activeDocument.pages[activePage].pageID);
   };
 
   const handleClickCancelRecognition = async () => {
@@ -104,6 +109,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       activeDocument.pages[activePage].file,
       activeDocument.documentID,
       activeDocument.pages[activePage].pageID,
+      translationLanguage,
     );
   };
 
@@ -178,7 +184,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             className={classes.rejectScannedDocument}
             size="xl"
             variant="transparent"
-            onClick={handleClickRejectScan}
+            onClick={handleClickRejectImage}
             color="red"
           >
             <IconX size={35}></IconX>
@@ -209,13 +215,6 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       </div>
     ) : activeDocument.pages[activePage].brailleStatus === 'brailleTextAvailable' ? (
       activeDocument.pages[activePage].brailleText
-    ) : null;
-  };
-
-  const renderTranslatedText = () => {
-    return activeDocument.pages[activePage].translatedTextStatus === 'translatedTextAvailable' &&
-      activeDocument.pages[activePage].translations.slovak !== null ? (
-      <Text tabIndex={0}>{activeDocument.pages[activePage].translations.slovak}</Text>
     ) : null;
   };
 
@@ -338,7 +337,13 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
                 {renderRecognizedBraille()}
               </Tabs.Panel>
               <Tabs.Panel value="text" tabIndex={0}>
-                {renderTranslatedText()}
+                <ViewTranslation
+                  activeDocument={activeDocument}
+                  activePage={activePage}
+                  onUpdate={onUpdate}
+                  translationLanguage={translationLanguage}
+                  setTranslationLanguage={setTranslationLanguage}
+                ></ViewTranslation>
               </Tabs.Panel>
             </Tabs>
           </div>

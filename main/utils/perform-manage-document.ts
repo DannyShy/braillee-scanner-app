@@ -28,6 +28,7 @@ const createDocumentData = (documentID): Document => {
   return {
     title: 'New Document',
     documentID: documentID,
+    translationLanguage: null,
     pages: [
       {
         pageID: crypto.randomUUID(),
@@ -35,9 +36,7 @@ const createDocumentData = (documentID): Document => {
         brailleStatus: null,
         brailleText: null,
         translatedTextStatus: null,
-        translations: {
-          slovak: null,
-        },
+        translation: null,
       },
     ],
   };
@@ -111,9 +110,7 @@ const performUpdateDocument = (
         brailleStatus: null,
         brailleText: null,
         translatedTextStatus: null,
-        translations: {
-          slovak: null,
-        },
+        translation: null,
       };
       jsonData.pages.push(newPage);
       break;
@@ -131,13 +128,20 @@ const performUpdateDocument = (
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].brailleText = data;
       }
+      break;
     case 'editTranslatedTextStatus':
       if (pageIndex !== -1) {
         jsonData.pages[pageIndex].translatedTextStatus = data as TranslatedTextStatus;
       }
+      break;
     case 'editTranslatedText':
       if (pageIndex !== -1) {
-        jsonData.pages[pageIndex].translations.slovak = data;
+        jsonData.pages[pageIndex].translation = data;
+      }
+      break;
+    case 'editTranslationLanguage':
+      if (pageIndex !== -1) {
+        jsonData.translationLanguage = data;
       }
       break;
   }

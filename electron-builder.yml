@@ -18,8 +18,8 @@ extraResources:
     to: icons
     filter:
       - '**/*'
-  - from: ./resources/python-liblouis
-    to: python-liblouis
+  - from: ./resources/liblouis-python
+    to: liblouis-python
     filter:
       - '**/*'
 publish: null

@@ -75,5 +75,6 @@
     "scanner_text_one": "Načítaný skener: {{selectedScanner}}. Pre nájdenie ďalších zariadení stlačte tlačidlo obnoviť.",
     "scanner_text_multiple": "Bolo nájdených {{scannersCount}} skenerov. Nižšie je menu na výber skeneru, s ktorým chcete pracovať.",
     "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení."
-  }
+  },
+  "view_translation_description": "Jazyk"
 }

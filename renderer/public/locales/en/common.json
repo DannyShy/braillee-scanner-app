@@ -75,5 +75,6 @@
     "scanner_text_one": "Loaded scanner: {{selectedScanner}}. To find another devices press refresh button.",
     "scanner_text_multiple": "Found {{scannersCount}} scanners. Below is menu for selecting scanner to work with.",
     "hidden_refresh_button": "Refresh scanners list"
-  }
+  },
+  "view_translation_description": "Language"
 }

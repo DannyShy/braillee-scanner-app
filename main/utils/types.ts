@@ -2,6 +2,7 @@ export type Document = {
   title: string;
   documentID?: number | null;
   pages: Page[];
+  translationLanguage: null | string;
 };
 
 export type Page = {
@@ -10,9 +11,7 @@ export type Page = {
   brailleStatus?: BrailleStatus;
   brailleText?: null | string;
   translatedTextStatus?: TranslatedTextStatus;
-  translations: {
-    slovak: null | string;
-  };
+  translation: null | string;
 };
 
 export type BrailleStatus = null | 'brailleTextAvailable' | 'recognitionCanceled' | 'recognitionInProgress';
@@ -25,4 +24,5 @@ export type UpdateDocumentAction =
   | 'editBrailleText'
   | 'editBrailleStatus'
   | 'editTranslatedTextStatus'
-  | 'editTranslatedText';
+  | 'editTranslatedText'
+  | 'editTranslationLanguage';
