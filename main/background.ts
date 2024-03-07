@@ -14,7 +14,6 @@ import { performLogFromRenderer } from './utils/perform-log-from-renderer';
 import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
-import { logger } from './logger';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
 
@@ -43,11 +42,6 @@ if (IS_PROD) {
     firstPage = 'home-screen';
   }
 
-  if (process.arch === 'x64') {
-    logger.info('The app is running in a 64-bit environment.');
-  } else if (process.arch === 'ia32') {
-    logger.info('The app is running in a 32-bit environment.');
-  }
   ipcMain.handle('getStoreValue', (event, key) => {
     return store.get(key);
   });

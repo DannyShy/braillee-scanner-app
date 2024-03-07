@@ -71,8 +71,8 @@
   },
   "scanner_picker": {
     "scanner": "scanner:",
-    "scanner_text_zero": "Scanner is not available. Press refresh button or try to use {{anotherAppVersion}}-bit version of this app instead of current one.",
-    "scanner_text_one": "Loaded scanner: {{selectedScanner}}. To find another devices press refresh button.",
+    "scanner_text_zero": "Scanner is not available. \n Press refresh button or try to fix connection with scanner.",
+    "scanner_text_one": "Loaded scanner: {{selectedScanner}}. \n To find another devices press refresh button.",
     "scanner_text_multiple": "Found {{scannersCount}} scanners. Below is menu for selecting scanner to work with.",
     "hidden_refresh_button": "Refresh scanners list"
   },

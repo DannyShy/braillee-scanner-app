@@ -165,7 +165,3 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.send('translate-text', brailleText, documentID, pageID, translationLanguage),
   clearPage: (documentID: number, file: string) => ipcRenderer.send('clear-page', documentID, file),
 });
-
-contextBridge.exposeInMainWorld('process', {
-  arch: process.arch,
-});
