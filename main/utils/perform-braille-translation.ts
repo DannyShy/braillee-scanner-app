@@ -13,9 +13,9 @@ let translationTable: string;
 const performBrailleTranslation = async (brailleText, documentID, pageID, translationLanguage, mainWindow) => {
   logger.info(`Starting Braille translation for document: ${documentID} page: ${pageID}`);
   const resultsDir = path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'translated-files');
-  if (translationLanguage === 'slovenský') {
+  if (translationLanguage === 'sk') {
     translationTable = 'sk-g1.ctb';
-  } else if (translationLanguage === 'english') {
+  } else if (translationLanguage === 'en') {
     translationTable = 'en-ueb-g2.ctb';
   }
   // Spawn a new child process to run the Python script

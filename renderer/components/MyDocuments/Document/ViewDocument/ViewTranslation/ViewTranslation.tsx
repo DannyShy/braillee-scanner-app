@@ -14,7 +14,7 @@ type Props = {
   setTranslationLanguage: (language: string) => void;
 };
 
-const languages = ['slovenský', 'english'];
+const languages = ['sk', 'en'];
 
 const ViewTranslation: React.FC<Props> = ({
   activeDocument,
@@ -35,7 +35,7 @@ const ViewTranslation: React.FC<Props> = ({
       }}
       key={language}
     >
-      {language}
+      {t(`view_translation.menu_item.${language}`)}
     </Menu.Item>
   ));
 
@@ -62,11 +62,7 @@ const ViewTranslation: React.FC<Props> = ({
       if (activeDocument.translationLanguage === null) {
         window.electronAPI.log('debug', 'Fetching stored language.');
         const storedLanguage = await window.electronAPI.getStoreValue('language');
-        if (storedLanguage === 'en') {
-          setTranslationLanguage('english');
-        } else if (storedLanguage === 'sk') {
-          setTranslationLanguage('slovenský');
-        }
+        setTranslationLanguage(storedLanguage);
       } else {
         window.electronAPI.log('debug', 'Setting translation language from document.json.');
         setTranslationLanguage(activeDocument.translationLanguage);
@@ -78,12 +74,12 @@ const ViewTranslation: React.FC<Props> = ({
   return (
     <div className={classes.ViewTranslation}>
       <div className={classes.translationLanguageSelector}>
-        <Text>{t('view_translation_description')}</Text>
+        <Text>{t('view_translation.description')}</Text>
         <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
           <Menu.Target>
             <UnstyledButton className={classes.control} data-expanded={opened || undefined}>
               <Group gap="xs">
-                <span className={classes.label}>{translationLanguage}</span>
+                <span className={classes.label}>{t(`view_translation.menu_item.${translationLanguage}`)}</span>
               </Group>
               <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
             </UnstyledButton>
