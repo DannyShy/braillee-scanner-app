@@ -18,6 +18,10 @@ extraResources:
     to: icons
     filter:
       - '**/*'
+  - from: ./resources/liblouis-python
+    to: liblouis-python
+    filter:
+      - '**/*'
   - from: ./resources/naps2-7.3.1-win
     to: naps2-7.3.1-win
     filter:

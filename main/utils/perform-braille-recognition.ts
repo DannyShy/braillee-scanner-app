@@ -7,6 +7,8 @@ import { performUpdateDocument } from './perform-manage-document';
 import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
+import { waitUntilFinished } from './wait-until-finished';
+import { performBrailleTranslation } from './perform-braille-translation';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -18,44 +20,13 @@ const fixFileFormat = (inputFileAbsolutePath: string): string => {
   return pathWithForwardSlashes.replace(/\//g, '\\');
 };
 
-const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
-  process.stdout.on('data', (data) => {
-    logger.info(`stdout from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
-  });
-  process.stderr.on('data', (data) => {
-    logger.error(`stderr from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
-  });
-  process.on('exit', (code, signal) => {
-    if (signal) {
-      logger.error(`Child process was killed by signal: ${signal}`);
-    }
-  });
-  process.on('uncaughtException', (error) => {
-    logger.error(`Uncaught exception in child process: ${error.message}`);
-  });
-  return new Promise<number>((resolve, reject) => {
-    process.on('close', (code) => {
-      if (code !== 0) {
-        logger.error(
-          `Child process in waitUntilFinished exited with non-zero status code: ${code}. This means spawn process failed`,
-        );
-      }
-      resolve(code);
-    });
-
-    process.on('error', (error) => {
-      logger.error(`Error occurred while waiting for child process in waitUntilFinished to finish: ${error.message}`);
-      reject(error);
-    });
-  });
-};
-
 let recognizeBraille: ChildProcessWithoutNullStreams;
 
 const performRecognizeBraille = async (
   inputFileAbsolutePath: string,
   documentID: number,
   pageID: number,
+  translationLanguage: string,
   mainWindow: BrowserWindow,
 ) => {
   const recognizedBraillesDirectoryPath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'recognized-files');
@@ -63,28 +34,28 @@ const performRecognizeBraille = async (
     inputFileAbsolutePath,
     recognizedBraillesDirectoryPath,
   );
-  if (!fs.existsSync(recognizedBrailleFilePath)) {
-    logger.info(`Started braille recognition for document: ${documentID} page: ${pageID}`);
-    const fixedInput = fixFileFormat(inputFileAbsolutePath);
-    try {
-      recognizeBraille = spawn(
-        PYTHON_EXE,
-        [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
-        {
-          detached: false,
-        },
-      );
-      await waitUntilFinished(recognizeBraille);
-      logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
-    } catch (error) {
-      logger.error(`Error in Python Braille Recognition: ${error.message}`);
-      throw error;
-    }
+  logger.info(`Started braille recognition for document: ${documentID} page: ${pageID}`);
+  const fixedInput = fixFileFormat(inputFileAbsolutePath);
+  try {
+    recognizeBraille = spawn(
+      PYTHON_EXE,
+      [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
+      {
+        detached: false,
+      },
+    );
+    await waitUntilFinished(recognizeBraille);
+    logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
+  } catch (error) {
+    logger.error(`Error in Python Braille Recognition: ${error.message}`);
+    throw error;
   }
   try {
-    const brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
+    let brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
+    brailleOutput = brailleOutput.replace(/\r/g, '');
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
     logger.info(`File ${recognizedBrailleFilePath} read successfully.`);
+    await performBrailleTranslation(brailleOutput, documentID, pageID, translationLanguage, mainWindow);
   } catch (error) {
     logger.error(`Error in reading Recognized Braille Output file: ${error.message}`);
     throw error;
@@ -105,9 +76,15 @@ const performCancelRecognizeBraille = () => {
 const scriptQueue = [];
 let isQueueRunning = false;
 
-const addFileToQueue = (fileName: string, documentID: number, pageID: number, mainWindow: BrowserWindow) => {
+const addFileToQueue = (
+  fileName: string,
+  documentID: number,
+  pageID: number,
+  translationLanguage: string,
+  mainWindow: BrowserWindow,
+) => {
   logger.info(`Document ${documentID} with ${pageID} added to queue for Braille recognition.`);
-  scriptQueue.push({ fileName, documentID, pageID });
+  scriptQueue.push({ fileName, documentID, pageID, translationLanguage });
   if (!isQueueRunning) {
     logger.debug(`Braille recognition queue execution started.`);
     executeRecognizeBrailleQueue(mainWindow);
@@ -122,10 +99,10 @@ const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
     return;
   }
   isQueueRunning = true;
-  const { fileName, documentID, pageID } = scriptQueue.shift();
+  const { fileName, documentID, pageID, translationLanguage } = scriptQueue.shift();
   try {
     logger.debug(`Braille recognition util running.`);
-    await performRecognizeBraille(fileName, documentID, pageID, mainWindow);
+    await performRecognizeBraille(fileName, documentID, pageID, translationLanguage, mainWindow);
   } catch (error) {
     logger.error('Error during performRecognizeBraille execution:', error);
     throw error;
