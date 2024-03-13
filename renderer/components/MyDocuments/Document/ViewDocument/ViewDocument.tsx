@@ -66,7 +66,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
       await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
     } catch (error) {
-      console.error(error);
+      window.electronAPI.log('error', `Error occurred during scanning: ${error.message}`);
     }
   };
 
@@ -229,10 +229,15 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   useEffect(() => {
     const checkStoredScannerAvailability = async () => {
       const storedScanner = await window.electronAPI.getStoreValue('scanner');
-      if (scannersList.includes(storedScanner)) {
-        setSelectedScanner(storedScanner);
-      } else if (scannersList.length > 0) {
+      if (scannersList && !scannersList.includes(storedScanner)) {
+        window.electronAPI.log(
+          'debug',
+          `Stored scanner: ${storedScanner} is not available. Setting first available scanner as selected.`,
+        );
         setSelectedScanner(scannersList[0]);
+      } else {
+        window.electronAPI.log('debug', `Stored scanner: ${storedScanner} is available. Setting it as selected.`);
+        setSelectedScanner(storedScanner);
       }
     };
     checkStoredScannerAvailability();

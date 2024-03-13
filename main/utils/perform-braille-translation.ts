@@ -18,6 +18,19 @@ const performBrailleTranslation = async (brailleText, documentID, pageID, transl
   } else if (translationLanguage === 'en') {
     translationTable = 'en-ueb-g2.ctb';
   }
+
+  const recognizedBrailleFilePath = path.join(resultsDir, 'translatedBrailleDots.txt');
+
+  // delete the old translation file to make sure that it is not read instead of new one if the translation fails
+  if (fs.existsSync(recognizedBrailleFilePath)) {
+    fs.unlink(recognizedBrailleFilePath, (err) => {
+      if (err) {
+        logger.error(`In performScan, error occurred when deleting profile file: ${err.message}`);
+        return;
+      }
+    });
+  }
+
   // Spawn a new child process to run the Python script
   translateBraille = spawn(PYTHON_EXE, [LIBLOUIS_PYTHON_PATH, brailleText, resultsDir, translationTable]);
 
@@ -32,7 +45,7 @@ const performBrailleTranslation = async (brailleText, documentID, pageID, transl
   translateBraille.stderr.on('data', (data) => {
     logger.error(`Python script error: ${data}`);
   });
-  const recognizedBrailleFilePath = path.join(resultsDir, 'translatedBrailleDots.txt');
+
   try {
     const translationOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
     await performUpdateDocument(mainWindow, 'editTranslatedText', documentID, translationOutput, pageID);
