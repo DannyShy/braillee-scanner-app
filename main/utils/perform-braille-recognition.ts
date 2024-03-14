@@ -79,7 +79,7 @@ let isQueueRunning = false;
 const addFileToQueue = (
   fileName: string,
   documentID: number,
-  pageID: number,
+  pageID: string,
   translationLanguage: string,
   mainWindow: BrowserWindow,
 ) => {

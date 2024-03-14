@@ -3,7 +3,7 @@ import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import { performScan, performDetectScanners } from './utils/perform-manage-scanning';
 import { ipcMain } from 'electron';
-import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
+import { performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
@@ -16,6 +16,7 @@ import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
+import prepareFileForRecognition from './utils/perform-prepare-file-for-recognition';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -68,7 +69,7 @@ if (IS_PROD) {
     return performScan(documentID, pageID, selectedScanner);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
-    addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);
+    prepareFileForRecognition(fileName, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();

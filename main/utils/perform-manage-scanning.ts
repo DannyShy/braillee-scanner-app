@@ -7,7 +7,7 @@ import fs from 'fs';
 
 const performScan = (documentID: number, pageID: string, selectedScanner: string): Promise<string> => {
   selectedScanner = selectedScanner.trim();
-  const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID, 'scan.pdf');
+  const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', 'scan.pdf');
   updateScannerProfile(selectedScanner);
 
   return new Promise((resolve, reject) => {
