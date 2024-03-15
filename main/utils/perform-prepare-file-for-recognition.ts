@@ -27,6 +27,7 @@ const prepareFileForRecognition = async (
           fs.unlinkSync(filePath);
         }
       } else {
+        // if the file is not a pdf, it is a single image which is uploaded by the user and should be copied to the images directory
         numberOfFiles = 1;
         filePath = performCopyUploadedImage(filePath, documentID);
       }
@@ -36,15 +37,16 @@ const prepareFileForRecognition = async (
     }
 
     for (let i = 0; i < numberOfFiles; i++) {
+      // If there are multiple files, add a new page for each one
       if (i > 0) {
         const updatedDocument = performUpdateDocument(mainWindow, 'addPage', documentID);
         pageID = updatedDocument.pages[updatedDocument.pages.length - 1].pageID;
       }
-
+      // If the file is a PDF, update the file path for each image
       if (extension === '.pdf') {
         filePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', `scan-${i + 1}.png`);
       }
-
+      // Create a new directory for each page
       const pathToPageDirectory = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID);
       if (!fs.existsSync(pathToPageDirectory)) {
         fs.mkdirSync(pathToPageDirectory);
@@ -53,10 +55,12 @@ const prepareFileForRecognition = async (
       await performMoveImageToPageDirectory(filePath, pathToPageDirectory);
       filePath = path.join(pathToPageDirectory, path.basename(filePath));
 
+      // Update the document with the new file path and status
       const correctedPathToFile = 'file:///' + filePath.replace(/\\/g, '/');
       performUpdateDocument(mainWindow, 'editFile', documentID, correctedPathToFile, pageID);
       performUpdateDocument(mainWindow, 'editBrailleStatus', documentID, 'recognitionInProgress', pageID);
 
+      // Add the file to the queue for recognition
       addFileToQueue(filePath, documentID, pageID, translationLanguage, mainWindow);
       filePath = filePath.replace(pageID, '');
     }
