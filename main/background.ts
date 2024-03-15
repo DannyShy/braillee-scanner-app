@@ -15,7 +15,7 @@ import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
-import prepareFileForRecognition from './utils/perform-prepare-file-for-recognition';
+import { performPrepareFileForRecognition } from './utils/perform-prepare-file-for-recognition';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -59,14 +59,14 @@ if (IS_PROD) {
     await performCheckDiskSpace(mainWindow);
   });
   ipcMain.on('process-uploaded-file', async (event, filePath, documentID, pageID, translationLanguage) => {
-    prepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
+    performPrepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, translationLanguage) => {
     const pathToScannedFile = await performScan(documentID, pageID, selectedScanner);
-    prepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
+    performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
     addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);

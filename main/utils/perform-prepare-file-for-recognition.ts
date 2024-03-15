@@ -10,7 +10,7 @@ import { performUpdateDocument } from './perform-manage-document';
 let numberOfFiles;
 const supportedExtensions = ['.pdf', '.jpeg', '.jpg', '.png', '.gif', '.bmp', '.tiff', '.ico', '.jfif', '.webp'];
 
-const prepareFileForRecognition = async (
+const performPrepareFileForRecognition = async (
   filePath: string,
   documentID: number,
   pageID: string,
@@ -112,4 +112,4 @@ const performCopyUploadedImage = (imagePath: string, documentID: number): string
   }
 };
 
-export default prepareFileForRecognition;
+export { performPrepareFileForRecognition };
