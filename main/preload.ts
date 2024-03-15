@@ -122,9 +122,8 @@ const removeBrailleTextListener = () => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  scanFile: (documentID: number, pageID: string, selectedScanner: string) =>
-    ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner),
-  copyImage: (imagePath: string, documentID: number) => ipcRenderer.send('copy-image', imagePath, documentID),
+  scanFile: (documentID: number, pageID: string, selectedScanner: string, translationLanguage: string) =>
+    ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner, translationLanguage),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   recognizeBraille: (file: string | null, documentID: number, pageID: string, translationLanguage: string) => {
     ipcRenderer.send('recognize-braille', file, documentID, pageID, translationLanguage);
@@ -164,4 +163,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   translateText: (brailleText: string, documentID: number, pageID: string, translationLanguage: string) =>
     ipcRenderer.send('translate-text', brailleText, documentID, pageID, translationLanguage),
   clearPage: (documentID: number, file: string) => ipcRenderer.send('clear-page', documentID, file),
+  processUploadedFile: (filePath: string, documentID: number, pageID: string, translationLanguage: string) =>
+    ipcRenderer.send('process-uploaded-file', filePath, documentID, pageID, translationLanguage),
 });

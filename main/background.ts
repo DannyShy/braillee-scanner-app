@@ -3,7 +3,7 @@ import serve from 'electron-serve';
 import { createWindow } from './helpers';
 import { performScan, performDetectScanners } from './utils/perform-manage-scanning';
 import { ipcMain } from 'electron';
-import { performCancelRecognizeBraille } from './utils/perform-braille-recognition';
+import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
 import fs from 'fs';
 import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
@@ -11,7 +11,6 @@ import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
-import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
@@ -59,17 +58,18 @@ if (IS_PROD) {
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
   });
-  ipcMain.on('copy-image', async (event, imagePath, documentID) => {
-    performCopyUploadedImage(imagePath, documentID);
+  ipcMain.on('process-uploaded-file', async (event, filePath, documentID, pageID, translationLanguage) => {
+    prepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
-  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner) => {
-    return performScan(documentID, pageID, selectedScanner);
+  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, translationLanguage) => {
+    const pathToScannedFile = await performScan(documentID, pageID, selectedScanner);
+    prepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
-    prepareFileForRecognition(fileName, documentID, pageID, translationLanguage, mainWindow);
+    addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('cancel-setup', () => {
     performCancelInitialSetup();

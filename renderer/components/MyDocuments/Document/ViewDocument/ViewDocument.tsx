@@ -54,20 +54,14 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   };
 
   const handleScan = async () => {
-    try {
-      window.electronAPI.log('debug', `Scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
-      await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
-      const scannedOutput = await window.electronAPI.scanFile(
-        activeDocument.documentID,
-        activeDocument.pages[activePage].pageID,
-        selectedScanner,
-      );
-      const formattedURI = 'file:///' + scannedOutput.replace(/\\/g, '/');
-      await onUpdate('editFile', formattedURI, activeDocument.pages[activePage].pageID);
-      await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
-    } catch (error) {
-      window.electronAPI.log('error', `Error occurred during scanning: ${error.message}`);
-    }
+    window.electronAPI.log('debug', `Scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
+    await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
+    await window.electronAPI.scanFile(
+      activeDocument.documentID,
+      activeDocument.pages[activePage].pageID,
+      selectedScanner,
+      translationLanguage,
+    );
   };
 
   const handleClickRejectImage = async () => {
@@ -91,11 +85,13 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
 
   const handleUploadFile = async () => {
     const pathToUploadedFile = (uploadedFile as any).path;
-    const correctedPathToFile = 'file:///' + pathToUploadedFile.replace(/\\/g, '/');
-    window.electronAPI.log('debug', `User uploaded file ${correctedPathToFile}.`);
-    window.electronAPI.copyImage(correctedPathToFile, activeDocument.documentID);
-    await onUpdate('editFile', correctedPathToFile, activeDocument.pages[activePage].pageID);
-    await onUpdate('editBrailleStatus', 'recognitionInProgress', activeDocument.pages[activePage].pageID);
+    window.electronAPI.log('debug', `User uploaded file ${pathToUploadedFile}.`);
+    window.electronAPI.processUploadedFile(
+      pathToUploadedFile,
+      activeDocument.documentID,
+      activeDocument.pages[activePage].pageID,
+      translationLanguage,
+    );
     setUploadedFile(null);
   };
 
@@ -163,7 +159,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           {t('view_document.scan_button')}
         </Button>
         <Text>{t('view_document.or')}</Text>
-        <FileButton onChange={setUploadedFile} accept="image/png,image/jpeg">
+        <FileButton onChange={setUploadedFile} accept="image/*,.pdf">
           {(props) => (
             <Button size="xl" {...props}>
               {t('view_document.upload_button')}
@@ -225,6 +221,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
       window.electronAPI.removeScannersListListener();
     };
   }, []);
+
   //checks if the stored scanner is available
   useEffect(() => {
     const checkStoredScannerAvailability = async () => {
