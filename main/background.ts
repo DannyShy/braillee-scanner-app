@@ -11,11 +11,11 @@ import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
 import { performLogFromRenderer } from './utils/perform-log-from-renderer';
-import { performCopyUploadedImage } from './utils/perform-copy-uploaded-image';
 import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
+import { performPrepareFileForRecognition } from './utils/perform-prepare-file-for-recognition';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -58,14 +58,15 @@ if (IS_PROD) {
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
   });
-  ipcMain.on('copy-image', async (event, imagePath, documentID) => {
-    performCopyUploadedImage(imagePath, documentID);
+  ipcMain.on('process-uploaded-file', async (event, filePath, documentID, pageID, translationLanguage) => {
+    performPrepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
-  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner) => {
-    return performScan(documentID, pageID, selectedScanner);
+  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, translationLanguage) => {
+    const pathToScannedFile = await performScan(documentID, pageID, selectedScanner);
+    performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
     addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);
