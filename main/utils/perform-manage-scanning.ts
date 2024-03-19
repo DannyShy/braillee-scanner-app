@@ -89,7 +89,7 @@ const createScannerProfile = (scannerName: string) => {
 <CustomPageSize xmlns:p3="http://www.w3.org/2001/XMLSchema-instance" p3:nil="true"/>
 <Resolution>Dpi300</Resolution>
 <PaperSource>Feeder</PaperSource>
-<EnableAutoSave>false</EnableAutoSave>
+<EnableAutoSave>true</EnableAutoSave>
 <AutoSaveSettings xmlns:p3="http://www.w3.org/2001/XMLSchema-instance" p3:nil="true"/>
 <Quality>75</Quality>
 <AutoDeskew>false</AutoDeskew>
