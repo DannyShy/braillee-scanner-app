@@ -8,6 +8,7 @@ import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import { DocumentDeletionNotification } from './DocumentDeletionNotification/DocumentDeletionNotification';
 
 const MyDocuments: React.FC = () => {
   useLogMount('MyDocuments');
@@ -80,6 +81,7 @@ const MyDocuments: React.FC = () => {
       ) : (
         <NoDocuments onCreateDocument={onCreateDocument} />
       )}
+      <DocumentDeletionNotification />
     </MainContent>
   );
 };

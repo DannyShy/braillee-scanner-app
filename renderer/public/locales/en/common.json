@@ -32,15 +32,7 @@
     "hidden_document_deletion": "Document {{document}}} was successfully deleted."
   },
   "document_cards": {
-    "search_bar": "Search by name...",
-    "close_button": "Close notification",
-    "deletion_error": {
-      "notification_title": "Document was not deleted!",
-      "notification_text": "There was problem with deletion of file/folder with path: {{path}}. Please try again, restart app or contact support."
-    },
-    "deletion_success": {
-      "notification_title": "Document was successfully deleted!"
-    }
+    "search_bar": "Search by name..."
   },
   "view_document": {
     "mini_page_number": "Miniature of page {{pageIndex}}",
@@ -76,5 +68,13 @@
     "scanner_text_multiple": "Found {{scannersCount}} scanners. Below is menu for selecting scanner to work with.",
     "hidden_refresh_button": "Refresh scanners list"
   },
-  "view_translation": { "description": "Language", "menu_item": { "en": "english", "sk": "slovenský" } }
+  "view_translation": { "description": "Language", "menu_item": { "en": "english", "sk": "slovenský" } },
+  "document_deletion_error": {
+    "notification_title": "Document was not deleted!",
+    "notification_text": "There was problem with deletion of file/folder with path: {{path}}. Please try again, restart app or contact support."
+  },
+  "document_deletion_success": {
+    "notification_title": "Document was successfully deleted!"
+  },
+  "notification_close_button": "Close notification"
 }

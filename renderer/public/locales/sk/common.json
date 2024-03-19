@@ -32,15 +32,7 @@
     "hidden_document_deletion": "Dokument {{document}}} bol úspešne vymazaný."
   },
   "document_cards": {
-    "search_bar": "Hľadať podľa názvu...",
-    "close_button": "Zatvoriť notifikáciu",
-    "deletion_error": {
-      "notification_title": "Dokument nebol vymazaný!",
-      "notification_text": "Vyskytol sa problem so zmazaním súboru/priečinka s cestou: {{path}}. Prosím skúste znovu, reštartujte aplikáciu alebo kontaktujte podporu."
-    },
-    "deletion_success": {
-      "notification_title": "Dokument bol úspešne vymazaný!"
-    }
+    "search_bar": "Hľadať podľa názvu..."
   },
   "view_document": {
     "mini_page_number": "Miniatúrne zobrazenie strany číslo {{pageIndex}}",
@@ -76,5 +68,13 @@
     "scanner_text_multiple": "Bolo nájdených {{scannersCount}} skenerov. Nižšie je menu na výber skeneru, s ktorým chcete pracovať.",
     "hidden_refresh_button": "Obnoviť zoznam nájdených zariadení."
   },
-  "view_translation": { "description": "Jazyk", "menu_item": { "en": "english", "sk": "slovenský" } }
+  "view_translation": { "description": "Jazyk", "menu_item": { "en": "english", "sk": "slovenský" } },
+  "document_deletion_error": {
+    "notification_title": "Dokument nebol vymazaný!",
+    "notification_text": "Vyskytol sa problem so zmazaním súboru/priečinka s cestou: {{path}}. Prosím skúste znovu, reštartujte aplikáciu alebo kontaktujte podporu."
+  },
+  "document_deletion_success": {
+    "notification_title": "Dokument bol úspešne vymazaný!"
+  },
+  "notification_close_button": "Zatvoriť notifikáciu"
 }

@@ -33,13 +33,3 @@
   width: 100%;
   padding: 0px 16px 32px 32px;
 }
-
-.notification {
-  position: fixed;
-  z-index: 1000;
-  max-width: 750px;
-  bottom: 0;
-  right: 0;
-  margin: 32px;
-  pointer-events: auto;
-}
