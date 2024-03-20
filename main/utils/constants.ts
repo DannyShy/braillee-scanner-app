@@ -34,4 +34,5 @@ export const DISK_NAME = path.parse(__dirname).root;
 export const MODEL_AND_DEPENDENCIES_SIZE: number = 1773117056;
 export const NAPS_SCAN_CLI_PATH = path.join(pathToResources, 'naps2-7.3.1-win/App/NAPS2.Console.exe');
 export const NAPS_SCAN_PROFILES_PATH = path.join(pathToResources, 'naps2-7.3.1-win/Data/profiles.xml');
+export const NAPS_SCAN_TEMPLATE_PROFILE_PATH = path.join(pathToResources, 'templates/profiles.xml.hbs');
 export const LIBLOUIS_PYTHON_PATH = path.join(pathToResources, 'liblouis-python/run.py');

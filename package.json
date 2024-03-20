@@ -27,6 +27,7 @@
     "electron-store": "^8.1.0",
     "file-selector": "^0.6.0",
     "fs-finder": "^1.8.1",
+    "handlebars": "^4.7.8",
     "i18next": "^23.7.16",
     "i18next-fetch-backend": "^5.0.2",
     "liblouis": "^0.4.0",
