@@ -17,15 +17,24 @@ const DocumentDeletionNotification: React.FC<Props> = () => {
   const checkIcon = <IconCheck style={{ width: 20, height: 20 }} />;
 
   useEffect(() => {
+    let timeout = null;
     window.electronAPI.addDeleteDocumentStatusListener((deletionStatus, error) => {
+      // Clear previous timeout
+      if (timeout) {
+        clearTimeout(timeout);
+      }
       setDeletionSuccessful(deletionStatus);
       setErrorMessage(error);
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         setDeletionSuccessful(null);
       }, 5000);
     });
     return () => {
       window.electronAPI.removeDeleteDocumentStatusListener();
+      // Clear timeout when component unmounts
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     };
   }, []);
 
