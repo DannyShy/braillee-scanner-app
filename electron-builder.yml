@@ -26,6 +26,10 @@ extraResources:
     to: naps2-7.3.1-win
     filter:
       - '**/*'
+  - from: ./resources/templates
+    to: templates
+    filter:
+      - '**/*'
 publish: null
 
 linux:

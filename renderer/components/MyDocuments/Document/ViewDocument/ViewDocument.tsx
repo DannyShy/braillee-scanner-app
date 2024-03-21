@@ -41,6 +41,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
   };
 
   const fetchScannersList = async () => {
+    setScannersList([]);
     window.electronAPI.getScannersList();
     await window.electronAPI.addScannersListListener((scannersList) => {
       setScannersList(scannersList);
@@ -155,7 +156,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
           fetchScannersList={fetchScannersList}
           scannersList={scannersList}
         />
-        <Button onClick={handleScan} size="xl">
+        <Button onClick={handleScan} size="xl" disabled={!scannersList.length}>
           {t('view_document.scan_button')}
         </Button>
         <Text>{t('view_document.or')}</Text>
