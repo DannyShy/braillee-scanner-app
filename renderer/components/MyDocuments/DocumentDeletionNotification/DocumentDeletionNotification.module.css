@@ -1,0 +1,9 @@
+.notification {
+  position: fixed;
+  z-index: 1000;
+  max-width: 750px;
+  bottom: 0;
+  right: 0;
+  margin: 32px;
+  pointer-events: auto;
+}
