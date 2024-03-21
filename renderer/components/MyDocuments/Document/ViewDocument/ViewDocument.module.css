@@ -105,54 +105,6 @@
   flex-direction: row;
 }
 
-.docPreviewEmpty {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  background: var(--mantine-color-gray-3);
-  margin-right: 30px;
-  margin-top: 10px;
-  border-radius: 1%;
-}
-
-.docPreviewEmpty p,
-.docPreviewEmpty button {
-  margin: 7px;
-}
-
-.imageAndButtonDiv {
-  position: relative;
-  display: inline-block;
-  margin-right: 30px;
-  margin-top: 10px;
-}
-
-.buttonDiv {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.rejectScannedDocument {
-  position: absolute;
-  top: 10px;
-  right: 0;
-  padding: 0px 24px;
-}
-
-.imagePreview {
-  width: 100%;
-  height: auto;
-  display: block;
-  max-width: 100%;
-  max-height: 70vh;
-  object-fit: contain;
-  position: relative;
-  z-index: 0;
-}
-
 .translatedDocs {
   flex: 1;
   height: 100%;

@@ -1,4 +1,4 @@
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { UnstyledButton, Menu, Group, VisuallyHidden, Button, Text } from '@mantine/core';
 import { IconChevronDown, IconRefresh } from '@tabler/icons-react';
 import classes from './ScannerPicker.module.css';
