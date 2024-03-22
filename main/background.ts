@@ -65,7 +65,7 @@ if (IS_PROD) {
     await performInitialSetup(mainWindow);
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, translationLanguage) => {
-    const pathToScannedFile = await performScan(documentID, pageID, selectedScanner);
+    const pathToScannedFile = await performScan(documentID, selectedScanner);
     performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
