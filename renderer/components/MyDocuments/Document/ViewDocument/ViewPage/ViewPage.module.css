@@ -10,11 +10,6 @@
   border-radius: 1%;
 }
 
-.docPreviewEmpty p,
-.docPreviewEmpty button {
-  margin: 7px;
-}
-
 .imageAndButtonDiv {
   position: relative;
   display: inline-block;
@@ -44,4 +39,66 @@
   object-fit: contain;
   position: relative;
   z-index: 0;
+}
+
+.control {
+  width: 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-md);
+  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6));
+  transition: background-color 150ms ease;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  margin: 0px;
+  margin-top: 8px;
+
+  &[data-expanded] {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
+  }
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
+  }
+}
+
+.label {
+  font-weight: 500;
+  font-size: var(--mantine-font-size-sm);
+  align-items: center;
+  gap: 0px;
+}
+
+.icon {
+  transition: transform 150ms ease;
+  transform: rotate(0deg);
+
+  [data-expanded] & {
+    transform: rotate(180deg);
+  }
+}
+
+.scanGroup {
+  white-space: pre-line;
+  display: flex;
+  align-items: center;
+  margin-left: 60px;
+  text-align: center;
+  gap: 0px;
+}
+
+.docPreviewEmpty > * {
+  margin: 8px;
+}
+
+.scanButton {
+  margin: 8px;
+  margin-bottom: 0px;
+}
+
+.autoScanButton {
+  margin-left: 8px;
+  margin-top: 8px;
+  margin-bottom: 0px;
 }

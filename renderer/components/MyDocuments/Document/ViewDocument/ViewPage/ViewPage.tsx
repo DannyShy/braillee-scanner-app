@@ -1,11 +1,23 @@
 import { useEffect, useState } from 'react';
 import classes from '../ViewPage/ViewPage.module.css';
-import { Button, Text, Container, Image, Loader, Tooltip, FileButton, VisuallyHidden, Group } from '@mantine/core';
+import {
+  Button,
+  Text,
+  Container,
+  Image,
+  Loader,
+  Tooltip,
+  FileButton,
+  VisuallyHidden,
+  Menu,
+  UnstyledButton,
+  ScrollArea,
+} from '@mantine/core';
 import { Document } from '../../../../types';
 import ScannerPicker from './ScannerPicker/ScannerPicker';
 import { useTranslation } from 'react-i18next';
 import useLogMount from 'hooks/useLogMount';
-import { IconX } from '@tabler/icons-react';
+import { IconChevronDown, IconX } from '@tabler/icons-react';
 
 type Props = {
   activeDocument: Document;
@@ -14,12 +26,24 @@ type Props = {
   translationLanguage: string;
 };
 
+const scanDelayValues: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+
 const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, translationLanguage }) => {
   useLogMount('ViewPage');
   const { t } = useTranslation();
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
+  const [opened, setOpened] = useState<boolean>(false);
+  const [selectedScanDelay, setSelectedScanDelay] = useState<number>(3);
+  const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
+
+  const items = scanDelayValues.map((item) => (
+    <Menu.Item onClick={() => setSelectedScanDelay(item)} key={item}>
+      {/* <VisuallyHidden>{t('scanner_picker.scanner')}</VisuallyHidden> */}
+      {item}s
+    </Menu.Item>
+  ));
 
   const fetchScannersList = async () => {
     setScannersList([]);
@@ -41,8 +65,21 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     setUploadedFile(null);
   };
 
-  const handleScan = async () => {
+  const handleContinuousScan = async () => {
     window.electronAPI.log('debug', `Scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
+    await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
+    await window.electronAPI.scanFile(
+      activeDocument.documentID,
+      activeDocument.pages[activePage].pageID,
+      selectedScanner,
+      translationLanguage,
+    );
+  };
+
+  const handleScanWithBreak = async () => {
+    //render stop button instead of other buttons
+    window.electronAPI.log('debug', `Auto scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
+    setAutoScanIsRunning(true);
     await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
     await window.electronAPI.scanFile(
       activeDocument.documentID,
@@ -64,6 +101,27 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     await onUpdate('editTranslatedTextStatus', null, activeDocument.pages[activePage].pageID);
     await onUpdate('editTranslatedText', null, activeDocument.pages[activePage].pageID);
   };
+
+  // run autoscan loop once the file of active page is available
+
+  useEffect(() => {
+    if (
+      activeDocument.pages[activePage].file &&
+      activeDocument.pages[activePage].file !== 'scanInProgress' &&
+      autoScanIsRunning
+    ) {
+      onUpdate('addPage'); // during time delay new page is added and set to be active
+      setTimeout(() => {
+        onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
+        window.electronAPI.scanFile(
+          activeDocument.documentID,
+          activeDocument.pages[activePage].pageID,
+          selectedScanner,
+          translationLanguage,
+        );
+      }, selectedScanDelay * 1000);
+    }
+  }, [activeDocument.pages[activePage].file]);
 
   // get list of available scanners
   useEffect(() => {
@@ -108,7 +166,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   return activeDocument.pages[activePage].file === 'scanInProgress' ? (
     <Container className={classes.docPreviewEmpty}>
       <Loader color="blue" />
-      <Text tabIndex={0}>{t('view_document.scan_runs')}</Text>
+      <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
     </Container>
   ) : activeDocument.pages[activePage].file === null ? (
     <Container className={classes.docPreviewEmpty}>
@@ -118,14 +176,47 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
         fetchScannersList={fetchScannersList}
         scannersList={scannersList}
       />
-      <Button onClick={handleScan} size="xl" disabled={!scannersList.length}>
-        {t('view_document.scan_button')}
-      </Button>
-      <Text>{t('view_document.or')}</Text>
+      <div className={classes.scanGroup}>
+        <Tooltip label="Scan all pages without a break">
+          <Button
+            className={classes.scanButton}
+            onClick={handleContinuousScan}
+            size="xl"
+            disabled={!scannersList.length}
+          >
+            {t('view_document.view_page.scan_button')}
+          </Button>
+        </Tooltip>
+        <Tooltip label="Scan with defined time break">
+          <Button
+            className={classes.autoScanButton}
+            onClick={handleScanWithBreak}
+            size="xl"
+            disabled={!scannersList.length}
+          >
+            {t('view_document.view_page.auto_scan_button')}
+          </Button>
+        </Tooltip>
+        <VisuallyHidden>
+          {t('scanner_picker.scanner_text_multiple', { scannersCount: scannersList.length })}
+        </VisuallyHidden>
+        <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
+          <Menu.Target>
+            <UnstyledButton h={60} className={classes.control} data-expanded={opened || undefined}>
+              <span className={classes.label}>{selectedScanDelay}s</span>
+              <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
+            </UnstyledButton>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <ScrollArea h={150}>{items}</ScrollArea>
+          </Menu.Dropdown>
+        </Menu>
+      </div>
+      <Text>{t('view_document.view_page.or')}</Text>
       <FileButton onChange={setUploadedFile} accept="image/*,.pdf">
         {(props) => (
           <Button size="xl" {...props}>
-            {t('view_document.upload_button')}
+            {t('view_document.view_page.upload_button')}
           </Button>
         )}
       </FileButton>
@@ -134,11 +225,11 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     <div className={classes.imageAndButtonDiv}>
       <Image
         src={activeDocument.pages[activePage].file}
-        alt={t('view_document.image_description')}
+        alt={t('view_document.view_page.image_description')}
         className={classes.imagePreview}
         tabIndex={0}
       />
-      <Tooltip label={t('view_document.clear_button')}>
+      <Tooltip label={t('view_document.view_page.clear_button')}>
         <Button
           className={classes.rejectScannedDocument}
           size="xl"
@@ -147,7 +238,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
           color="red"
         >
           <IconX size={35}></IconX>
-          <VisuallyHidden>{t('view_document.clear_button')}</VisuallyHidden>
+          <VisuallyHidden>{t('view_document.view_page.clear_button')}</VisuallyHidden>
         </Button>
       </Tooltip>
     </div>

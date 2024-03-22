@@ -38,17 +38,20 @@
     "mini_page_number": "Miniature of page {{pageIndex}}",
     "mini_page_description_filled": "This page contains uploaded or scanned file.",
     "mini_page_description_empty": "This page is empty.",
-    "scan_runs": "Scan in progress...",
-    "scan_button": "Scan",
-    "or": "or",
-    "upload_button": "Upload file",
-    "image_description": "View of current page.",
-    "clear_button": "Clear page",
     "cancel_recognition_button": "Cancel recognition",
     "recognition_runs": "Recognition in progress...",
     "add_page": "Add page",
     "hidden_pagination_description": "Below is pagination component used to navigate through pages.",
-    "hidden_scanner_description": "Select scanner {{scanner}}"
+    "hidden_scanner_description": "Select scanner {{scanner}}",
+    "view_page": {
+      "scan_runs": "Scan in progress...",
+      "scan_button": "Scan",
+      "auto_scan_button": "Auto-scan",
+      "or": "or",
+      "upload_button": "Upload file",
+      "image_description": "View of current page.",
+      "clear_button": "Clear page"
+    }
   },
   "document_title": {
     "hidden_return_button": "Return to MyDocuments",
