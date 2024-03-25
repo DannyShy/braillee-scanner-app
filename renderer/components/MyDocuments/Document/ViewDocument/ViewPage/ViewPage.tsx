@@ -100,7 +100,11 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
 
   const handleClickRejectImage = async () => {
     window.electronAPI.log('debug', 'Reject image button clicked by user.');
-    window.electronAPI.clearPage(activeDocument.documentID, activeDocument.pages[activePage].file);
+    window.electronAPI.clearPage(
+      activeDocument.documentID,
+      activeDocument.pages[activePage].file,
+      activeDocument.pages[activePage].pageID,
+    );
     await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
     if (activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress') {
       window.electronAPI.cancelRecognition();

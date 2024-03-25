@@ -52,7 +52,7 @@ if (IS_PROD) {
   ipcMain.on('translate-text', (event, brailleText, documentID, pageID, translationLanguage) => {
     performBrailleTranslation(brailleText, documentID, pageID, translationLanguage, mainWindow);
   });
-  ipcMain.on('clear-page', (event, documentID, file) => performDeletePage(documentID, file));
+  ipcMain.on('clear-page', (event, documentID, file, pageID) => performDeletePage(documentID, file, pageID));
   ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
