@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import classes from '../ViewPage/ViewPage.module.css';
 import {
   Button,
@@ -37,6 +37,8 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   const [opened, setOpened] = useState<boolean>(false);
   const [selectedScanDelay, setSelectedScanDelay] = useState<number>(3);
   const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
+  const activePageRef = useRef(activePage);
+  const activeDocumentRef = useRef(activeDocument);
 
   const items = scanDelayValues.map((item) => (
     <Menu.Item onClick={() => setSelectedScanDelay(item)} key={item}>
@@ -89,6 +91,12 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     );
   };
 
+  const handleStopScanWithBreak = async () => {
+    setAutoScanIsRunning(false);
+    await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
+    window.electronAPI.log('debug', 'Auto scan stopped by user.');
+  };
+
   const handleClickRejectImage = async () => {
     window.electronAPI.log('debug', 'Reject image button clicked by user.');
     window.electronAPI.clearPage(activeDocument.documentID, activeDocument.pages[activePage].file);
@@ -112,16 +120,25 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     ) {
       onUpdate('addPage'); // during time delay new page is added and set to be active
       setTimeout(() => {
-        onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
+        const newActiveDocument = activeDocumentRef.current;
+        onUpdate('editFile', 'scanInProgress', newActiveDocument.pages[activePageRef.current].pageID);
         window.electronAPI.scanFile(
           activeDocument.documentID,
-          activeDocument.pages[activePage].pageID,
+          newActiveDocument.pages[activePageRef.current].pageID,
           selectedScanner,
           translationLanguage,
         );
       }, selectedScanDelay * 1000);
     }
   }, [activeDocument.pages[activePage].file]);
+
+  useEffect(() => {
+    activePageRef.current = activePage;
+  }, [activePage]);
+
+  useEffect(() => {
+    activeDocumentRef.current = activeDocument;
+  }, [activeDocument]);
 
   // get list of available scanners
   useEffect(() => {
@@ -163,10 +180,18 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     }
   }, [uploadedFile]);
 
-  return activeDocument.pages[activePage].file === 'scanInProgress' ? (
+  return activeDocument.pages[activePage].file === 'scanInProgress' && !autoScanIsRunning ? (
     <Container className={classes.docPreviewEmpty}>
       <Loader color="blue" />
       <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
+    </Container>
+  ) : autoScanIsRunning ? (
+    <Container className={classes.docPreviewEmpty}>
+      <Loader color="blue" />
+      <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
+      <Button size="xl" color="red" onClick={handleStopScanWithBreak}>
+        {t('view_document_view_page.stop_auto_scan')}
+      </Button>
     </Container>
   ) : activeDocument.pages[activePage].file === null ? (
     <Container className={classes.docPreviewEmpty}>
@@ -177,28 +202,30 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
         scannersList={scannersList}
       />
       <div className={classes.scanGroup}>
-        <Tooltip label="Scan all pages without a break">
+        <Tooltip label={t('view_document.view_page.scan_button_tooltip')}>
           <Button
             className={classes.scanButton}
             onClick={handleContinuousScan}
             size="xl"
             disabled={!scannersList.length}
           >
+            <VisuallyHidden>{t('view_document.view_page.scan_button_tooltip')}</VisuallyHidden>
             {t('view_document.view_page.scan_button')}
           </Button>
         </Tooltip>
-        <Tooltip label="Scan with defined time break">
+        <Tooltip label={t('view_document.view_page.scan_with_break_button_tooltip')}>
           <Button
             className={classes.autoScanButton}
             onClick={handleScanWithBreak}
             size="xl"
             disabled={!scannersList.length}
           >
+            <VisuallyHidden>{t('view_document.view_page.scan_with_break_button_tooltip')}</VisuallyHidden>
             {t('view_document.view_page.auto_scan_button')}
           </Button>
         </Tooltip>
         <VisuallyHidden>
-          {t('scanner_picker.scanner_text_multiple', { scannersCount: scannersList.length })}
+          {t('view_document.view_page.delay_selection_description', { scannersCount: scannersList.length })}
         </VisuallyHidden>
         <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
           <Menu.Target>

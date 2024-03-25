@@ -50,7 +50,11 @@
       "or": "alebo",
       "upload_button": "Nahrať súbor",
       "image_description": "Zobrazenie aktuálnej strany.",
-      "clear_button": "Vymazať stranu"
+      "clear_button": "Vymazať stranu",
+      "stop_auto_scan": "Ukončiť auto-skenovanie",
+      "scan_button_tooltip": "Skenovať všetky strany bez prestávky",
+      "scan_with_break_button_tooltip": "Skenovať s časovou prestávkou",
+      "delay_selection_description": "Vybrať časovú prestávku medzi skenovaním strán v sekundách."
     }
   },
   "document_title": {
