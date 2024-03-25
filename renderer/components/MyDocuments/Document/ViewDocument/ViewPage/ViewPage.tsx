@@ -35,13 +35,14 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   const [scannersList, setScannersList] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState<File>(null);
   const [opened, setOpened] = useState<boolean>(false);
-  const [selectedScanDelay, setSelectedScanDelay] = useState<number>(3);
+  const [scanDelay, setScanDelay] = useState<number>(3);
   const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
+
   const activePageRef = useRef(activePage);
   const activeDocumentRef = useRef(activeDocument);
 
   const items = scanDelayValues.map((item) => (
-    <Menu.Item onClick={() => setSelectedScanDelay(item)} key={item}>
+    <Menu.Item onClick={() => setScanDelay(item)} key={item}>
       {/* <VisuallyHidden>{t('scanner_picker.scanner')}</VisuallyHidden> */}
       {item}s
     </Menu.Item>
@@ -128,7 +129,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
           selectedScanner,
           translationLanguage,
         );
-      }, selectedScanDelay * 1000);
+      }, scanDelay * 1000);
     }
   }, [activeDocument.pages[activePage].file]);
 
@@ -148,7 +149,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     };
   }, []);
 
-  //checks if the stored scanner is available
+  // checks if the stored scanner is available
   useEffect(() => {
     const checkStoredScannerAvailability = async () => {
       const storedScanner = await window.electronAPI.getStoreValue('scanner');
@@ -172,6 +173,20 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
       window.electronAPI.setStoreValue('scanner', selectedScanner);
     }
   }, [selectedScanner]);
+
+  // checks if the stored scanDelay is available
+  useEffect(() => {
+    const checkStoredScanDealay = async () => {
+      const storedScanDelay = await window.electronAPI.getStoreValue('scan-delay');
+      if (storedScanDelay) setScanDelay(storedScanDelay);
+    };
+    checkStoredScanDealay();
+  }, []);
+
+  // stores value of scanDelay
+  useEffect(() => {
+    window.electronAPI.setStoreValue('scan-delay', scanDelay);
+  }, [scanDelay]);
 
   // updates the value of file in document after update of file
   useEffect(() => {
@@ -230,7 +245,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
         <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
           <Menu.Target>
             <UnstyledButton h={60} className={classes.control} data-expanded={opened || undefined}>
-              <span className={classes.label}>{selectedScanDelay}s</span>
+              <span className={classes.label}>{scanDelay}s</span>
               <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
             </UnstyledButton>
           </Menu.Target>
