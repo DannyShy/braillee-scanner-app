@@ -162,7 +162,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeDeleteDocumentStatusListener: removeDeleteDocumentStatusListener,
   translateText: (brailleText: string, documentID: number, pageID: string, translationLanguage: string) =>
     ipcRenderer.send('translate-text', brailleText, documentID, pageID, translationLanguage),
-  clearPage: (documentID: number, file: string) => ipcRenderer.send('clear-page', documentID, file),
+  clearPage: (documentID: number, file: string, pageID: string) =>
+    ipcRenderer.send('clear-page', documentID, file, pageID),
   processUploadedFile: (filePath: string, documentID: number, pageID: string, translationLanguage: string) =>
     ipcRenderer.send('process-uploaded-file', filePath, documentID, pageID, translationLanguage),
 });

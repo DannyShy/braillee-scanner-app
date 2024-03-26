@@ -38,17 +38,24 @@
     "mini_page_number": "Miniatúrne zobrazenie strany číslo {{pageIndex}}",
     "mini_page_description_filled": "Táto strana obsahuje nahraný alebo naskenovaný súbor.",
     "mini_page_description_empty": "Táto strana je prázdna.",
-    "scan_runs": "Prebieha skenovanie...",
-    "scan_button": "Skenovať",
-    "or": "alebo",
-    "upload_button": "Nahrať súbor",
-    "image_description": "Zobrazenie aktuálnej strany.",
-    "clear_button": "Vymazať stranu",
     "cancel_recognition_button": "Zrušiť rozpoznávanie",
     "recognition_runs": "Prebieha rozpoznávanie...",
     "add_page": "Pridať stranu",
     "hidden_pagination_description": "Nižšie je nástroj, ktorý slúži na navigáciu medzi stranami.",
-    "hidden_scanner_description": "Vybrať skener {{scanner}}"
+    "hidden_scanner_description": "Vybrať skener {{scanner}}",
+    "view_page": {
+      "scan_runs": "Prebieha skenovanie...",
+      "scan_button": "Skenovať",
+      "auto_scan_button": "Auto-skenovať",
+      "or": "alebo",
+      "upload_button": "Nahrať súbor",
+      "image_description": "Zobrazenie aktuálnej strany.",
+      "clear_button": "Vymazať stranu",
+      "stop_auto_scan": "Ukončiť auto-skenovanie",
+      "scan_button_tooltip": "Skenovať všetky strany bez prestávky",
+      "scan_with_break_button_tooltip": "Skenovať s časovou prestávkou",
+      "delay_selection_description": "Vybrať časovú prestávku medzi skenovaním strán v sekundách."
+    }
   },
   "document_title": {
     "hidden_return_button": "Vrátiť sa späť na moje dokumenty.",

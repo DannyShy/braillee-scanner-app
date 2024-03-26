@@ -1,4 +1,4 @@
-import { useState, useEffect, Dispatch, SetStateAction } from 'react';
+import { useState, Dispatch, SetStateAction } from 'react';
 import { UnstyledButton, Menu, Group, VisuallyHidden, Button, Text } from '@mantine/core';
 import { IconChevronDown, IconRefresh } from '@tabler/icons-react';
 import classes from './ScannerPicker.module.css';
@@ -43,28 +43,20 @@ const ScannerPicker: React.FC<Props> = ({ selectedScanner, setSelectedScanner, f
         </Text>
       ) : (
         <div className={classes.scannerSelection}>
-          <div className={classes.combobox}>
-            <VisuallyHidden>
-              {t('scanner_picker.scanner_text_multiple', { scannersCount: scannersList.length })}
-            </VisuallyHidden>
-            <Menu
-              onOpen={() => setOpened(true)}
-              onClose={() => setOpened(false)}
-              radius="md"
-              width="target"
-              withinPortal
-            >
-              <Menu.Target>
-                <UnstyledButton className={classes.control} data-expanded={opened || undefined}>
-                  <Group gap="xs">
-                    <span className={classes.label}>{selectedScanner}</span>
-                  </Group>
-                  <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
-                </UnstyledButton>
-              </Menu.Target>
-              <Menu.Dropdown>{items}</Menu.Dropdown>
-            </Menu>
-          </div>
+          <VisuallyHidden>
+            {t('scanner_picker.scanner_text_multiple', { scannersCount: scannersList.length })}
+          </VisuallyHidden>
+          <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
+            <Menu.Target>
+              <UnstyledButton className={classes.control} data-expanded={opened || undefined}>
+                <Group gap="xs">
+                  <span className={classes.label}>{selectedScanner}</span>
+                </Group>
+                <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
+              </UnstyledButton>
+            </Menu.Target>
+            <Menu.Dropdown>{items}</Menu.Dropdown>
+          </Menu>
         </div>
       )}
       <Button

@@ -1,0 +1,104 @@
+.docPreviewEmpty {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background: var(--mantine-color-gray-3);
+  margin-right: 30px;
+  margin-top: 10px;
+  border-radius: 1%;
+}
+
+.imageAndButtonDiv {
+  position: relative;
+  display: inline-block;
+  margin-right: 30px;
+  margin-top: 10px;
+}
+
+.buttonDiv {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+.rejectScannedDocument {
+  position: absolute;
+  top: 10px;
+  right: 0;
+  padding: 0px 24px;
+}
+
+.imagePreview {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  position: relative;
+  z-index: 0;
+}
+
+.control {
+  width: 52px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--mantine-spacing-xs);
+  border-radius: var(--mantine-radius-md);
+  border: rem(1px) solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-6));
+  transition: background-color 150ms ease;
+  background-color: light-dark(var(--mantine-color-white), var(--mantine-color-dark-6));
+  margin: 0px;
+  margin-top: 8px;
+
+  &[data-expanded] {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
+  }
+
+  @mixin hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-5));
+  }
+}
+
+.label {
+  font-weight: 500;
+  font-size: var(--mantine-font-size-sm);
+  align-items: center;
+  gap: 0px;
+}
+
+.icon {
+  transition: transform 150ms ease;
+  transform: rotate(0deg);
+
+  [data-expanded] & {
+    transform: rotate(180deg);
+  }
+}
+
+.scanGroup {
+  white-space: pre-line;
+  display: flex;
+  align-items: center;
+  margin-left: 60px;
+  text-align: center;
+  gap: 0px;
+}
+
+.docPreviewEmpty > * {
+  margin: 8px;
+}
+
+.scanButton {
+  margin: 8px;
+  margin-bottom: 0px;
+}
+
+.autoScanButton {
+  margin-left: 8px;
+  margin-top: 8px;
+  margin-bottom: 0px;
+}

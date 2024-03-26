@@ -48,6 +48,7 @@
   white-space: pre-line;
   display: flex;
   align-items: center;
-  margin-left: 28px;
+  margin: 7px;
+  margin-left: 50px;
   text-align: center;
 }
