@@ -18,6 +18,7 @@ import ScannerPicker from './ScannerPicker/ScannerPicker';
 import { useTranslation } from 'react-i18next';
 import useLogMount from 'hooks/useLogMount';
 import { IconChevronDown, IconX } from '@tabler/icons-react';
+import { DEFAULT_SCAN_DELAY } from '../../../../../constants';
 
 type Props = {
   activeDocument: Document;
@@ -33,9 +34,9 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   const { t } = useTranslation();
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
-  const [uploadedFile, setUploadedFile] = useState<File>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [opened, setOpened] = useState<boolean>(false);
-  const [scanDelay, setScanDelay] = useState<number>(3);
+  const [scanDelay, setScanDelay] = useState<number>(DEFAULT_SCAN_DELAY);
   const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
 
   const activePageRef = useRef(activePage);
@@ -43,7 +44,6 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
 
   const items = scanDelayValues.map((item) => (
     <Menu.Item onClick={() => setScanDelay(item)} key={item}>
-      {/* <VisuallyHidden>{t('scanner_picker.scanner')}</VisuallyHidden> */}
       {item}s
     </Menu.Item>
   ));
