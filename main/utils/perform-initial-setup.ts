@@ -1,19 +1,12 @@
 import fs from 'fs';
 import axios from 'axios';
 import { mkdirSync } from 'original-fs';
-import {
-  APP_DATA_PATH,
-  PATH_TO_MODEL,
-  MODEL_URL,
-  CHUNK_SIZE,
-  MODEL_SIZE,
-  PYTHON_EXE,
-  REQUIREMENTS_PATH,
-} from './constants';
+import { APP_DATA_PATH, PATH_TO_MODEL, MODEL_URL, CHUNK_SIZE, MODEL_SIZE, REQUIREMENTS_PATH } from './constants';
 import { spawn } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
+import { pythonExecutable } from './get-python-executable';
 
 const controller = new AbortController();
 
@@ -45,7 +38,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   logger.debug(`Initial Setup util opened.`);
   mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
-  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
+  pipUpgrade = spawn(pythonExecutable, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
     detached: false,
   });
   logger.info(`Pip installations started.`);
@@ -55,7 +48,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
 
   mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
   logger.info(`Requirements installations started.`);
-  installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+  installRequirements = spawn(pythonExecutable, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
     detached: false,
   });
   await waitUntilFinished(installRequirements, 'installRequirements');

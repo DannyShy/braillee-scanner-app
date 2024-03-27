@@ -13,7 +13,8 @@
     "cancel_button": "Zrušiť",
     "finished_text": "Dodatočné dáta boli úspešne stiahnuté a aplikácia je pripravená na použitie.",
     "proceed_button": "Pokračovať",
-    "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?"
+    "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?",
+    "python_not_found": "Pre použitie tejto aplikácie je potrebné mať nainštalovaný Python 3.11. Prosím nainštalujte Python 3.11 a spustite aplikáciu znovu."
   },
   "logo": "Logo DotSight aplikácie. Zobrazenie oka obklopeného bodkami.",
   "my_documents": "Moje Dokumenty",

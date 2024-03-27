@@ -3,7 +3,7 @@ import path from 'path';
 
 export const IS_PROD = process.env.NODE_ENV === 'production';
 
-let pathToResources: string;
+export let pathToResources: string;
 let userDataPathAppendix;
 const parentDir = path.join(__dirname, '..');
 if (IS_PROD) {
@@ -25,12 +25,10 @@ export const ANGELINA_READER_PATH = path.join(pathToResources, 'AngelinaReader')
 export const ANGELINA_READER_CODE = path.join(ANGELINA_READER_PATH, 'run_local.py');
 export const PYTHON_HOME = path.join(pathToResources, 'python-3.11.6-embed-amd64');
 export const ICON_PATH = path.join(pathToResources, 'icons/icon.png');
-export const PYTHON_MODULES = path.join(PYTHON_HOME, 'python311');
 export const PYTHON_EXE = path.join(PYTHON_HOME, 'python.exe');
 export const REQUIREMENTS_PATH = path.join(ANGELINA_READER_PATH, 'requirements.txt');
 export const DISK_NAME = path.parse(__dirname).root;
 export const MODEL_AND_DEPENDENCIES_SIZE: number = 1773117056;
-export const NAPS_SCAN_CLI_PATH = path.join(pathToResources, 'naps2-7.3.1-win/App/NAPS2.Console.exe');
-export const NAPS_SCAN_PROFILES_PATH = path.join(pathToResources, 'naps2-7.3.1-win/Data/profiles.xml');
 export const NAPS_SCAN_TEMPLATE_PROFILE_PATH = path.join(pathToResources, 'templates/profiles.xml.hbs');
 export const LIBLOUIS_PYTHON_PATH = path.join(pathToResources, 'liblouis-python/run.py');
+export const PYTHON_VERSION = 'Python 3.11';

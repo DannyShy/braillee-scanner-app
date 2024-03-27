@@ -22,8 +22,8 @@ extraResources:
     to: liblouis-python
     filter:
       - '**/*'
-  - from: ./resources/naps2-7.3.1-win
-    to: naps2-7.3.1-win
+  - from: ./resources/naps2-7.4.0-win
+    to: naps2-7.4.0-win
     filter:
       - '**/*'
   - from: ./resources/templates
@@ -46,6 +46,27 @@ linux:
     Type: 'Application'
     Categories: 'Office;'
     StartupWMClass: 'dotsight'
+  extraResources:
+    - from: ./resources/naps2-7.4.0-linux
+      to: naps2-7.4.0-linux
+      filter:
+        - '**/*'
+    - from: ./resources/templates
+      to: templates
+      filter:
+        - '**/*'
+    - from: ./resources/AngelinaReader
+      to: AngelinaReader
+      filter:
+        - '**/*'
+    - from: ./resources/icons
+      to: icons
+      filter:
+        - '**/*'
+    - from: ./resources/liblouis-python
+      to: liblouis-python
+      filter:
+        - '**/*'
 
 win:
   target:
@@ -56,5 +77,32 @@ win:
   extraResources:
     - from: ./resources/python-3.11.6-embed-amd64
       to: python-3.11.6-embed-amd64
+      filter:
+        - '**/*'
+
+mac:
+  category: 'public.app-category.office'
+  target:
+    - dmg
+  icon: 'resources/icons/icon.icns'
+  extraResources:
+    # - from: ./resources/naps2-7.4.0-mac
+    #   to: naps2-7.4.0-mac
+    #   filter:
+    #     - '**/*' // to be added to the resources
+    - from: ./resources/templates
+      to: templates
+      filter:
+        - '**/*'
+    - from: ./resources/AngelinaReader
+      to: AngelinaReader
+      filter:
+        - '**/*'
+    - from: ./resources/icons
+      to: icons
+      filter:
+        - '**/*'
+    - from: ./resources/liblouis-python
+      to: liblouis-python
       filter:
         - '**/*'

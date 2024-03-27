@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, MY_DOCUMENTS_PATH } from './constants';
+import { ANGELINA_READER_CODE, PATH_TO_MODEL, MY_DOCUMENTS_PATH } from './constants';
 import path from 'path';
 import { spawn } from 'child_process';
 import treeKill from 'tree-kill';
@@ -9,6 +9,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
 import { waitUntilFinished } from './wait-until-finished';
 import { performBrailleTranslation } from './perform-braille-translation';
+import { pythonExecutable } from './get-python-executable';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -38,7 +39,7 @@ const performRecognizeBraille = async (
   const fixedInput = fixFileFormat(inputFileAbsolutePath);
   try {
     recognizeBraille = spawn(
-      PYTHON_EXE,
+      pythonExecutable,
       [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
       {
         detached: false,

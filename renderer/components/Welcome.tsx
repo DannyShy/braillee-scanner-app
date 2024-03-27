@@ -25,6 +25,7 @@ const Welcome: React.FC = () => {
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
+  const [isCorrectPythonPresent, setIsCorrectPythonPresent] = useState<boolean>(true);
   const [opened, { open, close }] = useDisclosure(false);
   const router = useRouter();
 
@@ -89,6 +90,13 @@ const Welcome: React.FC = () => {
     window.electronAPI.log('debug', `isFinishedState value changed to: ${isFinishedState}.`);
   }, [isFinishedState]);
 
+  useEffect(() => {
+    window.electronAPI.addPythonVerificationListener((value) => {
+      setIsCorrectPythonPresent(value);
+    });
+    return () => window.electronAPI.removePythonVerificationListener();
+  }, []);
+
   return (
     <Container className={classes.wrapper} size={1400}>
       <Container className={classes.center} size={1400}>
@@ -99,19 +107,28 @@ const Welcome: React.FC = () => {
                 {t('welcome.welcome_title')}
               </Title>
               <Container p={0} size={600}>
-                <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
-                  {t('welcome.welcome_text_1')}
-                  <br />
-                  {t('welcome.welcome_text_2')}
-                </Text>
+                {isCorrectPythonPresent && (
+                  <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
+                    {t('welcome.welcome_text_1')}
+                    <br />
+                    {t('welcome.welcome_text_2')}
+                  </Text>
+                )}
+                {!isCorrectPythonPresent && (
+                  <Text size="lg" c="dimmed" className={classes.description} tabIndex={0}>
+                    {t('welcome.python_not_found')}
+                  </Text>
+                )}
               </Container>
               <Flex direction={{ base: 'column', sm: 'row' }} gap={{ base: 'sm', sm: 'lg' }} justify={{ sm: 'center' }}>
                 <Button className={classes.control} size="lg" variant="default" color="gray" onClick={handleCloseApp}>
                   {t('exit_button')}
                 </Button>
-                <Button className={classes.control} size="lg" onClick={handlecheckDiskSpace}>
-                  {t('welcome.continue_button')}
-                </Button>
+                {isCorrectPythonPresent && (
+                  <Button className={classes.control} size="lg" onClick={handlecheckDiskSpace}>
+                    {t('welcome.continue_button')}
+                  </Button>
+                )}
               </Flex>
             </div>
           </Container>

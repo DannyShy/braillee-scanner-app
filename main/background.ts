@@ -16,6 +16,7 @@ import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
 import { performPrepareFileForRecognition } from './utils/perform-prepare-file-for-recognition';
+import { performPythonVerification } from './utils/perform-python-verification';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -41,6 +42,7 @@ if (IS_PROD) {
     firstPageHtml = 'home-screen.html';
     firstPage = 'home-screen';
   }
+  if (process.platform !== 'win32') performPythonVerification(mainWindow);
 
   ipcMain.handle('getStoreValue', (event, key) => {
     return store.get(key);

@@ -13,7 +13,8 @@
     "cancel_button": "Cancel",
     "finished_text": "Additional data has been successfully downloaded and application is ready to use.",
     "proceed_button": "Continue",
-    "modal_text": "Are you sure you want to cancel the data download?"
+    "modal_text": "Are you sure you want to cancel the data download?",
+    "python_not_found": "This application requires Python 3.11 to be installed on your computer. Please install Python 3.11 and restart the application."
   },
   "logo": "Logo of DotSight application. Picture of eye surrounded by dots.",
   "my_documents": "My Documents",

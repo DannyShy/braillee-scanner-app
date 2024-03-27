@@ -3,6 +3,23 @@ import { Document } from './utils/types';
 
 window.global = window;
 
+let pythonVerificationListener;
+
+const addPythonVerificationListener = (listener) => {
+  pythonVerificationListener = (event, isCorrectPythonPresent) => {
+    listener(isCorrectPythonPresent);
+  };
+  ipcRenderer.on('python-verification', pythonVerificationListener);
+};
+
+const removePythonVerificationListener = () => {
+  if (!pythonVerificationListener) {
+    return;
+  }
+  ipcRenderer.removeListener('python-verification', pythonVerificationListener);
+  pythonVerificationListener = null;
+};
+
 let scannersListListener;
 
 const addScannersListListener = (listener) => {
@@ -165,4 +182,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   clearPage: (documentID: number, file: string) => ipcRenderer.send('clear-page', documentID, file),
   processUploadedFile: (filePath: string, documentID: number, pageID: string, translationLanguage: string) =>
     ipcRenderer.send('process-uploaded-file', filePath, documentID, pageID, translationLanguage),
+  addPythonVerificationListener: addPythonVerificationListener,
+  removePythonVerificationListener: removePythonVerificationListener,
 });
