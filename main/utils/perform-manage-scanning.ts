@@ -10,9 +10,24 @@ import path from 'path';
 import { logger } from '../logger';
 import fs from 'fs';
 import Handlebars from 'handlebars';
+import os from 'os';
 
 const templateSource = fs.readFileSync(NAPS_SCAN_TEMPLATE_PROFILE_PATH, 'utf8');
 const template = Handlebars.compile(templateSource);
+
+let driver: string;
+
+switch (process.platform) {
+  case 'win32':
+    driver = 'twain';
+    break;
+  case 'darwin':
+    driver = 'apple';
+    break;
+  case 'linux':
+    driver = 'sane';
+    break;
+}
 
 const performScan = (documentID: number, selectedScanner: string): Promise<string> => {
   selectedScanner = selectedScanner.trim();
@@ -54,7 +69,7 @@ const performDetectScanners = (mainWindow: BrowserWindow) => {
 };
 
 const updateScannerProfile = (scannerName: string) => {
-  const profileContent = template({ scannerName });
+  const profileContent = template({ scannerName, driver });
   fs.writeFile(NAPS_SCAN_PROFILES_PATH, profileContent, (err) => {
     if (err) {
       logger.error(`In performScan, error occurred when creating profile file: ${err.message}`);

@@ -9,12 +9,15 @@ import {
   MODEL_SIZE,
   PYTHON_EXE,
   REQUIREMENTS_PATH,
+  OS_PLATFORM,
+  PYTHON_PKG,
+  NAPS_SCAN_PKG
 } from './constants';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
-
+import path from 'path';
 const controller = new AbortController();
 
 let pipUpgrade;
@@ -40,28 +43,46 @@ const waitUntilFinished = async (process, processName) => {
     });
   });
 };
-
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  logger.debug(`Initial Setup util opened.`);
-  mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+  if(OS_PLATFORM === 'win32') {
+    logger.debug(`Initial Setup for win32 util opened.`);
+    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+    pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
+      detached: false,
+    });
+    logger.info(`Pip installations started.`);
+    await waitUntilFinished(pipUpgrade, 'pipUpgrade');
+    pipUpgrade = null;
 
-  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
-    detached: false,
-  });
-  logger.info(`Pip installations started.`);
-  await waitUntilFinished(pipUpgrade, 'pipUpgrade');
-  pipUpgrade = null;
-  logger.info(`Pip installations finished.`);
+    logger.info(`Pip installations finished.`);
 
-  mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
-  logger.info(`Requirements installations started.`);
-  installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
-    detached: false,
-  });
-  await waitUntilFinished(installRequirements, 'installRequirements');
-  installRequirements = null;
-  logger.info(`Requirements installations finished.`);
+    mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
+    logger.info(`Requirements installations started.`);
+    installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+      detached: false,
+    });
+    await waitUntilFinished(installRequirements, 'installRequirements');
+    installRequirements = null;
+    logger.info(`Requirements installations finished.`);
 
+  } else if (OS_PLATFORM === 'darwin'){
+    logger.debug(`Initial Setup for darwin util opened.`);
+    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+
+    let pythonInstallation= exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(pythonInstallation, 'pythonInstallation');
+    pythonInstallation = null;
+    logger.info(`Pip installations finished.`);
+
+    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+    napsInstallation = null;
+    logger.info(`Naps installations finished`);
+  } else if (OS_PLATFORM === 'linux'){
+  //   TODO FINISH LINUX INSTALLATION
+  }
+
+  // model installer
   logger.info(`Model download started.`);
   let progressPercentage = 0;
   mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
