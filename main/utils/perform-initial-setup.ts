@@ -63,7 +63,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     });
     await waitUntilFinished(installRequirements, 'installRequirements');
     installRequirements = null;
-    logger.info(`Requirements installations finished.`);
+    logger.info(`Requirements installations for win32 finished.`);
 
   } else if (OS_PLATFORM === 'darwin'){
     logger.debug(`Initial Setup for darwin util opened.`);
