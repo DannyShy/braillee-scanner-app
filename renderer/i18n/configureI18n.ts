@@ -7,7 +7,9 @@ const languages = ['sk', 'en'];
 const DEFAULT_INTL_NAMESPACE = 'common';
 
 const fetchStoredLanguage = async (setConfiguredI18n: React.Dispatch<React.SetStateAction<typeof i18n>>) => {
-  const storedLanguage = await window.electronAPI.getStoreValue('language');
+  //todo: linux version does not allow this approach:
+  // const storedLanguage = await window.electronAPI.getStoreValue('language') || 'en';
+  const storedLanguage =  'sk'; 
   const i18nConfig: InitOptions = {
     supportedLngs: languages,
     fallbackLng: 'sk',

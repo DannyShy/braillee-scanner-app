@@ -1,7 +1,8 @@
-import pdf from 'pdf-poppler';
+// import pdf from 'pdf-poppler' - todo: not supported on linux;
 import fs from 'fs';
 import { logger } from '../logger';
 import path from 'path';
+import pdfImage from 'pdf-image';
 import { addFileToQueue } from './perform-braille-recognition';
 import { BrowserWindow } from 'electron';
 import { MY_DOCUMENTS_PATH } from './constants';
@@ -74,11 +75,12 @@ const performPrepareFileForRecognition = async (
 const performConvertPdfToImages = async (filePath: string, documentID: number) => {
   try {
     const outputDir = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images');
-    await pdf.convert(filePath, {
-      format: 'png',
-      out_dir: outputDir,
-      out_prefix: 'scan',
-    });
+    // todo: find better alternative or implement selective method
+    // await pdf.convert(filePath, {
+    //   format: 'png',
+    //   out_dir: outputDir,
+    //   out_prefix: 'scan',
+    // });
     const files = fs.readdirSync(outputDir);
 
     const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');
