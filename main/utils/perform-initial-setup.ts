@@ -65,7 +65,8 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     installRequirements = null;
     logger.info(`Requirements installations for win32 finished.`);
 
-  } else if (OS_PLATFORM === 'darwin'){
+  }
+  if (OS_PLATFORM === 'darwin'){
     logger.debug(`Initial Setup for darwin util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
@@ -78,8 +79,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     await waitUntilFinished(napsInstallation, 'napsInstallation');
     napsInstallation = null;
     logger.info(`Naps installations finished`);
-  } else if (OS_PLATFORM === 'linux'){
-  //   TODO FINISH LINUX INSTALLATION
+    logger.info(`Requirements installations for darwin finished.`);
   }
 
   // model installer
