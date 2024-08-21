@@ -17,6 +17,10 @@ if (IS_PROD) {
   userDataPathAppendix = '(development)';
 }
 const pathToOsResources = path.join(pathToResources, 'os', OS_PLATFORM);
+
+const pathToArm64Resources = path.join(pathToOsResources, 'arm64');
+
+const pathToX64Resources = path.join(pathToOsResources, 'x64');
 export const USER_DATA_PATH = `${app.getPath('userData')}${userDataPathAppendix}`;
 export const APP_DATA_PATH = path.resolve(USER_DATA_PATH, '.dotsight');
 export const LOGS_PATH = path.resolve(APP_DATA_PATH, 'logs');
@@ -33,8 +37,10 @@ export const PYTHON_MODULES = path.join(PYTHON_HOME, 'python311');
 export const PYTHON_EXE = path.join(PYTHON_HOME, 'python.exe');
 export const PYTHON_PKG = path.join(pathToOsResources, 'python-3.12.4-macos11.pkg');
 export const NAPS_SCAN_PKG = path.join(pathToOsResources, 'naps2-7.4.3-mac-univ.pkg');
-export const NAPS_RPM_PKG = path.join(pathToOsResources, 'naps2-7.5.1-linux-x64.rpm');
-export const NAPS_DEB_PKG = path.join(pathToOsResources, 'naps2-7.5.1-linux-x64.deb');
+export const NAPS_RPM_PKG_64 = path.join(pathToArm64Resources, 'naps2-7.5.1-linux-x64.rpm');
+export const NAPS_DEB_PKG_64 = path.join(pathToArm64Resources, 'naps2-7.5.1-linux-x64.deb');
+export const NAPS_DEB_PKG_arm64 = path.join(pathToArm64Resources, 'naps2-7.5.1-linux-x64.deb');
+export const NAPS_RPM_PKG_arm64 = path.join(pathToArm64Resources, 'naps2-7.5.1-linux-x64.deb');
 export const REQUIREMENTS_PATH = path.join(ANGELINA_READER_PATH, 'requirements.txt');
 export const TEMP_OUTPUT = os.tmpdir();
 export const DISK_NAME = path.parse(__dirname).root;

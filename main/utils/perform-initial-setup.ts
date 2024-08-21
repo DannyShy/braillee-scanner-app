@@ -12,18 +12,27 @@ import {
   OS_PLATFORM,
   PYTHON_PKG,
   NAPS_SCAN_PKG,
-  NAPS_RPM_PKG,
-  NAPS_DEB_PKG
+  NAPS_RPM_PKG_64,
+  NAPS_DEB_PKG_64,
+  NAPS_DEB_PKG_arm64,
+  NAPS_RPM_PKG_arm64
 } from './constants';
 import { spawn, exec } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
 import path from 'path';
+import {version} from 'react';
 const controller = new AbortController();
 
 let pipUpgrade;
 let installRequirements;
+
+// LINUX constants
+const DEBIAN = 'debian';
+const RPM = 'rpm';
+const x_64 = 'x64';
+const arm_64 = 'arm64';
 
 const waitUntilFinished = async (process, processName) => {
   process.stdout.on('data', (data) => {
@@ -45,6 +54,25 @@ const waitUntilFinished = async (process, processName) => {
     });
   });
 };
+
+function determineLinuxInstallationPackage(version, architecture) {
+  switch (version) {
+    case x_64:
+      switch (architecture){
+        case DEBIAN:
+          return NAPS_DEB_PKG_64;
+        case RPM:
+          return NAPS_RPM_PKG_64;
+      }
+    case arm_64:
+      switch (architecture){
+        case DEBIAN:
+          return NAPS_DEB_PKG_arm64;
+        case RPM:
+          return NAPS_RPM_PKG_arm64;
+      }
+  }
+}
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   // ### win32
   if(OS_PLATFORM === 'win32') {
@@ -86,42 +114,49 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
   }
   //### LINUX
   if (OS_PLATFORM === 'linux') {
+    const DEBIAN = 'debian';
+    const RPM = 'rpm';
+    const x_64 = 'x64';
+    const arm_64 = 'arm64';
+    let linuxVersion;
+    let linuxArch;
     logger.debug(`Initial Setup for linux util opened.`);
-    let linuxArch = null;
-    // no need to install python - linux distros already have it
-    // determine linux architecture to select correct package installer
-    const { stdout: stdoutArch } = exec(`uname -m`, (err, stdout, stderr) => {
-      if (err) {
-        logger.info('Cannot determine linux architecture');
+    // DETERMINE LINUX PACKAGE MANAGER
+    exec(`which dpkg`, (error, stdout, stderr) => {
+      if(error || stderr){
+        logger.error('Cannot determine linux distribution!');
         return;
-        } else {
-        linuxArch = stdoutArch;
-        }
-      });
-    const { stdout } = exec(`which dpkg`, (err, stdout, stderr) => {
-      if (err) {
-        logger.info(`Cannot determine linux distro`)
       } else {
-        const installerPath = stdout !== null ? NAPS_DEB_PKG : NAPS_RPM_PKG;
-        if (stdout !== null) {
-          let napsInstallation = exec(`sudo dpkg -i ${installerPath}`);
-          await waitUntilFinished(napsInstallation, 'napsInstallation');
-          napsInstallation = null;
-          logger.info(`Naps installations finished`);
-        logger.info(`Requirements installations for darwin finished.`);
-        }
-        console.log('output: ', stdout.trim().toString())
+        linuxVersion = stdout !== null ? DEBIAN : RPM;
       }
     });
 
-    
-    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
+    // DETERMINE LINUX ARCHITECTURE
+    exec(`uname -u`, (error, stdout, stderr) => {
+      if(error || stderr){
+        logger.error('Cannot determine linux architecture');
+        return;
+      } else {
+        linuxArch = stdout!== 'aarch64' ? x_64: arm_64;
+      }
+    })
+
+    // RUN INSTALLER COMMAND
+    let command = `sudo ${linuxVersion === 'DEBIAN' ? 'dpkg' : 'rpm'} -i ${determineLinuxInstallationPackage(linuxVersion, linuxArch)} }`
+    let napsInstallation = exec(command, (error, stdout, stderr) =>{
+      if(error || stderr){
+        logger.error('Cannot install necessary packages!');
+      } else {
+        logger.info('Installation started');
+      }
+    });
     await waitUntilFinished(napsInstallation, 'napsInstallation');
     napsInstallation = null;
     logger.info(`Naps installations finished`);
     logger.info(`Requirements installations for linux finished.`);
   }
-  // model installer
+
+  // MODEL INSTALLER
   logger.info(`Model download started.`);
   let progressPercentage = 0;
   mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
