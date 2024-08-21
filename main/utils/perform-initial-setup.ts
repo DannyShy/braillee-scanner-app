@@ -11,7 +11,9 @@ import {
   REQUIREMENTS_PATH,
   OS_PLATFORM,
   PYTHON_PKG,
-  NAPS_SCAN_PKG
+  NAPS_SCAN_PKG,
+  NAPS_RPM_PKG,
+  NAPS_DEB_PKG
 } from './constants';
 import { spawn, exec } from 'child_process';
 import { BrowserWindow } from 'electron';
@@ -44,6 +46,7 @@ const waitUntilFinished = async (process, processName) => {
   });
 };
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
+  // ### win32
   if(OS_PLATFORM === 'win32') {
     logger.debug(`Initial Setup for win32 util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
@@ -64,8 +67,8 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     await waitUntilFinished(installRequirements, 'installRequirements');
     installRequirements = null;
     logger.info(`Requirements installations for win32 finished.`);
-
   }
+  //### MACOS
   if (OS_PLATFORM === 'darwin'){
     logger.debug(`Initial Setup for darwin util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
@@ -81,7 +84,43 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     logger.info(`Naps installations finished`);
     logger.info(`Requirements installations for darwin finished.`);
   }
+  //### LINUX
+  if (OS_PLATFORM === 'linux') {
+    logger.debug(`Initial Setup for linux util opened.`);
+    let linuxArch = null;
+    // no need to install python - linux distros already have it
+    // determine linux architecture to select correct package installer
+    const { stdout: stdoutArch } = exec(`uname -m`, (err, stdout, stderr) => {
+      if (err) {
+        logger.info('Cannot determine linux architecture');
+        return;
+        } else {
+        linuxArch = stdoutArch;
+        }
+      });
+    const { stdout } = exec(`which dpkg`, (err, stdout, stderr) => {
+      if (err) {
+        logger.info(`Cannot determine linux distro`)
+      } else {
+        const installerPath = stdout !== null ? NAPS_DEB_PKG : NAPS_RPM_PKG;
+        if (stdout !== null) {
+          let napsInstallation = exec(`sudo dpkg -i ${installerPath}`);
+          await waitUntilFinished(napsInstallation, 'napsInstallation');
+          napsInstallation = null;
+          logger.info(`Naps installations finished`);
+        logger.info(`Requirements installations for darwin finished.`);
+        }
+        console.log('output: ', stdout.trim().toString())
+      }
+    });
 
+    
+    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+    napsInstallation = null;
+    logger.info(`Naps installations finished`);
+    logger.info(`Requirements installations for linux finished.`);
+  }
   // model installer
   logger.info(`Model download started.`);
   let progressPercentage = 0;
