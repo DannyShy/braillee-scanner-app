@@ -1,5 +1,5 @@
 import fs from 'fs';
-import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, MY_DOCUMENTS_PATH } from './constants';
+import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, MY_DOCUMENTS_PATH, IS_WIN32, IS_DARWIN, IS_LINUX } from './constants';
 import path from 'path';
 import { spawn } from 'child_process';
 import treeKill from 'tree-kill';
@@ -9,6 +9,7 @@ import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
 import { waitUntilFinished } from './wait-until-finished';
 import { performBrailleTranslation } from './perform-braille-translation';
+import { getPythonLocation } from '../utils/get_python_location';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -36,9 +37,23 @@ const performRecognizeBraille = async (
   );
   logger.info(`Started braille recognition for document: ${documentID} page: ${pageID}`);
   const fixedInput = fixFileFormat(inputFileAbsolutePath);
-  try {
+  let PYTHON_PATH = null;
+  if(IS_WIN32){
+    logger.info('win 32 system detected');
+    PYTHON_PATH = PYTHON_EXE;
+  } else {
+  // darwin,linux
+    logger.info(`${IS_DARWIN ? 'darwin' : 'linux'} system detected`);
+    try {
+      PYTHON_PATH = await getPythonLocation();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine.');
+      logger.error('Unable to fin python3 installation. Cannot use liblious software');
+    }
+  }
+
     recognizeBraille = spawn(
-      PYTHON_EXE,
+      PYTHON_PATH,
       [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
       {
         detached: false,
@@ -46,10 +61,17 @@ const performRecognizeBraille = async (
     );
     await waitUntilFinished(recognizeBraille);
     logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
-  } catch (error) {
-    logger.error(`Error in Python Braille Recognition: ${error.message}`);
-    throw error;
-  }
+
+    recognizeBraille.stdout.on('data', (data) => {
+      logger.info(`Python script response: ${data}`);
+    });
+
+    recognizeBraille.stderr.on('data', (data)=>{
+      logger.error(`Python script error: ${data}`);
+      throw new Error(data.message);
+    });
+
+
   try {
     let brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
     brailleOutput = brailleOutput.replace(/\r/g, '');

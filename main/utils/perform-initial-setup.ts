@@ -9,7 +9,9 @@ import {
   MODEL_SIZE,
   PYTHON_EXE,
   REQUIREMENTS_PATH,
-  OS_PLATFORM,
+  IS_MAC,
+  IS_LINUX,
+  IS_WINDOWS,
   PYTHON_PKG,
   NAPS_SCAN_PKG,
   NAPS_RPM_PKG_64,
@@ -75,7 +77,7 @@ function determineLinuxInstallationPackage(version, architecture) {
 }
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   // ### win32
-  if(OS_PLATFORM === 'win32') {
+  if(IS_WINDOWS) {
     logger.debug(`Initial Setup for win32 util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
     pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
@@ -97,7 +99,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     logger.info(`Requirements installations for win32 finished.`);
   }
   //### MACOS
-  if (OS_PLATFORM === 'darwin'){
+  if (IS_MAC){
     logger.debug(`Initial Setup for darwin util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
@@ -113,7 +115,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     logger.info(`Requirements installations for darwin finished.`);
   }
   //### LINUX
-  if (OS_PLATFORM === 'linux') {
+  if (IS_LINUX) {
     const DEBIAN = 'debian';
     const RPM = 'rpm';
     const x_64 = 'x64';
@@ -127,7 +129,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         logger.error('Cannot determine linux distribution!');
         return;
       } else {
-        linuxVersion = stdout !== null ? DEBIAN : RPM;
+        linuxVersion = stdout.trim().toString() !== null ? DEBIAN : RPM;
       }
     });
 
@@ -137,7 +139,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
         logger.error('Cannot determine linux architecture');
         return;
       } else {
-        linuxArch = stdout!== 'aarch64' ? x_64: arm_64;
+        linuxArch = stdout.trim().toString() !== 'aarch64' ? x_64: arm_64;
       }
     })
 

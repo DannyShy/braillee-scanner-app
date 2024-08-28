@@ -1,7 +1,6 @@
 import { app } from 'electron';
 import path from 'path';
 import os from 'os';
-
 export const IS_PROD = process.env.NODE_ENV === 'production';
 
 export const OS_PLATFORM = os.platform();
@@ -16,6 +15,8 @@ if (IS_PROD) {
   pathToResources = path.join(parentDir, 'resources');
   userDataPathAppendix = '(development)';
 }
+
+let PYTHON_PATH: string;
 const pathToOsResources = path.join(pathToResources, 'os', OS_PLATFORM);
 
 const pathToArm64Resources = path.join(pathToOsResources, 'arm64');
@@ -49,4 +50,9 @@ export const NAPS_SCAN_CLI_PATH = path.join(pathToOsResources, 'naps2-7.3.1-win/
 export const NAPS_SCAN_PROFILES_PATH = path.join(pathToOsResources, 'naps2-7.3.1-win/Data/profiles.xml');
 export const NAPS_SCAN_TEMPLATE_PROFILE_PATH = path.join(pathToResources, 'templates/profiles.xml.hbs');
 export const LIBLOUIS_PYTHON_PATH = path.join(pathToResources, 'liblouis-python/run.py');
+
+export const IS_WIN32 = OS_PLATFORM === 'win32';
+export const IS_DARWIN = OS_PLATFORM === 'darwin';
+export const IS_LINUX = OS_PLATFORM === 'linux';
+
 
