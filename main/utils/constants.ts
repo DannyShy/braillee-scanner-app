@@ -46,8 +46,11 @@ export const REQUIREMENTS_PATH = path.join(ANGELINA_READER_PATH, 'requirements.t
 export const TEMP_OUTPUT = os.tmpdir();
 export const DISK_NAME = path.parse(__dirname).root;
 export const MODEL_AND_DEPENDENCIES_SIZE: number = 1773117056;
-export const NAPS_SCAN_CLI_PATH = path.join(pathToOsResources, 'naps2-7.3.1-win/App/NAPS2.Console.exe');
+export const NAPS_SCAN_CLI_PATH_WIN32 = path.join(pathToOsResources, 'naps2-7.3.1-win/App/NAPS2.Console.exe');
+export const NAPS_SCAN_CLI_PATH_DARWIN = '/Applications/NAPS2.app/Contents/MacOS/NAPS2 console';
+export const NAPS_SCAN_CLI_PATH_LINUX = 'naps2 console';
 export const NAPS_SCAN_PROFILES_PATH = path.join(pathToOsResources, 'naps2-7.3.1-win/Data/profiles.xml');
+
 export const NAPS_SCAN_TEMPLATE_PROFILE_PATH = path.join(pathToResources, 'templates/profiles.xml.hbs');
 export const LIBLOUIS_PYTHON_PATH = path.join(pathToResources, 'liblouis-python/run.py');
 

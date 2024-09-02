@@ -9,9 +9,9 @@ import {
   MODEL_SIZE,
   PYTHON_EXE,
   REQUIREMENTS_PATH,
-  IS_MAC,
+  IS_DARWIN,
   IS_LINUX,
-  IS_WINDOWS,
+  IS_WIN32,
   PYTHON_PKG,
   NAPS_SCAN_PKG,
   NAPS_RPM_PKG_64,
@@ -77,7 +77,7 @@ function determineLinuxInstallationPackage(version, architecture) {
 }
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
   // ### win32
-  if(IS_WINDOWS) {
+  if(IS_WIN32) {
     logger.debug(`Initial Setup for win32 util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
     pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
@@ -96,10 +96,10 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     });
     await waitUntilFinished(installRequirements, 'installRequirements');
     installRequirements = null;
-    logger.info(`Requirements installations for win32 finished.`);
+    logger.info(`Requirements installation for win32 finished.`);
   }
   //### MACOS
-  if (IS_MAC){
+  if (IS_DARWIN){
     logger.debug(`Initial Setup for darwin util opened.`);
     mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
@@ -111,8 +111,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
     await waitUntilFinished(napsInstallation, 'napsInstallation');
     napsInstallation = null;
-    logger.info(`Naps installations finished`);
-    logger.info(`Requirements installations for darwin finished.`);
+    logger.info(`Requirements installation for darwin finished.`);
   }
   //### LINUX
   if (IS_LINUX) {
@@ -154,8 +153,7 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     });
     await waitUntilFinished(napsInstallation, 'napsInstallation');
     napsInstallation = null;
-    logger.info(`Naps installations finished`);
-    logger.info(`Requirements installations for linux finished.`);
+    logger.info(`Requirements installation for linux finished.`);
   }
 
   // MODEL INSTALLER

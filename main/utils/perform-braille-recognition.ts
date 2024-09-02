@@ -47,8 +47,7 @@ const performRecognizeBraille = async (
     try {
       PYTHON_PATH = await getPythonLocation();
     } catch (e) {
-      logger.info('Unable to locate python on local machine.');
-      logger.error('Unable to fin python3 installation. Cannot use liblious software');
+      logger.info('Unable to locate python on local machine. Cannot use liblious software.');
     }
   }
 
