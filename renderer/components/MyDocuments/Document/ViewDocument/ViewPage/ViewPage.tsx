@@ -158,12 +158,11 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   useEffect(() => {
     const checkStoredScannerAvailability = async () => {
       const storedScanner = await window.electronAPI.getStoreValue('scanner');
-      if (scannersList && !scannersList.includes(storedScanner)) {
+      if (scannersList && !scannersList.includes(storedScanner) && storedScanner !== undefined) {
         window.electronAPI.log(
           'debug',
-          `Stored scanner: ${storedScanner} is not available. Setting first available scanner as selected.`,
+          `Stored scanner: ${storedScanner} is not available.`,
         );
-        setSelectedScanner(scannersList[0]);
       } else {
         window.electronAPI.log('debug', `Stored scanner: ${storedScanner} is available. Setting it as selected.`);
         setSelectedScanner(storedScanner);
