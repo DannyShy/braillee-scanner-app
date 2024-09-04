@@ -25,6 +25,7 @@ import treeKill from 'tree-kill';
 import { logger } from '../logger';
 import path from 'path';
 import {version} from 'react';
+import { getPythonLocation } from './get_python_location';
 const controller = new AbortController();
 
 let pipUpgrade;
@@ -76,6 +77,7 @@ function determineLinuxInstallationPackage(version, architecture) {
   }
 }
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
+  let pythonPath = null;
   // ### win32
   if(IS_WIN32) {
     logger.debug(`Initial Setup for win32 util opened.`);
@@ -106,7 +108,26 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     let pythonInstallation= exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
     await waitUntilFinished(pythonInstallation, 'pythonInstallation');
     pythonInstallation = null;
-    logger.info(`Pip installations finished.`);
+    logger.info(`Python installations finished.`);
+
+    try {
+      pythonPath = await getPythonLocation();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine. Cannot install additional software!');
+    }
+    if(pythonPath !== null){
+      // upgrade pip
+      let pipInstallation = exec(`pip3 install --upgrade pip`);
+      await waitUntilFinished(pipInstallation, 'pipInstallation');
+      pipInstallation = null;
+      logger.info(`Pip upgrade finished!`);
+      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+        detached: false,
+      });
+      await waitUntilFinished(installRequirements, 'installRequirements');
+      installRequirements = null;
+      logger.info(`Requirements installation for darwin finished.`);
+    }
 
     let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
     await waitUntilFinished(napsInstallation, 'napsInstallation');
@@ -122,6 +143,20 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     let linuxVersion;
     let linuxArch;
     logger.debug(`Initial Setup for linux util opened.`);
+    try {
+      pythonPath = await getPythonLocation();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine. Cannot install software!');
+    }
+    if(pythonPath !== null){
+      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+        detached: false,
+      });
+
+      await waitUntilFinished(installRequirements, 'installRequirements');
+      installRequirements = null;
+      logger.info(`Requirements installation for python finished`);
+    }
     // DETERMINE LINUX PACKAGE MANAGER
     exec(`which dpkg`, (error, stdout, stderr) => {
       if(error || stderr){
@@ -153,7 +188,6 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     });
     await waitUntilFinished(napsInstallation, 'napsInstallation');
     napsInstallation = null;
-    logger.info(`Requirements installation for linux finished.`);
   }
 
   // MODEL INSTALLER
