@@ -80,11 +80,12 @@ const performConvertPdfToImages = async (filePath: string, documentID: number) =
       savePath: outputDir,
       format: "png",
     }
-    const convert = fromPath(outputDir, conversionOptions);
-    await convert(1, { responseType: 'image' }).then((resolve) => {
+    const convert = fromPath(filePath, conversionOptions);
+    const pageToConvertAsImage = 1;
+    await convert(pageToConvertAsImage, { responseType: 'image' }).then((resolve) => {
       return resolve;
     })
-    
+
     const files = fs.readdirSync(outputDir);
 
     const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');
