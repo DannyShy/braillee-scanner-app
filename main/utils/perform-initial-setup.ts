@@ -117,9 +117,9 @@ const performInitialSetup = async (mainWindow: BrowserWindow) => {
     }
     if(pythonPath !== null){
       // upgrade pip
-      let pipInstallation = exec(`pip3 install --upgrade pip`);
-      await waitUntilFinished(pipInstallation, 'pipInstallation');
-      pipInstallation = null;
+      pipUpgrade = exec(`pip3 install --upgrade pip`);
+      await waitUntilFinished(pipUpgrade, 'pipInstallation');
+      pipUpgrade = null;
       logger.info(`Pip upgrade finished!`);
       installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
         detached: false,
