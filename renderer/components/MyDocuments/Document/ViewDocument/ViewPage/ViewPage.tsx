@@ -49,13 +49,14 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   ));
 
   const fetchScannersList = async () => {
+    console.log("=>(ViewPage.tsx:53) fetchScannersList");
     setScannersList([]);
     window.electronAPI.getScannersList();
     await window.electronAPI.addScannersListListener((scannersList) => {
-      setScannersList(scannersList);
+      const sanitizedScannerList = scannersList.filter(i => i);
+      setScannersList(sanitizedScannerList);
     });
   };
-
   const handleUploadFile = async () => {
     const pathToUploadedFile = (uploadedFile as any).path;
     window.electronAPI.log('debug', `User uploaded file ${pathToUploadedFile}.`);

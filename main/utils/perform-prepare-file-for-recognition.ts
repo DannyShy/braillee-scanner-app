@@ -1,4 +1,3 @@
-import pdf from 'pdf-poppler';
 import fs from 'fs';
 import { logger } from '../logger';
 import path from 'path';
@@ -6,6 +5,7 @@ import { addFileToQueue } from './perform-braille-recognition';
 import { BrowserWindow } from 'electron';
 import { MY_DOCUMENTS_PATH } from './constants';
 import { performUpdateDocument } from './perform-manage-document';
+import { fromPath } from 'pdf2pic';
 
 let numberOfFiles;
 const supportedExtensions = ['.pdf', '.jpeg', '.jpg', '.png', '.gif', '.bmp', '.tiff', '.ico', '.jfif', '.webp'];
@@ -74,11 +74,18 @@ const performPrepareFileForRecognition = async (
 const performConvertPdfToImages = async (filePath: string, documentID: number) => {
   try {
     const outputDir = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images');
-    await pdf.convert(filePath, {
-      format: 'png',
-      out_dir: outputDir,
-      out_prefix: 'scan',
-    });
+    const conversionOptions = {
+      density: 100,
+      saveFileName: 'scan',
+      savePath: outputDir,
+      format: "png",
+    }
+    const convert = fromPath(filePath, conversionOptions);
+    const pageToConvertAsImage = 1;
+    await convert(pageToConvertAsImage, { responseType: 'image' }).then((resolve) => {
+      return resolve;
+    })
+
     const files = fs.readdirSync(outputDir);
 
     const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');

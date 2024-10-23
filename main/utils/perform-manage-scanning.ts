@@ -1,7 +1,9 @@
 import { BrowserWindow } from 'electron';
 import {
   MY_DOCUMENTS_PATH,
-  NAPS_SCAN_CLI_PATH,
+  NAPS_SCAN_CLI_PATH_WIN32,
+  NAPS_SCAN_CLI_PATH_LINUX,
+  NAPS_SCAN_CLI_PATH_DARWIN,
   NAPS_SCAN_PROFILES_PATH,
   NAPS_SCAN_TEMPLATE_PROFILE_PATH,
 } from './constants';
@@ -10,9 +12,28 @@ import path from 'path';
 import { logger } from '../logger';
 import fs from 'fs';
 import Handlebars from 'handlebars';
+import os from 'os';
 
 const templateSource = fs.readFileSync(NAPS_SCAN_TEMPLATE_PROFILE_PATH, 'utf8');
 const template = Handlebars.compile(templateSource);
+
+let driver: string;
+let napsCliPath: string;
+
+switch (process.platform) {
+  case 'win32':
+    driver = 'twain';
+    napsCliPath = NAPS_SCAN_CLI_PATH_WIN32;
+    break;
+  case 'darwin':
+    driver = 'apple';
+    napsCliPath = NAPS_SCAN_CLI_PATH_DARWIN;
+    break;
+  case 'linux':
+    driver = 'sane';
+    napsCliPath = NAPS_SCAN_CLI_PATH_LINUX;
+    break;
+}
 
 const performScan = (documentID: number, selectedScanner: string): Promise<string> => {
   selectedScanner = selectedScanner.trim();
@@ -20,7 +41,7 @@ const performScan = (documentID: number, selectedScanner: string): Promise<strin
   updateScannerProfile(selectedScanner);
 
   return new Promise((resolve, reject) => {
-    exec(`${NAPS_SCAN_CLI_PATH} -o "${scannedImagePath}" -p "braille-scanner"`, (error, stdout, stderr) => {
+      exec(`${napsCliPath} -o "${scannedImagePath}" -p "braille-scanner"`, (error, stdout, stderr) => {
       if (error) {
         logger.error(`In performScan, error occurred: ${error.message}`);
         reject(error);
@@ -34,11 +55,12 @@ const performScan = (documentID: number, selectedScanner: string): Promise<strin
       logger.info(`In performScan, stdout is: ${stdout}`);
       resolve(scannedImagePath);
     });
+      logger.info(`Detected darwin/linux system`);
   });
 };
 
 const performDetectScanners = (mainWindow: BrowserWindow) => {
-  exec(`${NAPS_SCAN_CLI_PATH} --listdevices --driver twain`, (error, stdout, stderr) => {
+  exec(`${napsCliPath} --listdevices --driver ${driver}`, (error, stdout, stderr) => {
     if (error) {
       logger.error(`In performDetectScanners, error occurred: ${error.message}`);
       return;
@@ -54,7 +76,7 @@ const performDetectScanners = (mainWindow: BrowserWindow) => {
 };
 
 const updateScannerProfile = (scannerName: string) => {
-  const profileContent = template({ scannerName });
+  const profileContent = template({ scannerName, driver });
   fs.writeFile(NAPS_SCAN_PROFILES_PATH, profileContent, (err) => {
     if (err) {
       logger.error(`In performScan, error occurred when creating profile file: ${err.message}`);

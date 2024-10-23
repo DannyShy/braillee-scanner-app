@@ -9,16 +9,33 @@ import {
   MODEL_SIZE,
   PYTHON_EXE,
   REQUIREMENTS_PATH,
+  IS_DARWIN,
+  IS_LINUX,
+  IS_WIN32,
+  PYTHON_PKG,
+  NAPS_SCAN_PKG,
+  NAPS_RPM_PKG_64,
+  NAPS_DEB_PKG_64,
+  NAPS_DEB_PKG_arm64,
+  NAPS_RPM_PKG_arm64
 } from './constants';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
-
+import path from 'path';
+import {version} from 'react';
+import { getPythonLocation } from './get_python_location';
 const controller = new AbortController();
 
 let pipUpgrade;
 let installRequirements;
+
+// LINUX constants
+const DEBIAN = 'debian';
+const RPM = 'rpm';
+const x_64 = 'x64';
+const arm_64 = 'arm64';
 
 const waitUntilFinished = async (process, processName) => {
   process.stdout.on('data', (data) => {
@@ -41,27 +58,139 @@ const waitUntilFinished = async (process, processName) => {
   });
 };
 
+function determineLinuxInstallationPackage(version, architecture) {
+  switch (version) {
+    case x_64:
+      switch (architecture){
+        case DEBIAN:
+          return NAPS_DEB_PKG_64;
+        case RPM:
+          return NAPS_RPM_PKG_64;
+      }
+    case arm_64:
+      switch (architecture){
+        case DEBIAN:
+          return NAPS_DEB_PKG_arm64;
+        case RPM:
+          return NAPS_RPM_PKG_arm64;
+      }
+  }
+}
 const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  logger.debug(`Initial Setup util opened.`);
-  mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+  let pythonPath = null;
+  // ### win32
+  if(IS_WIN32) {
+    logger.debug(`Initial Setup for win32 util opened.`);
+    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+    pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
+      detached: false,
+    });
+    logger.info(`Pip installations started.`);
+    await waitUntilFinished(pipUpgrade, 'pipUpgrade');
+    pipUpgrade = null;
 
-  pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
-    detached: false,
-  });
-  logger.info(`Pip installations started.`);
-  await waitUntilFinished(pipUpgrade, 'pipUpgrade');
-  pipUpgrade = null;
-  logger.info(`Pip installations finished.`);
+    logger.info(`Pip installations finished.`);
 
-  mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
-  logger.info(`Requirements installations started.`);
-  installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
-    detached: false,
-  });
-  await waitUntilFinished(installRequirements, 'installRequirements');
-  installRequirements = null;
-  logger.info(`Requirements installations finished.`);
+    mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
+    logger.info(`Requirements installations started.`);
+    installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+      detached: false,
+    });
+    await waitUntilFinished(installRequirements, 'installRequirements');
+    installRequirements = null;
+    logger.info(`Requirements installation for win32 finished.`);
+  }
+  //### MACOS
+  if (IS_DARWIN){
+    logger.debug(`Initial Setup for darwin util opened.`);
+    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
 
+    let pythonInstallation= exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(pythonInstallation, 'pythonInstallation');
+    pythonInstallation = null;
+    logger.info(`Python installations finished.`);
+
+    try {
+      pythonPath = await getPythonLocation();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine. Cannot install additional software!');
+    }
+    if(pythonPath !== null){
+      // upgrade pip
+      pipUpgrade = exec(`pip3 install --upgrade pip`);
+      await waitUntilFinished(pipUpgrade, 'pipInstallation');
+      pipUpgrade = null;
+      logger.info(`Pip upgrade finished!`);
+      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+        detached: false,
+      });
+      await waitUntilFinished(installRequirements, 'installRequirements');
+      installRequirements = null;
+      logger.info(`Requirements installation for darwin finished.`);
+    }
+
+    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+    napsInstallation = null;
+    logger.info(`Requirements installation for darwin finished.`);
+  }
+  //### LINUX
+  if (IS_LINUX) {
+    const DEBIAN = 'debian';
+    const RPM = 'rpm';
+    const x_64 = 'x64';
+    const arm_64 = 'arm64';
+    let linuxVersion;
+    let linuxArch;
+    logger.debug(`Initial Setup for linux util opened.`);
+    try {
+      pythonPath = await getPythonLocation();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine. Cannot install software!');
+    }
+    if(pythonPath !== null){
+      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
+        detached: false,
+      });
+
+      await waitUntilFinished(installRequirements, 'installRequirements');
+      installRequirements = null;
+      logger.info(`Requirements installation for python finished`);
+    }
+    // DETERMINE LINUX PACKAGE MANAGER
+    exec(`which dpkg`, (error, stdout, stderr) => {
+      if(error || stderr){
+        logger.error('Cannot determine linux distribution!');
+        return;
+      } else {
+        linuxVersion = stdout.trim().toString() !== null ? DEBIAN : RPM;
+      }
+    });
+
+    // DETERMINE LINUX ARCHITECTURE
+    exec(`uname -u`, (error, stdout, stderr) => {
+      if(error || stderr){
+        logger.error('Cannot determine linux architecture');
+        return;
+      } else {
+        linuxArch = stdout.trim().toString() !== 'aarch64' ? x_64: arm_64;
+      }
+    })
+
+    // RUN INSTALLER COMMAND
+    let command = `sudo ${linuxVersion === 'DEBIAN' ? 'dpkg' : 'rpm'} -i ${determineLinuxInstallationPackage(linuxVersion, linuxArch)} }`
+    let napsInstallation = exec(command, (error, stdout, stderr) =>{
+      if(error || stderr){
+        logger.error('Cannot install necessary packages!');
+      } else {
+        logger.info('Installation started');
+      }
+    });
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+    napsInstallation = null;
+  }
+
+  // MODEL INSTALLER
   logger.info(`Model download started.`);
   let progressPercentage = 0;
   mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);

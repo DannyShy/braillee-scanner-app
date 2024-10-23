@@ -1,7 +1,7 @@
 numpy>=1.15.1
 pillow>=6.2.0
-https://download.pytorch.org/whl/cpu/torch-2.2.1%2Bcpu-cp311-cp311-win_amd64.whl
-https://download.pytorch.org/whl/cpu/torchvision-0.17.1%2Bcpu-cp311-cp311-win_amd64.whl
+torch>=2.3.0
+torchvision<=0.18
 werkzeug==0.14.1
 flask==0.12
 flask_login==0.4.1
