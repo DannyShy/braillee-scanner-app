@@ -54,21 +54,41 @@ from ctypes import (
     create_string_buffer,
 )
 
-try:  # Native win32
+# Determine the library name based on platform
+_is_windows = platform == "win32"
+_is_darwin = platform == "darwin"
+
+if _is_windows:
     from ctypes import WINFUNCTYPE, windll
     _loader, _functype = windll, WINFUNCTYPE
-except ImportError:  # Unix/Cygwin
+else:  # Unix/Cygwin/macOS
     _loader, _functype = cdll, CFUNCTYPE
 
 # Get the path of the current script and its directory
 current_script_path = os.path.realpath(__file__)
 current_script_directory = os.path.dirname(current_script_path)
 
-# Construct the path to the liblous.dll file
-liblouis_dll = os.path.join(current_script_directory, 'liblouis.dll')
+def try_load_library():
+    if _is_windows:
+        # On Windows always use our bundled copy
+        return _loader[os.path.join(current_script_directory, 'liblouis.dll')]
 
-liblouis = _loader[liblouis_dll]
-_is_windows = platform == "win32"
+    try:
+        if _is_darwin:
+            # Try system library first on macOS
+            return _loader['liblouis.dylib']
+        else:
+            # Try system library first on Linux
+            return _loader['liblouis.so.20']
+    except OSError:
+        # If system library fails, try our bundled copy
+        local_path = os.path.join(
+            current_script_directory,
+            'liblouis.dylib' if _is_darwin else 'liblouis.so'
+        )
+        return _loader[local_path]
+
+liblouis = try_load_library()
 
 # { Module Configuration
 #: Specifies the charSize (in bytes) used by liblouis.

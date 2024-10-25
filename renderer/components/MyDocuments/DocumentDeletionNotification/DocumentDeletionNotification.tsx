@@ -1,13 +1,11 @@
-import classes from './DocumentDeletionNotification.module.css';
 import { IconCheck, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 import { Notification } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import useLogMount from 'hooks/useLogMount';
+import classes from './DocumentDeletionNotification.module.css';
 
-type Props = {};
-
-const DocumentDeletionNotification: React.FC<Props> = () => {
+const DocumentDeletionNotification: React.FC = () => {
   useLogMount('DocumentDeletionNotification');
   const { t } = useTranslation();
   const [deletionSuccessful, setDeletionSuccessful] = useState<null | boolean>(null);

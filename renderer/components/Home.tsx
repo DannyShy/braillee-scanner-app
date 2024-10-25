@@ -1,12 +1,13 @@
-import classes from './Home.module.css';
-import {useEffect, useState} from 'react';
-import { Image, Text } from '@mantine/core';
-import { IconLogout, IconFolderOpen } from '@tabler/icons-react';
-import MyDocuments from './MyDocuments/MyDocuments';
+import { useEffect, useState } from 'react';
+import { Button, Image, Modal, Text } from '@mantine/core';
+import { IconFolderOpen, IconLogout } from '@tabler/icons-react';
 import useLogMount from 'hooks/useLogMount';
-import { useTranslation } from 'react-i18next';
-import LanguagePicker from './LanguagePicker/LanguagePicker';
+import { Trans, useTranslation } from 'react-i18next';
 import i18n from 'i18next';
+import { ExternalLink } from './common/ExternalLink';
+import LanguagePicker from './LanguagePicker/LanguagePicker';
+import MyDocuments from './MyDocuments/MyDocuments';
+import classes from './Home.module.css';
 
 enum Pages {
   MY_DOCUMENTS = 'my_documents',
@@ -21,7 +22,20 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ i18n }) => {
   useLogMount('Home');
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const handleError = (errorKey: string, errorMessage: string) => {
+      setError({ key: errorKey, message: errorMessage });
+    };
+
+    window.electronAPI.addErrorListener(handleError);
+
+    return () => {
+      window.electronAPI.removeErrorListener();
+    };
+  }, []);
   const [activePage, setActivePage] = useState<string>(Pages.MY_DOCUMENTS);
+  const [error, setError] = useState<{ key: string; message: string } | null>(null);
 
   const links = data.map((item) => (
     <a
@@ -60,7 +74,7 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
         <div className={classes.navbarMain}>
           <div className={classes.header}>
             <div className={classes.appLogoAndAppName}>
-              <Image className={classes.appLogo} src={'images/icon.png'} alt={t('logo')} />
+              <Image className={classes.appLogo} src="images/icon.png" alt={t('logo')} />
               <Text className={classes.appName}>DotSight</Text>
             </div>
             {/* <Code className={classes.appVersion} fw={700}>
@@ -79,6 +93,21 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
         </div>
       </div>
       <div className={classes.mainContent}>{renderComponent()}</div>
+
+      <Modal opened={error !== null} onClose={() => setError(null)} title={t('errors.title')} centered>
+        <Text>
+          <Trans
+            i18nKey={error?.key}
+            components={{
+              ExternalLink: <ExternalLink />,
+              strong: <strong />,
+            }}
+          />
+        </Text>
+        <Button onClick={() => setError(null)} fullWidth mt="md">
+          {t('common.ok')}
+        </Button>
+      </Modal>
     </div>
   );
 };

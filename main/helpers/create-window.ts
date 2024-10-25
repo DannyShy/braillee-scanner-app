@@ -1,9 +1,16 @@
+import path from 'path';
 import { screen, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import Store from 'electron-store';
-import path from 'path';
 import { ICON_PATH } from '../utils/constants';
 
-export default (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
+type Dimensions = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+const createWindow = (windowName: string, options: BrowserWindowConstructorOptions): BrowserWindow => {
   const key = 'window-state';
   const name = `window-state-${windowName}`;
   const store = new Store({ name });
@@ -13,25 +20,9 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
   };
   let state = {};
 
-  let win: BrowserWindow;
+  const restore = () => store.get(key, defaultSize) as Dimensions | undefined;
 
-  const restore = () => store.get(key, defaultSize);
-
-  const getCurrentPosition = () => {
-    const position = win.getPosition();
-    const size = win.getSize();
-    return {
-      x: position[0],
-      y: position[1],
-      width: size[0],
-      height: size[1],
-    };
-  };
-
-  const windowWithinBounds = (
-    windowState: { x: number; y: number; width: any; height: any },
-    bounds: { x: number; y: number; width: any; height: any },
-  ) => {
+  const windowWithinBounds = (windowState: Dimensions, bounds: Dimensions) => {
     return (
       windowState.x >= bounds.x &&
       windowState.y >= bounds.y &&
@@ -48,8 +39,8 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     });
   };
 
-  const ensureVisibleOnSomeDisplay = (windowState: any) => {
-    const visible = screen.getAllDisplays().some((display: { bounds: any }) => {
+  const ensureVisibleOnSomeDisplay = (windowState: Dimensions) => {
+    const visible = screen.getAllDisplays().some((display: { bounds: Dimensions }) => {
       return windowWithinBounds(windowState, display.bounds);
     });
     if (!visible) {
@@ -58,13 +49,6 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
       return resetToDefaults();
     }
     return windowState;
-  };
-
-  const saveState = () => {
-    if (!win.isMinimized() && !win.isMaximized()) {
-      Object.assign(state, getCurrentPosition());
-    }
-    store.set(key, state);
   };
 
   state = ensureVisibleOnSomeDisplay(restore());
@@ -85,10 +69,30 @@ export default (windowName: string, options: BrowserWindowConstructorOptions): B
     icon: ICON_PATH,
   };
 
-  win = new BrowserWindow(browserOptions);
+  const getCurrentPosition = () => {
+    const position = window.getPosition();
+    const size = window.getSize();
+    return {
+      x: position[0],
+      y: position[1],
+      width: size[0],
+      height: size[1],
+    };
+  };
 
-  win.on('close', saveState);
-  win.setAlwaysOnTop(false, 'normal');
+  const saveState = () => {
+    if (!window.isMinimized() && !window.isMaximized()) {
+      Object.assign(state, getCurrentPosition());
+    }
+    store.set(key, state);
+  };
 
-  return win;
+  const window = new BrowserWindow(browserOptions);
+
+  window.on('close', saveState);
+  window.setAlwaysOnTop(false, 'normal');
+
+  return window;
 };
+
+export default createWindow;

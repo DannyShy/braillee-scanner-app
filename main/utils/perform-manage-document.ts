@@ -1,11 +1,11 @@
-import { MY_DOCUMENTS_PATH } from './constants';
 import path from 'path';
 import fs from 'fs';
+import * as crypto from 'node:crypto';
 import { mkdirSync } from 'original-fs';
 import { BrowserWindow } from 'electron';
-import { BrailleStatus, Document, UpdateDocumentAction, TranslatedTextStatus } from './types';
-import * as crypto from 'node:crypto';
 import { logger } from '../logger';
+import { BrailleStatus, Document, UpdateDocumentAction, TranslatedTextStatus } from './types';
+import { MY_DOCUMENTS_PATH } from './constants';
 
 const getDocPathFromDocID = (documentID: number | string): string => {
   return path.resolve(MY_DOCUMENTS_PATH, String(documentID), 'document.json');
@@ -60,6 +60,19 @@ const performUpdateDocument = (
   if (pageID) {
     pageIndex = jsonData.pages.findIndex((page) => page.pageID === pageID);
   }
+
+  const addEmptyPage = () => {
+    const newPage = {
+      pageID: crypto.randomUUID(),
+      file: null,
+      brailleStatus: null,
+      brailleText: null,
+      translatedTextStatus: null,
+      translation: null,
+    };
+    jsonData.pages.push(newPage);
+  };
+
   switch (action) {
     case 'createDocument':
       if (!fs.existsSync(MY_DOCUMENTS_PATH)) {
@@ -104,15 +117,7 @@ const performUpdateDocument = (
       jsonData.title = data;
       break;
     case 'addPage':
-      const newPage = {
-        pageID: crypto.randomUUID(),
-        file: null,
-        brailleStatus: null,
-        brailleText: null,
-        translatedTextStatus: null,
-        translation: null,
-      };
-      jsonData.pages.push(newPage);
+      addEmptyPage();
       break;
     case 'editFile':
       if (pageIndex !== -1) {
@@ -144,6 +149,14 @@ const performUpdateDocument = (
         jsonData.translationLanguage = data;
       }
       break;
+    case 'deletePage':
+      if (pageIndex !== -1) {
+        jsonData.pages.splice(pageIndex, 1);
+      }
+      if (jsonData.pages.length === 0) {
+        addEmptyPage();
+      }
+      break;
   }
   writeJsonToFile(jsonData, documentID);
   performReadDocuments(mainWindow);
@@ -157,7 +170,7 @@ const performUpdateDocument = (
 // 4. repeat that using for each loop
 // 5. sends documents array
 const performReadDocuments = (mainWindow: BrowserWindow): void => {
-  let documents: Document[] = [];
+  const documents: Document[] = [];
   try {
     if (fs.existsSync(MY_DOCUMENTS_PATH)) {
       const files = fs.readdirSync(MY_DOCUMENTS_PATH);
@@ -167,7 +180,7 @@ const performReadDocuments = (mainWindow: BrowserWindow): void => {
       });
     }
   } catch (err) {
-    console.error('Error reading directory synchronously:', err);
+    logger.error('Error reading directory synchronously:', err);
   }
   mainWindow.webContents.send('read-documents-output', documents);
 };

@@ -1,15 +1,15 @@
 import fs from 'fs';
-import { ANGELINA_READER_CODE, PATH_TO_MODEL, PYTHON_EXE, MY_DOCUMENTS_PATH, IS_WIN32, IS_DARWIN, IS_LINUX } from './constants';
 import path from 'path';
 import { spawn } from 'child_process';
-import treeKill from 'tree-kill';
-import { performUpdateDocument } from './perform-manage-document';
-import { BrowserWindow } from 'electron';
 import { ChildProcessWithoutNullStreams } from 'child_process';
+import treeKill from 'tree-kill';
+import { BrowserWindow } from 'electron';
 import { logger } from '../logger';
+import { getPythonPath } from '../utils/common';
+import { performUpdateDocument } from './perform-manage-document';
 import { waitUntilFinished } from './wait-until-finished';
 import { performBrailleTranslation } from './perform-braille-translation';
-import { getPythonLocation } from '../utils/get_python_location';
+import { ANGELINA_READER_CODE, PATH_TO_MODEL, MY_DOCUMENTS_PATH } from './constants';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -17,8 +17,8 @@ const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedB
 };
 
 const fixFileFormat = (inputFileAbsolutePath: string): string => {
-  const pathWithForwardSlashes = inputFileAbsolutePath.replace('file:///', '');
-  return pathWithForwardSlashes.replace(/\//g, '\\');
+  const pathWithoutProtocol = inputFileAbsolutePath.replace('file:///', '');
+  return path.normalize(pathWithoutProtocol);
 };
 
 let recognizeBraille: ChildProcessWithoutNullStreams;
@@ -37,39 +37,26 @@ const performRecognizeBraille = async (
   );
   logger.info(`Started braille recognition for document: ${documentID} page: ${pageID}`);
   const fixedInput = fixFileFormat(inputFileAbsolutePath);
-  let PYTHON_PATH = null;
-  if(IS_WIN32){
-    logger.info('win 32 system detected');
-    PYTHON_PATH = PYTHON_EXE;
-  } else {
-  // darwin,linux
-    logger.info(`${IS_DARWIN ? 'darwin' : 'linux'} system detected`);
-    try {
-      PYTHON_PATH = await getPythonLocation();
-    } catch (e) {
-      logger.info('Unable to locate python on local machine. Cannot use liblious software.');
-    }
-  }
+  const pythonPath = await getPythonPath();
 
-    recognizeBraille = spawn(
-      PYTHON_PATH,
-      [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
-      {
-        detached: false,
-      },
-    );
-    await waitUntilFinished(recognizeBraille);
-    logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
+  recognizeBraille = spawn(
+    pythonPath,
+    [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
+    {
+      detached: false,
+    },
+  );
+  await waitUntilFinished(recognizeBraille);
+  logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
 
-    recognizeBraille.stdout.on('data', (data) => {
-      logger.info(`Python script response: ${data}`);
-    });
+  recognizeBraille.stdout.on('data', (data) => {
+    logger.info(`Python script response: ${data}`);
+  });
 
-    recognizeBraille.stderr.on('data', (data)=>{
-      logger.error(`Python script error: ${data}`);
-      throw new Error(data.message);
-    });
-
+  recognizeBraille.stderr.on('data', (data) => {
+    logger.error(`Python script error: ${data}`);
+    throw new Error(data.message);
+  });
 
   try {
     let brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
@@ -107,28 +94,30 @@ const addFileToQueue = (
   logger.info(`Document ${documentID} with ${pageID} added to queue for Braille recognition.`);
   scriptQueue.push({ fileName, documentID, pageID, translationLanguage });
   if (!isQueueRunning) {
-    logger.debug(`Braille recognition queue execution started.`);
-    executeRecognizeBrailleQueue(mainWindow);
+    logger.debug('Braille recognition queue execution started.');
+    void executeRecognizeBrailleQueue(mainWindow);
+  } else {
+    logger.debug('Braille recognition queue execution skipped.');
   }
 };
 
 const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
   if (scriptQueue.length === 0) {
-    logger.debug(`Braille recognition finished.`);
+    logger.debug('Braille recognition finished.');
     isQueueRunning = false;
-    logger.debug(`Braille recognition queue execution finished.`);
+    logger.debug('Braille recognition queue execution finished.');
     return;
   }
   isQueueRunning = true;
   const { fileName, documentID, pageID, translationLanguage } = scriptQueue.shift();
   try {
-    logger.debug(`Braille recognition util running.`);
+    logger.debug('Braille recognition util running.');
     await performRecognizeBraille(fileName, documentID, pageID, translationLanguage, mainWindow);
   } catch (error) {
     logger.error('Error during performRecognizeBraille execution:', error);
     throw error;
   }
-  executeRecognizeBrailleQueue(mainWindow); // Continue with the next script in the queue
+  void executeRecognizeBrailleQueue(mainWindow); // Continue with the next script in the queue
 };
 
 export { performCancelRecognizeBraille, performRecognizeBraille, executeRecognizeBrailleQueue, addFileToQueue };

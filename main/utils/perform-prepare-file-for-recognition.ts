@@ -1,11 +1,35 @@
 import fs from 'fs';
-import { logger } from '../logger';
 import path from 'path';
-import { addFileToQueue } from './perform-braille-recognition';
 import { BrowserWindow } from 'electron';
-import { MY_DOCUMENTS_PATH } from './constants';
-import { performUpdateDocument } from './perform-manage-document';
 import { fromPath } from 'pdf2pic';
+import { PDFImage } from 'pdf-image';
+import { logger } from '../logger';
+import { IS_LINUX, MY_DOCUMENTS_PATH } from './constants';
+import { addFileToQueue } from './perform-braille-recognition';
+import { performUpdateDocument } from './perform-manage-document';
+
+const performSaveFileAndPrepareForRecognition = async (
+  fileBytes: Uint8Array,
+  fileName: string,
+  documentID: number,
+  pageID: string,
+  translationLanguage: string,
+  mainWindow: BrowserWindow,
+) => {
+  const imagesDir = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images');
+  const filePath = path.join(imagesDir, fileName);
+
+  // Ensure directory exists
+  if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir, { recursive: true });
+  }
+
+  // Write the file
+  fs.writeFileSync(filePath, fileBytes);
+
+  // Process the saved file
+  await performPrepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
+};
 
 let numberOfFiles;
 const supportedExtensions = ['.pdf', '.jpeg', '.jpg', '.png', '.gif', '.bmp', '.tiff', '.ico', '.jfif', '.webp'];
@@ -68,32 +92,61 @@ const performPrepareFileForRecognition = async (
     logger.info(`Prepared ${numberOfFiles} file(s) for recognition.`);
   } catch (err) {
     logger.error(`Error in prepareFileForRecognition: ${err}`);
+    throw err;
   }
 };
 
 const performConvertPdfToImages = async (filePath: string, documentID: number) => {
   try {
     const outputDir = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images');
-    const conversionOptions = {
-      density: 100,
-      saveFileName: 'scan',
-      savePath: outputDir,
-      format: "png",
+
+    if (IS_LINUX) {
+      logger.info('Using pdf-image for Linux platform');
+      // Use pdf-image for Linux
+      const pdfImage = new PDFImage(filePath, {
+        convertOptions: {
+          '-density': '300',
+          '-quality': '100',
+        },
+        outputDirectory: outputDir,
+        combinedImage: false,
+      });
+
+      // Convert all pages
+      const filePaths = await pdfImage.convertFile();
+
+      filePaths.forEach((filePath, index) => {
+        const newPath = path.join(outputDir, `scan-${index + 1}.png`);
+        fs.renameSync(filePath, newPath);
+      });
+
+      logger.info(`Converted PDF to ${filePaths.length} PNG image(s) using pdf-image`);
+      return filePaths.length;
+    } else {
+      logger.info('Using pdf2pic for Windows/Mac platform');
+      // Use pdf2pic for Windows and Mac
+      const conversionOptions = {
+        density: 300,
+        saveFileName: 'scan',
+        savePath: outputDir,
+        format: 'png',
+      };
+
+      const convert = fromPath(filePath, conversionOptions);
+      const pageToConvertAsImage = 1;
+      await convert(pageToConvertAsImage, { responseType: 'image' }).then((resolve) => {
+        return resolve;
+      });
+
+      const files = fs.readdirSync(outputDir);
+      const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');
+      logger.info(`Converted PDF to ${pngFiles.length} PNG image(s) using pdf2pic`);
+
+      return pngFiles.length;
     }
-    const convert = fromPath(filePath, conversionOptions);
-    const pageToConvertAsImage = 1;
-    await convert(pageToConvertAsImage, { responseType: 'image' }).then((resolve) => {
-      return resolve;
-    })
-
-    const files = fs.readdirSync(outputDir);
-
-    const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');
-    logger.info(`Converted PDF to ${pngFiles.length} PNG image(s).`);
-
-    return pngFiles.length;
   } catch (err) {
     logger.error(`Error in performConvertPdfToImages: ${err}`);
+    throw err;
   }
 };
 
@@ -119,4 +172,4 @@ const performCopyUploadedImage = (imagePath: string, documentID: number): string
   }
 };
 
-export { performPrepareFileForRecognition };
+export { performPrepareFileForRecognition, performSaveFileAndPrepareForRecognition };

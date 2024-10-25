@@ -1,13 +1,13 @@
 import DocumentCards from 'components/MyDocuments/Document/DocumentCards';
 import { useEffect, useState } from 'react';
-import classes from './MyDocuments.module.css';
 import { Button, Title } from '@mantine/core';
 import NoDocuments from 'components/MyDocuments/Document/NoDocuments';
-import { Document } from '../types';
-import ViewDocument from './Document/ViewDocument/ViewDocument';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import { Document } from '../types';
+import ViewDocument from './Document/ViewDocument/ViewDocument';
+import classes from './MyDocuments.module.css';
 import { DocumentDeletionNotification } from './DocumentDeletionNotification/DocumentDeletionNotification';
 
 const MyDocuments: React.FC = () => {

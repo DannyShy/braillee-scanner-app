@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import classes from './DocumentTitle.module.css';
 import { Button, TextInput, Title, VisuallyHidden } from '@mantine/core';
 import { IconArrowLeft, IconCheck, IconFileExport, IconPencil, IconX } from '@tabler/icons-react';
-import { Document } from '../../../../types';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import { Document } from '../../../../types';
+import classes from './DocumentTitle.module.css';
 
 type Props = {
   activeDocument: Document;

@@ -1,9 +1,9 @@
 import { Button } from '@mantine/core';
-import classes from './NoDocuments.module.css';
 import { Text } from '@mantine/core';
 import React from 'react';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import classes from './NoDocuments.module.css';
 
 type Props = { onCreateDocument: () => void };
 

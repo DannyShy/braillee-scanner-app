@@ -1,10 +1,10 @@
-import classes from './DocumentCards.module.css';
 import { TextInput } from '@mantine/core';
 import React, { useMemo, useState } from 'react';
-import DocumentCard from './DocumentCard/DocumentCard';
-import { Document } from '../../types';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import { Document } from '../../types';
+import DocumentCard from './DocumentCard/DocumentCard';
+import classes from './DocumentCards.module.css';
 
 type Props = {
   documents: Document[];

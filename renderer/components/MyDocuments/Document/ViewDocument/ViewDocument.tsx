@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import classes from '../ViewDocument/ViewDocument.module.css';
 import { Button, Text, Image, Tabs, Paper, Loader, Pagination, Tooltip, VisuallyHidden } from '@mantine/core';
 import { IconPlus, IconX } from '@tabler/icons-react';
-import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
-import { Document } from '../../../types';
 import MainContent from '@renderer/components/MainContent';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import { Document } from '../../../types';
+import classes from '../ViewDocument/ViewDocument.module.css';
+import DocumentTitleComponent from './DocumentTitle/DocumentTitle';
 import ViewTranslation from './ViewTranslation/ViewTranslation';
 import { ViewPage } from './ViewPage/ViewPage';
 
@@ -128,6 +128,14 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
     );
   }, [newestPageIndex]);
 
+  const onDelete = async () => {
+    const pageToDelete = activeDocument.pages[activePage];
+    await window.electronAPI.deletePage(activeDocument.documentID, pageToDelete.file, pageToDelete.pageID);
+    if (activePage > 0) {
+      setActivePage(activePage - 1);
+    }
+  };
+
   return (
     <MainContent
       header={
@@ -185,6 +193,7 @@ const ViewDocument: React.FC<Props> = ({ activeDocument, onClose }) => {
             activePage={activePage}
             onUpdate={onUpdate}
             translationLanguage={translationLanguage}
+            onDelete={onDelete}
           />
           <div className={classes.translatedDocs}>
             <Tabs defaultValue="unicode" className={classes.tab}>

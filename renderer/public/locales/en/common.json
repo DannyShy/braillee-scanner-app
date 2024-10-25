@@ -5,15 +5,29 @@
     "welcome_text_2": "This is one time setup. Do you want to continue?",
     "continue_button": "Continue and download",
     "progress": {
-      "python": "Installing Python library...",
+      "python": "Installing Python library (this can take a few minutes depending on your internet connection speed)...",
       "requirements": "Installing requirements...",
+      "naps2": "Installing NAPS2 - tool for scanning...",
+      "liblouis": "Installing Liblouis - tool for translation...",
       "model": "Downloading recognition model...",
       "percentage": "of braille model has been downloaded."
+    },
+    "errors": {
+      "missingPython": "Python 3.11 is not installed or it is not possible to find its location. Install Python 3.11 and try again.",
+      "napsInstallationFailed": "It was not possible to install NAPS2 - tool for scanning. Try to install it manually or contact support, please.",
+      "liblouisInstallationFailed": "It was not possible to install liblouis - tool for translation. Try to install it manually or contact support, please."
     },
     "cancel_button": "Cancel",
     "finished_text": "Additional data has been successfully downloaded and application is ready to use.",
     "proceed_button": "Continue",
     "modal_text": "Are you sure you want to cancel the data download?"
+  },
+  "common": {
+    "ok": "OK"
+  },
+  "errors": {
+    "title": "An error occurred",
+    "imageMagickNotInstalled": "You need to install the ImageMagick library. Download and install it according to <ExternalLink href=\"https://github.com/yakovmeister/pdf2image/blob/HEAD/docs/gm-installation.md\">these instructions</ExternalLink> and try again."
   },
   "logo": "Logo of DotSight application. Picture of eye surrounded by dots.",
   "my_documents": "My Documents",
@@ -52,8 +66,8 @@
       "image_description": "View of current page.",
       "clear_button": "Clear page",
       "stop_auto_scan": "Stop auto-scan",
-      "scan_button_tooltip": "Scan all pages without a break",
-      "scan_with_break_button_tooltip": "Scan with defined time break",
+      "scan_button_tooltip": "Scan single page",
+      "scan_with_break_button_tooltip": "Scan all pages with a break between them",
       "delay_selection_description": "Select delay between scans in seconds"
     }
   },

@@ -11,7 +11,9 @@ import { I18nextProvider } from 'react-i18next';
 
 declare global {
   interface Window {
-    electronAPI: any;
+    // TODO: add proper type
+    // eslint-disable-next-line
+    electronAPI: any
   }
 }
 
@@ -32,9 +34,9 @@ const MyApp: NextPage = ({ Component, pageProps }: AppProps) => {
 
   return (
     <MantineProvider>
-      <I18nextProvider i18n={configuredI18n} defaultNS={'common'}>
+      <I18nextProvider i18n={configuredI18n} defaultNS="common">
         <Head>
-          <title>Braille scanner</title>
+          <title>DotSight - braille scanner</title>
           <meta charSet="UTF-8" />
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />

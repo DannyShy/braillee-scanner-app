@@ -1,8 +1,8 @@
-import { BrowserWindow } from 'electron';
-import { MY_DOCUMENTS_PATH } from './constants';
 import fs from 'fs';
 import path from 'path';
+import { BrowserWindow } from 'electron';
 import { logger } from '../logger';
+import { MY_DOCUMENTS_PATH } from './constants';
 
 const deleteDirectory = (directory: string, mainWindow: BrowserWindow) => {
   let errorOccurred = false;

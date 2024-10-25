@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron';
-import { Document } from './utils/types';
+import { contextBridge, ipcRenderer, IpcRendererEvent, shell } from 'electron';
+import { Document, ScannerPaperSource } from './utils/types';
 
 window.global = window;
 
@@ -20,6 +20,23 @@ const removeScannersListListener = () => {
   scannersListListener = null;
 };
 
+let errorListener;
+
+const addErrorListener = (listener) => {
+  errorListener = (event, errorKey, error) => {
+    listener(errorKey, error);
+  };
+  ipcRenderer.on('error', errorListener);
+};
+
+const removeErrorListener = () => {
+  if (!errorListener) {
+    return;
+  }
+  ipcRenderer.removeListener('error', errorListener);
+  errorListener = null;
+};
+
 let deleteDocumentStatusListener;
 
 const addDeleteDocumentStatusListener = (listener) => {
@@ -37,11 +54,25 @@ const removeDeleteDocumentStatusListener = () => {
   deleteDocumentStatusListener = null;
 };
 
-let initialSetupProgressListener: any;
+type InitialSetupProgressListener = (
+  event: IpcRendererEvent,
+  progressMessage: string,
+  downloadModelProgressPercentage: number,
+  isFinished: boolean,
+  errorKey?: string,
+) => void;
+let initialSetupProgressListener: InitialSetupProgressListener;
 
-const addInitialSetupProgressListener = (listener) => {
-  initialSetupProgressListener = (event, progressMessage, downloadModelProgressPercentage, isFinished) => {
-    listener(progressMessage, downloadModelProgressPercentage, isFinished);
+const addInitialSetupProgressListener = (
+  listener: (
+    progressMessage: string,
+    downloadModelProgressPercentage: number,
+    isFinished: boolean,
+    errorKey?: string,
+  ) => void,
+) => {
+  initialSetupProgressListener = (_event, progressMessage, downloadModelProgressPercentage, isFinished, errorKey) => {
+    listener(progressMessage, downloadModelProgressPercentage, isFinished, errorKey);
   };
   ipcRenderer.on('initial-setup-progress', initialSetupProgressListener);
 };
@@ -122,8 +153,13 @@ const removeBrailleTextListener = () => {
 };
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  scanFile: (documentID: number, pageID: string, selectedScanner: string, translationLanguage: string) =>
-    ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner, translationLanguage),
+  scanFile: (
+    documentID: number,
+    pageID: string,
+    selectedScanner: string,
+    paperSource: ScannerPaperSource,
+    translationLanguage: string,
+  ) => ipcRenderer.invoke('scan-file', documentID, pageID, selectedScanner, paperSource, translationLanguage),
   exportDocument: (activeDocument: Document) => ipcRenderer.invoke('export-document', activeDocument),
   recognizeBraille: (file: string | null, documentID: number, pageID: string, translationLanguage: string) => {
     ipcRenderer.send('recognize-braille', file, documentID, pageID, translationLanguage);
@@ -138,6 +174,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeCheckDiskSpaceListener: removeCheckDiskSpaceListener,
   closeApp: () => {
     ipcRenderer.invoke('close-app');
+  },
+  openExternal: (url: string) => {
+    void shell.openExternal(url);
   },
   cancelSetup: () => ipcRenderer.invoke('cancel-setup'),
   cancelRecognition: () => ipcRenderer.invoke('cancel-recognition'),
@@ -162,8 +201,15 @@ contextBridge.exposeInMainWorld('electronAPI', {
   removeDeleteDocumentStatusListener: removeDeleteDocumentStatusListener,
   translateText: (brailleText: string, documentID: number, pageID: string, translationLanguage: string) =>
     ipcRenderer.send('translate-text', brailleText, documentID, pageID, translationLanguage),
-  clearPage: (documentID: number, file: string, pageID: string) =>
-    ipcRenderer.send('clear-page', documentID, file, pageID),
-  processUploadedFile: (filePath: string, documentID: number, pageID: string, translationLanguage: string) =>
-    ipcRenderer.send('process-uploaded-file', filePath, documentID, pageID, translationLanguage),
+  deletePage: (documentID: number, file: string, pageID: string) =>
+    ipcRenderer.send('delete-page', documentID, file, pageID),
+  processUploadedFile: (
+    fileBytes: Uint8Array,
+    fileName: string,
+    documentID: number,
+    pageID: string,
+    translationLanguage: string,
+  ) => ipcRenderer.send('process-uploaded-file', fileBytes, fileName, documentID, pageID, translationLanguage),
+  addErrorListener: addErrorListener,
+  removeErrorListener: removeErrorListener,
 });

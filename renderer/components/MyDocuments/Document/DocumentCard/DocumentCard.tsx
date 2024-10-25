@@ -1,11 +1,11 @@
-import classes from '../DocumentCard/DocumentCard.module.css';
 import { Text, Button, Title, Card, VisuallyHidden, Tooltip, Modal, SimpleGrid, Center, Flex } from '@mantine/core';
 import React from 'react';
-import { Document } from '../../../types';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
 import { useDisclosure } from '@mantine/hooks';
 import { IconX } from '@tabler/icons-react';
+import { Document } from '../../../types';
+import classes from '../DocumentCard/DocumentCard.module.css';
 
 type Props = {
   document: Document;
@@ -23,9 +23,9 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
     onOpen(document);
   };
 
-  const handleDeleteDocument = (document) => {
+  const handleDeleteDocument = (document: Document) => {
     window.electronAPI.log('debug', `Document: ${document.documentID} deleted by user.`);
-    window.electronAPI.deleteDocument(document.documentID);
+    window.electronAPI.deleteDocument(document.documentID!);
     // Fetch the updated list of documents
     window.electronAPI.readDocuments();
   };
@@ -58,7 +58,7 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
           className={classes.deleteDocumentButton}
           onClick={() => {
             open();
-            window.electronAPI.log('debug', `Modal for deletion of document opened.`);
+            window.electronAPI.log('debug', 'Modal for deletion of document opened.');
           }}
           variant="transparent"
           size="md"
@@ -80,7 +80,7 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
               onClick={() => {
                 handleDeleteDocument(document);
                 close();
-                window.electronAPI.log('debug', `Button for confirming deletion of document clicked in modal.`);
+                window.electronAPI.log('debug', 'Button for confirming deletion of document clicked in modal.');
               }}
             >
               {t('yes_button')}
@@ -88,7 +88,7 @@ const DocumentCard: React.FC<Props> = ({ document, onOpen }) => {
             <Button
               onClick={() => {
                 close();
-                window.electronAPI.log('debug', `Button for closing modal clicked.`);
+                window.electronAPI.log('debug', 'Button for closing modal clicked.');
               }}
             >
               {t('no_button')}

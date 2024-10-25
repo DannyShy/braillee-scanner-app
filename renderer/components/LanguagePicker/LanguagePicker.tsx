@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { UnstyledButton, Menu, Image, Group, VisuallyHidden } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
-import images from './images/images';
-import classes from './LanguagePicker.module.css';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
 import { LanguagePickerData } from 'components/types';
+import classes from './LanguagePicker.module.css';
+import images from './images/images';
 
 const data: LanguagePickerData[] = [
   { label: 'en', image: images.english, description: 'english' },

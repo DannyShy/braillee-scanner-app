@@ -1,43 +1,319 @@
 import fs from 'fs';
-import axios from 'axios';
+import path from 'path';
+import { ChildProcess, exec, spawn } from 'child_process';
 import { mkdirSync } from 'original-fs';
-import {
-  APP_DATA_PATH,
-  PATH_TO_MODEL,
-  MODEL_URL,
-  CHUNK_SIZE,
-  MODEL_SIZE,
-  PYTHON_EXE,
-  REQUIREMENTS_PATH,
-  IS_DARWIN,
-  IS_LINUX,
-  IS_WIN32,
-  PYTHON_PKG,
-  NAPS_SCAN_PKG,
-  NAPS_RPM_PKG_64,
-  NAPS_DEB_PKG_64,
-  NAPS_DEB_PKG_arm64,
-  NAPS_RPM_PKG_arm64
-} from './constants';
-import { spawn, exec } from 'child_process';
+import axios from 'axios';
 import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
-import path from 'path';
-import {version} from 'react';
-import { getPythonLocation } from './get_python_location';
-const controller = new AbortController();
+import {
+  PYTHON_VENV_PATH,
+  APP_DATA_PATH,
+  CHUNK_SIZE,
+  IS_DARWIN,
+  IS_LINUX,
+  IS_WIN32,
+  MODEL_SIZE,
+  MODEL_URL,
+  NAPS_DEB_PKG_64,
+  NAPS_RPM_PKG_64,
+  NAPS_SCAN_PKG,
+  PATH_TO_MODEL,
+  PYTHON_EXE,
+  PYTHON_PKG,
+  ANGELINA_REQUIREMENTS_PATH,
+} from './constants';
+import { getPythonPath, getLinuxPackaging, getLinuxArchitecture, DEBIAN, RPM, x_64, arm_64 } from './common';
 
-let pipUpgrade;
-let installRequirements;
+let controller: AbortController;
+let pipUpgradeProcess: ChildProcess;
+let pythonVenvProcess: ChildProcess;
+let installRequirements: ChildProcess;
 
-// LINUX constants
-const DEBIAN = 'debian';
-const RPM = 'rpm';
-const x_64 = 'x64';
-const arm_64 = 'arm64';
+const setupPython = async (mainWindow: BrowserWindow): Promise<[boolean, string | null]> => {
+  mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+  let pythonPath = null;
 
-const waitUntilFinished = async (process, processName) => {
+  if (IS_WIN32) {
+    logger.debug('Setting up Python for Windows...');
+    pipUpgradeProcess = spawn(PYTHON_EXE, ['-m', 'pip', 'install', 'pip', '--upgrade'], {
+      detached: false,
+    });
+    await waitUntilFinished(pipUpgradeProcess, 'pipUpgrade');
+    pipUpgradeProcess = null;
+    pythonPath = PYTHON_EXE;
+  } else if (IS_LINUX) {
+    try {
+      pythonPath = await getPythonPath(false);
+    } catch (e) {
+      logger.info('Unable to locate python on local machine.');
+      mainWindow.webContents.send('initial-setup-progress', 'python', null, false, 'missingPython');
+      return [false, null];
+    }
+
+    logger.info('Creating virtual environment...');
+    pythonVenvProcess = spawn(pythonPath, ['-m', 'venv', PYTHON_VENV_PATH], {
+      detached: false,
+    });
+    await waitUntilFinished(pythonVenvProcess, 'pythonVenvProcess');
+    pythonVenvProcess = null;
+
+    pythonPath = path.join(PYTHON_VENV_PATH, 'bin', 'python');
+  } else if (IS_DARWIN) {
+    logger.debug('Setting up Python for macOS...');
+    const pythonInstallation = exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(pythonInstallation, 'pythonInstallation');
+
+    try {
+      pythonPath = await getPythonPath();
+    } catch (e) {
+      logger.info('Unable to locate python on local machine.');
+      mainWindow.webContents.send('initial-setup-progress', 'python', null, false, 'missingPython');
+      return [false, null];
+    }
+  }
+
+  return [true, pythonPath];
+};
+
+const setupAngelinaPipRequirements = async (pythonPath: string, mainWindow: BrowserWindow): Promise<boolean> => {
+  mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
+
+  if (IS_WIN32) {
+    logger.info('Installing requirements for Windows...');
+    installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
+      detached: false,
+    });
+    await waitUntilFinished(installRequirements, 'installRequirements');
+    installRequirements = null;
+    return true;
+  }
+
+  if (IS_DARWIN) {
+    logger.info('Installing requirements for macOS...');
+    pipUpgradeProcess = exec('pip3 install --upgrade pip');
+    await waitUntilFinished(pipUpgradeProcess, 'pipInstallation');
+    pipUpgradeProcess = null;
+  }
+
+  // Install requirements for Linux/macOS
+  if (IS_LINUX || IS_DARWIN) {
+    logger.info('Installing requirements...');
+    installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
+      detached: false,
+    });
+    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
+    await waitUntilFinished(installRequirements, 'installRequirements');
+    installRequirements = null;
+  }
+
+  return true;
+};
+
+const setupLiblouis = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  if (IS_WIN32) {
+    return true;
+  }
+
+  mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false);
+
+  if (IS_DARWIN) {
+    // Check if liblouis is installed via homebrew
+    const checkLiblouisProcess = exec('brew list liblouis', (error) => {
+      if (!error) {
+        logger.info('Liblouis is already installed');
+        return true;
+      }
+    });
+    await waitUntilFinished(checkLiblouisProcess, 'checkLiblouis');
+
+    if (checkLiblouisProcess.exitCode !== 0) {
+      logger.info('Installing liblouis via homebrew...');
+      const installLiblouisProcess = exec('pkexec brew install liblouis', (error) => {
+        if (error) {
+          logger.error(`Failed to install liblouis: ${error.message}`);
+          return false;
+        }
+      });
+      await waitUntilFinished(installLiblouisProcess, 'installLiblouis');
+
+      if (installLiblouisProcess.exitCode !== 0) {
+        mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false, 'liblouisInstallationFailed');
+        return false;
+      }
+    }
+    return true;
+  }
+
+  if (IS_LINUX) {
+    const linuxPackaging = await getLinuxPackaging();
+    // For Debian/Ubuntu
+    if (linuxPackaging === DEBIAN) {
+      const checkLiblouisProcess = exec('dpkg -l | grep -q "^ii.*liblouis"', (error) => {
+        if (!error) {
+          logger.info('Liblouis is already installed');
+          return true;
+        }
+      });
+      await waitUntilFinished(checkLiblouisProcess, 'checkLiblouis');
+
+      if (checkLiblouisProcess.exitCode !== 0) {
+        logger.info('Installing liblouis...');
+        const installLiblouisProcess = exec('pkexec apt-get install -y liblouis', (error) => {
+          if (error) {
+            logger.error(`Failed to install liblouis: ${error.message}`);
+            return false;
+          }
+        });
+        await waitUntilFinished(installLiblouisProcess, 'installLiblouis');
+
+        if (installLiblouisProcess.exitCode !== 0) {
+          mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false, 'liblouisInstallationFailed');
+          return false;
+        }
+      }
+    }
+    // For RPM-based systems
+    else {
+      // Check if zypper exists (OpenSUSE)
+      const checkZypperProcess = exec('which zypper');
+      await waitUntilFinished(checkZypperProcess, 'checkZypper');
+      const useZypper = checkZypperProcess.exitCode === 0;
+
+      // Check if liblouis is installed
+      const checkLiblouisProcess = exec('rpm -q liblouis');
+      await waitUntilFinished(checkLiblouisProcess, 'checkLiblouis');
+
+      if (checkLiblouisProcess.exitCode !== 0) {
+        logger.info('Installing liblouis...');
+        const installCommand = useZypper
+          ? 'pkexec zypper --non-interactive install liblouis'
+          : 'pkexec dnf install -y liblouis';
+
+        const installLiblouisProcess = exec(installCommand);
+        await waitUntilFinished(installLiblouisProcess, 'installLiblouis');
+
+        if (installLiblouisProcess.exitCode !== 0) {
+          logger.error('Failed to install liblouis');
+          mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false, 'liblouisInstallationFailed');
+          return false;
+        }
+      } else {
+        logger.info('Liblouis is already installed');
+      }
+    }
+    return true;
+  }
+
+  return true;
+};
+
+const setupNaps2 = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  if (IS_WIN32) {
+    return true;
+  }
+
+  if (IS_DARWIN) {
+    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+    napsInstallation = null;
+    logger.info('NAPS2 installation for macOS finished.');
+    return true;
+  }
+
+  // Linux-specific NAPS2 setup
+  let naps2Installed = false;
+
+  const linuxPackaging = await getLinuxPackaging();
+  logger.info(`Linux packaging system: ${linuxPackaging}`);
+
+  const linuxArch = await getLinuxArchitecture();
+  logger.info(`Linux architecture: ${linuxArch}`);
+
+  // Check existing installation
+  const checkNaps2Command = linuxPackaging === DEBIAN ? 'dpkg -l | grep -q "^ii.*naps2"' : 'rpm -q naps2';
+  const checkNaps2Process = exec(checkNaps2Command, (error) => {
+    naps2Installed = !error;
+  });
+  await waitUntilFinished(checkNaps2Process, 'checkNaps2');
+
+  if (!naps2Installed) {
+    logger.info('NAPS2 is not installed. Installing...');
+    mainWindow.webContents.send('initial-setup-progress', 'naps2', null, false);
+
+    const command = `pkexec ${linuxPackaging === DEBIAN ? 'dpkg' : 'rpm'} -i ${determineLinusNaps2InstallationPackage(
+      linuxPackaging,
+      linuxArch,
+    )}`;
+    const napsInstallation = exec(command, (error, stdout, stderr) => {
+      if (error || stderr) {
+        logger.error(`Cannot install necessary packages: ${error?.message || stderr}`);
+      } else {
+        logger.info('Installation started');
+      }
+    });
+    await waitUntilFinished(napsInstallation, 'napsInstallation');
+
+    if (napsInstallation.exitCode !== 0) {
+      logger.error('Installation of NAPS2 failed!');
+      mainWindow.webContents.send('initial-setup-progress', 'naps', null, false, 'napsInstallationFailed');
+      return false;
+    }
+  }
+  return true;
+};
+
+const setupModel = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  logger.info('Model download started.');
+  let progressPercentage = 0;
+  mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
+
+  let offset = 0;
+  if (!fs.existsSync(APP_DATA_PATH)) {
+    mkdirSync(APP_DATA_PATH);
+  }
+
+  controller = new AbortController();
+  while (controller) {
+    try {
+      const response = await axios.get(MODEL_URL, {
+        responseType: 'arraybuffer',
+        headers: {
+          Range: `bytes=${offset}-${offset + CHUNK_SIZE - 1}`,
+        },
+        signal: controller.signal,
+      });
+      if (!controller) {
+        return;
+      }
+
+      const chunk = Buffer.from(response.data, 'binary');
+      fs.appendFileSync(PATH_TO_MODEL, chunk as unknown as Uint8Array);
+      offset += chunk.length;
+      progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
+
+      const isFinished = chunk.length < CHUNK_SIZE;
+      logger.info(`Model download is at ${progressPercentage}%.`);
+      if (isFinished) {
+        progressPercentage = null;
+        mainWindow.webContents.send('initial-setup-progress', null, progressPercentage, true);
+        logger.info('Model download finished.');
+        return true;
+      }
+      mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
+    } catch (error) {
+      if (error.code === 'ERR_CANCELED') {
+        logger.error('Download cancelled by user.');
+      } else {
+        logger.error('Error downloading chunk:', error);
+      }
+      return false;
+    }
+  }
+  return false;
+};
+
+const waitUntilFinished = async (process: ChildProcess, processName: string) => {
   process.stdout.on('data', (data) => {
     logger.info(`${processName} stdout: ${data}`);
   });
@@ -58,191 +334,86 @@ const waitUntilFinished = async (process, processName) => {
   });
 };
 
-function determineLinuxInstallationPackage(version, architecture) {
-  switch (version) {
+const determineLinusNaps2InstallationPackage = (packaging: string, architecture: string) => {
+  switch (architecture) {
     case x_64:
-      switch (architecture){
+      switch (packaging) {
         case DEBIAN:
           return NAPS_DEB_PKG_64;
         case RPM:
           return NAPS_RPM_PKG_64;
       }
-    case arm_64:
-      switch (architecture){
-        case DEBIAN:
-          return NAPS_DEB_PKG_arm64;
-        case RPM:
-          return NAPS_RPM_PKG_arm64;
-      }
-  }
-}
-const performInitialSetup = async (mainWindow: BrowserWindow) => {
-  let pythonPath = null;
-  // ### win32
-  if(IS_WIN32) {
-    logger.debug(`Initial Setup for win32 util opened.`);
-    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
-    pipUpgrade = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `pip`, `--upgrade`], {
-      detached: false,
-    });
-    logger.info(`Pip installations started.`);
-    await waitUntilFinished(pipUpgrade, 'pipUpgrade');
-    pipUpgrade = null;
-
-    logger.info(`Pip installations finished.`);
-
-    mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
-    logger.info(`Requirements installations started.`);
-    installRequirements = spawn(PYTHON_EXE, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
-      detached: false,
-    });
-    await waitUntilFinished(installRequirements, 'installRequirements');
-    installRequirements = null;
-    logger.info(`Requirements installation for win32 finished.`);
-  }
-  //### MACOS
-  if (IS_DARWIN){
-    logger.debug(`Initial Setup for darwin util opened.`);
-    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
-
-    let pythonInstallation= exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
-    await waitUntilFinished(pythonInstallation, 'pythonInstallation');
-    pythonInstallation = null;
-    logger.info(`Python installations finished.`);
-
-    try {
-      pythonPath = await getPythonLocation();
-    } catch (e) {
-      logger.info('Unable to locate python on local machine. Cannot install additional software!');
-    }
-    if(pythonPath !== null){
-      // upgrade pip
-      pipUpgrade = exec(`pip3 install --upgrade pip`);
-      await waitUntilFinished(pipUpgrade, 'pipInstallation');
-      pipUpgrade = null;
-      logger.info(`Pip upgrade finished!`);
-      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
-        detached: false,
-      });
-      await waitUntilFinished(installRequirements, 'installRequirements');
-      installRequirements = null;
-      logger.info(`Requirements installation for darwin finished.`);
-    }
-
-    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
-    await waitUntilFinished(napsInstallation, 'napsInstallation');
-    napsInstallation = null;
-    logger.info(`Requirements installation for darwin finished.`);
-  }
-  //### LINUX
-  if (IS_LINUX) {
-    const DEBIAN = 'debian';
-    const RPM = 'rpm';
-    const x_64 = 'x64';
-    const arm_64 = 'arm64';
-    let linuxVersion;
-    let linuxArch;
-    logger.debug(`Initial Setup for linux util opened.`);
-    try {
-      pythonPath = await getPythonLocation();
-    } catch (e) {
-      logger.info('Unable to locate python on local machine. Cannot install software!');
-    }
-    if(pythonPath !== null){
-      installRequirements = spawn(pythonPath, [`-m`, `pip`, `install`, `-r`, `${REQUIREMENTS_PATH}`], {
-        detached: false,
-      });
-
-      await waitUntilFinished(installRequirements, 'installRequirements');
-      installRequirements = null;
-      logger.info(`Requirements installation for python finished`);
-    }
-    // DETERMINE LINUX PACKAGE MANAGER
-    exec(`which dpkg`, (error, stdout, stderr) => {
-      if(error || stderr){
-        logger.error('Cannot determine linux distribution!');
-        return;
-      } else {
-        linuxVersion = stdout.trim().toString() !== null ? DEBIAN : RPM;
-      }
-    });
-
-    // DETERMINE LINUX ARCHITECTURE
-    exec(`uname -u`, (error, stdout, stderr) => {
-      if(error || stderr){
-        logger.error('Cannot determine linux architecture');
-        return;
-      } else {
-        linuxArch = stdout.trim().toString() !== 'aarch64' ? x_64: arm_64;
-      }
-    })
-
-    // RUN INSTALLER COMMAND
-    let command = `sudo ${linuxVersion === 'DEBIAN' ? 'dpkg' : 'rpm'} -i ${determineLinuxInstallationPackage(linuxVersion, linuxArch)} }`
-    let napsInstallation = exec(command, (error, stdout, stderr) =>{
-      if(error || stderr){
-        logger.error('Cannot install necessary packages!');
-      } else {
-        logger.info('Installation started');
-      }
-    });
-    await waitUntilFinished(napsInstallation, 'napsInstallation');
-    napsInstallation = null;
-  }
-
-  // MODEL INSTALLER
-  logger.info(`Model download started.`);
-  let progressPercentage = 0;
-  mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
-
-  let offset = 0;
-  if (!fs.existsSync(APP_DATA_PATH)) {
-    mkdirSync(APP_DATA_PATH);
-  }
-  while (true) {
-    try {
-      const response = await axios.get(MODEL_URL, {
-        responseType: 'arraybuffer',
-        headers: {
-          Range: `bytes=${offset}-${offset + CHUNK_SIZE - 1}`,
-        },
-        signal: controller.signal,
-      });
-      const chunk = Buffer.from(response.data, 'binary');
-      fs.appendFileSync(PATH_TO_MODEL, chunk);
-      offset += chunk.length;
-      progressPercentage = Math.round((offset / MODEL_SIZE) * 100);
-
-      const isFinished = chunk.length < CHUNK_SIZE;
-      logger.info(`Model download is at ${progressPercentage}%.`);
-      if (isFinished) {
-        progressPercentage = null;
-        mainWindow.webContents.send('initial-setup-progress', null, progressPercentage, true);
-        logger.info(`Model download finished.`);
-        break;
-      }
-      mainWindow.webContents.send('initial-setup-progress', 'model', progressPercentage, false);
-    } catch (error) {
-      if (error.code === 'ERR_CANCELED') {
-        logger.error('Download cancelled by user.');
-      } else {
-        logger.error('Error downloading chunk:', error);
-      }
       break;
+    case arm_64:
+      // TODO: not supported yet
+      // switch (architecture) {
+      //   case DEBIAN:
+      //     return NAPS_DEB_PKG_arm64;
+      //   case RPM:
+      //     return NAPS_RPM_PKG_arm64;
+      // }
+      break;
+  }
+};
+
+const performInitialSetup = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  logger.debug('Initial Setup started.');
+
+  // Setup Python
+  const [pythonSuccess, pythonPath] = await setupPython(mainWindow);
+  if (!pythonSuccess || (IS_LINUX && !pythonPath)) {
+    return false;
+  }
+
+  // Setup Requirements
+  if (pythonPath) {
+    const requirementsSuccess = await setupAngelinaPipRequirements(pythonPath, mainWindow);
+    if (!requirementsSuccess) {
+      return false;
     }
   }
-  logger.debug(`Initial Setup util closed.`);
+
+  // Setup NAPS2
+  const naps2Success = await setupNaps2(mainWindow);
+  if (!naps2Success) {
+    return false;
+  }
+
+  // Setup Liblouis
+  const liblouisSuccess = await setupLiblouis(mainWindow);
+  if (!liblouisSuccess) {
+    return false;
+  }
+
+  // Setup Model
+  const modelSuccess = await setupModel(mainWindow);
+  if (!modelSuccess) {
+    return false;
+  }
+
+  logger.debug('Initial Setup completed.');
+  return true;
 };
 
 const performCancelInitialSetup = async () => {
-  if (pipUpgrade !== null) {
-    treeKill(pipUpgrade.pid, 9);
-  } else if (installRequirements !== null) {
+  if (pipUpgradeProcess) {
+    logger.info('Pip upgrade cancelled by user.');
+    treeKill(pipUpgradeProcess.pid, 9);
+  } else if (installRequirements) {
+    logger.info('Requirements installation cancelled by user.');
     treeKill(installRequirements.pid, 9);
   } else {
-    controller.abort();
+    logger.info('Model download cancelled by user.');
+    if (controller !== null) {
+      controller.abort();
+      controller = null;
+
+      if (fs.existsSync(PATH_TO_MODEL)) {
+        fs.rmSync(PATH_TO_MODEL, { recursive: true });
+      }
+    }
   }
-  logger.info(`Initial setup cancelled by user.`);
+  logger.info('Initial setup cancelled by user.');
 };
 
 export { performInitialSetup, performCancelInitialSetup };

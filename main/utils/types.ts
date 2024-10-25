@@ -25,4 +25,7 @@ export type UpdateDocumentAction =
   | 'editBrailleStatus'
   | 'editTranslatedTextStatus'
   | 'editTranslatedText'
-  | 'editTranslationLanguage';
+  | 'editTranslationLanguage'
+  | 'deletePage';
+
+export type ScannerPaperSource = 'Glass' | 'Feeder';

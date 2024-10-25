@@ -1,5 +1,4 @@
 import '@mantine/core/styles.css';
-import classes from './Welcome.module.css';
 import {
   Button,
   Center,
@@ -18,10 +17,12 @@ import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import useLogMount from 'hooks/useLogMount';
 import { useTranslation } from 'react-i18next';
+import classes from './Welcome.module.css';
 
 const Welcome: React.FC = () => {
   useLogMount('Welcome');
   const { t } = useTranslation();
+  const [errorKey, setErrorKey] = useState<string | null>(null);
   const [progressMessage, setProgressMessage] = useState<string>(null);
   const [downloadModelProgress, setDownloadModelProgress] = useState<number>(null);
   const [isFinishedState, setIsFinishedState] = useState<boolean>(false);
@@ -32,9 +33,17 @@ const Welcome: React.FC = () => {
 
   const handleViewInitialSetupProgress = async () => {
     await window.electronAPI.addInitialSetupProgressListener(
-      (progressMessage, downloadModelProgressPercentage, isFinished) => {
-        setProgressMessage(progressMessage);
-        setDownloadModelProgress(downloadModelProgressPercentage);
+      (progressMessage, downloadModelProgressPercentage, isFinished, errorKey) => {
+        if (errorKey) {
+          setProgressMessage(null);
+          setDownloadModelProgress(null);
+          setErrorKey(errorKey);
+          return;
+        } else {
+          setProgressMessage(progressMessage);
+          setDownloadModelProgress(downloadModelProgressPercentage);
+        }
+
         if (isFinished === true) {
           setIsFinishedState(isFinished);
           window.electronAPI.removeInitialSetupProgressListener();
@@ -43,12 +52,11 @@ const Welcome: React.FC = () => {
     );
   };
 
-  const handlecheckDiskSpace = async () => {
+  const handleCheckDiskSpace = async () => {
     window.electronAPI.log('debug', 'Button for installing app (starting initial setup) clicked by user.');
-    await window.electronAPI.checkDiskSpace();
     await window.electronAPI.addCheckDiskSpaceListener(async (checkDiskSpaceOutput) => {
       if (checkDiskSpaceOutput === 0) {
-        handleViewInitialSetupProgress();
+        await handleViewInitialSetupProgress();
         window.electronAPI.removeCheckDiskSpaceListener();
         window.electronAPI.initialSetup();
       } else if (typeof checkDiskSpaceOutput === 'string') {
@@ -57,6 +65,7 @@ const Welcome: React.FC = () => {
         );
       }
     });
+    await window.electronAPI.checkDiskSpace();
   };
 
   const handleCancelSetup = () => {
@@ -92,7 +101,7 @@ const Welcome: React.FC = () => {
   return (
     <Container className={classes.wrapper} size={1400}>
       <Container className={classes.center} size={1400}>
-        {!progressMessage && !isFinishedState && (
+        {!progressMessage && !isFinishedState && !errorKey && (
           <Container>
             <div className={classes.inner}>
               <Title className={classes.title} tabIndex={0}>
@@ -109,7 +118,7 @@ const Welcome: React.FC = () => {
                 <Button className={classes.control} size="lg" variant="default" color="gray" onClick={handleCloseApp}>
                   {t('exit_button')}
                 </Button>
-                <Button className={classes.control} size="lg" onClick={handlecheckDiskSpace}>
+                <Button className={classes.control} size="lg" onClick={handleCheckDiskSpace}>
                   {t('welcome.continue_button')}
                 </Button>
               </Flex>
@@ -154,10 +163,23 @@ const Welcome: React.FC = () => {
                 color="gray"
                 onClick={() => {
                   open();
-                  window.electronAPI.log('debug', `Modal for cancelling initial setup opened.`);
+                  window.electronAPI.log('debug', 'Modal for cancelling initial setup opened.');
                 }}
               >
                 {t('welcome.cancel_button')}
+              </Button>
+            </Center>
+          </Container>
+        )}
+
+        {errorKey && (
+          <Container>
+            <Text size="lg" c="red" className={classes.description} tabIndex={0}>
+              {t(`welcome.errors.${errorKey}`)}
+            </Text>
+            <Center>
+              <Button className={classes.control} size="lg" color="gray" onClick={handleCloseApp}>
+                {t('exit_button')}
               </Button>
             </Center>
           </Container>
@@ -169,7 +191,7 @@ const Welcome: React.FC = () => {
               {t('welcome.finished_text')}
             </Text>
             <Center>
-              <Button className={classes.control} size={'lg'} onClick={handleGoHome}>
+              <Button className={classes.control} size="lg" onClick={handleGoHome}>
                 {t('welcome.proceed_button')}
               </Button>
             </Center>
@@ -180,7 +202,7 @@ const Welcome: React.FC = () => {
           opened={opened}
           onClose={() => {
             close();
-            window.electronAPI.log('debug', `Button for closing modal clicked.`);
+            window.electronAPI.log('debug', 'Button for closing modal clicked.');
           }}
           withCloseButton={true}
           centered
@@ -198,7 +220,7 @@ const Welcome: React.FC = () => {
                   close();
                   window.electronAPI.log(
                     'debug',
-                    `Button for confirming cancellilng of initial setup clicked in modal.`,
+                    'Button for confirming cancellilng of initial setup clicked in modal.',
                   );
                 }}
               >
@@ -207,7 +229,7 @@ const Welcome: React.FC = () => {
               <Button
                 onClick={() => {
                   close();
-                  window.electronAPI.log('debug', `Button for closing modal clicked.`);
+                  window.electronAPI.log('debug', 'Button for closing modal clicked.');
                 }}
               >
                 {t('no_button')}

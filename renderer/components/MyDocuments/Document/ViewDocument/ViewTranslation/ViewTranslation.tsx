@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Document } from '../../../../types';
 import { Text, Menu, UnstyledButton, Group } from '@mantine/core';
 import { IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import classes from './ViewTranslation.module.css';
 import useLogMount from 'hooks/useLogMount';
+import { Document } from '../../../../types';
+import classes from './ViewTranslation.module.css';
 
 type Props = {
   activeDocument: Document;

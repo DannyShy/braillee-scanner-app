@@ -1,12 +1,12 @@
-import { app } from 'electron';
+import fs from 'fs';
+import { app, ipcMain } from 'electron';
 import serve from 'electron-serve';
+import { logger } from './logger';
 import { createWindow } from './helpers';
-import { performScan, performDetectScanners } from './utils/perform-manage-scanning';
-import { ipcMain } from 'electron';
+import { performDetectScanners, performScan } from './utils/perform-manage-scanning';
 import { addFileToQueue, performCancelRecognizeBraille } from './utils/perform-braille-recognition';
 import { performCancelInitialSetup, performInitialSetup } from './utils/perform-initial-setup';
-import fs from 'fs';
-import { PATH_TO_MODEL, IS_PROD } from './utils/constants';
+import { IS_PROD, PATH_TO_MODEL } from './utils/constants';
 import { performCheckDiskSpace } from './utils/perform-check-disk-space';
 import { performReadDocuments, performUpdateDocument } from './utils/perform-manage-document';
 import { performExportDocument } from './utils/perform-export-document';
@@ -15,12 +15,16 @@ import { store } from './utils/store';
 import { performDeleteDocument } from './utils/perform-delete-document';
 import { performBrailleTranslation } from './utils/perform-braille-translation';
 import { performDeletePage } from './utils/perform-delete-page';
-import { performPrepareFileForRecognition } from './utils/perform-prepare-file-for-recognition';
+import {
+  performPrepareFileForRecognition,
+  performSaveFileAndPrepareForRecognition,
+} from './utils/perform-prepare-file-for-recognition';
+import { processError } from './error';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
 } else {
-  app.setPath('userData', `${app.getPath('userData')}(development)`);
+  app.setPath('userData', `${app.getPath('userData')} (development)`);
 }
 
 (async () => {
@@ -52,21 +56,41 @@ if (IS_PROD) {
   ipcMain.on('translate-text', (event, brailleText, documentID, pageID, translationLanguage) => {
     performBrailleTranslation(brailleText, documentID, pageID, translationLanguage, mainWindow);
   });
-  ipcMain.on('clear-page', (event, documentID, file, pageID) => performDeletePage(documentID, file, pageID));
+  ipcMain.on('delete-page', (event, documentID, file, pageID) =>
+    performDeletePage(documentID, file, pageID, mainWindow),
+  );
   ipcMain.handle('get-scanners-list', () => performDetectScanners(mainWindow));
   ipcMain.handle('read-documents', () => performReadDocuments(mainWindow));
   ipcMain.handle('check-disk-space', async () => {
     await performCheckDiskSpace(mainWindow);
   });
-  ipcMain.on('process-uploaded-file', async (event, filePath, documentID, pageID, translationLanguage) => {
-    performPrepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
+  ipcMain.on('process-uploaded-file', async (event, fileBytes, fileName, documentID, pageID, translationLanguage) => {
+    try {
+      await performSaveFileAndPrepareForRecognition(
+        fileBytes,
+        fileName,
+        documentID,
+        pageID,
+        translationLanguage,
+        mainWindow,
+      );
+    } catch (error) {
+      logger.error(`Error processing uploaded file: ${error.message}`);
+      processError(mainWindow, error);
+    }
   });
   ipcMain.handle('initial-setup', async () => {
     await performInitialSetup(mainWindow);
   });
-  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, translationLanguage) => {
-    const pathToScannedFile = await performScan(documentID, selectedScanner);
-    performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
+  ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, paperSource, translationLanguage) => {
+    try {
+      const pathToScannedFile = await performScan(documentID, selectedScanner, paperSource);
+      await performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
+    } catch (err) {
+      logger.error(`Error scanning file: ${err.message}`);
+      performUpdateDocument(mainWindow, 'editFile', documentID, null, pageID);
+      processError(mainWindow, err);
+    }
   });
   ipcMain.on('recognize-braille', async (event, fileName, documentID, pageID, translationLanguage) => {
     addFileToQueue(fileName, documentID, pageID, translationLanguage, mainWindow);

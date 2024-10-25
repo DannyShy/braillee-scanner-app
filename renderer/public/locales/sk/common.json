@@ -5,15 +5,29 @@
     "welcome_text_2": "Ide o jednorazovú akciu. Chceš pokračovať?",
     "continue_button": "Pokračovať a stiahnuť",
     "progress": {
-      "python": "Inštalujem Python knižnicu...",
+      "python": "Inštalujem Python knižnicu (táto akcia môže trvať aj niekoľko minút v závislosti od rýchlosti pripojenia)...",
       "requirements": "Inštalujem požadované súbory...",
+      "naps2": "Inštalujem NAPS2 - nástroj na skenovanie...",
+      "liblouis": "Inštalujem Liblouis - nástroj na preklad...",
       "model": "Sťahujem rozpoznávací model...",
       "percentage": "z braille modelu bolo stiahnutých."
+    },
+    "errors": {
+      "missingPython": "Python 3.11 nie je nainštalovaný alebo nie je možné najísť jeho umiestnenie. Nainštalujte Python 3.11 a skúste znovu.",
+      "napsInstallationFailed": "Nebolo možné nainštalovať NAPS2 - nástroj na skenovanie. Skúste nástroj nainštalovať manuálne alebo kontaktujte podporu, prosím.",
+      "liblouisInstallationFailed": "Nebolo možné nainštalovať liblouis - nástroj na preklad. Skúste nástroj nainštalovať manuálne alebo kontaktujte podporu, prosím."
     },
     "cancel_button": "Zrušiť",
     "finished_text": "Dodatočné dáta boli úspešne stiahnuté a aplikácia je pripravená na použitie.",
     "proceed_button": "Pokračovať",
     "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?"
+  },
+  "common": {
+    "ok": "OK"
+  },
+  "errors": {
+    "title": "Vyskytla sa chyba",
+    "imageMagickNotInstalled": "Je potrebné nainštalovať knižnicu ImageMagick. Stiahnite si a nainštalujte knižnicu podľa <ExternalLink href=\"https://github.com/yakovmeister/pdf2image/blob/HEAD/docs/gm-installation.md\">inštrukcií</ExternalLink> a skúste znova."
   },
   "logo": "Logo DotSight aplikácie. Zobrazenie oka obklopeného bodkami.",
   "my_documents": "Moje Dokumenty",
@@ -52,8 +66,8 @@
       "image_description": "Zobrazenie aktuálnej strany.",
       "clear_button": "Vymazať stranu",
       "stop_auto_scan": "Ukončiť auto-skenovanie",
-      "scan_button_tooltip": "Skenovať všetky strany bez prestávky",
-      "scan_with_break_button_tooltip": "Skenovať s časovou prestávkou",
+      "scan_button_tooltip": "Skenovať jednu stranu",
+      "scan_with_break_button_tooltip": "Skenovať všetky strany s časovou prestávkou",
       "delay_selection_description": "Vybrať časovú prestávku medzi skenovaním strán v sekundách."
     }
   },

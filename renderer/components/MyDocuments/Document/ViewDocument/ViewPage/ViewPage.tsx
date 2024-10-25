@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import classes from '../ViewPage/ViewPage.module.css';
 import {
   Button,
   Text,
@@ -13,34 +12,37 @@ import {
   UnstyledButton,
   ScrollArea,
 } from '@mantine/core';
-import { Document } from '../../../../types';
-import ScannerPicker from './ScannerPicker/ScannerPicker';
 import { useTranslation } from 'react-i18next';
 import useLogMount from 'hooks/useLogMount';
 import { IconChevronDown, IconX } from '@tabler/icons-react';
+import { Document } from '../../../../types';
+import classes from '../ViewPage/ViewPage.module.css';
 import { DEFAULT_SCAN_DELAY } from '../../../../../constants';
+import ScannerPicker from './ScannerPicker/ScannerPicker';
 
 type Props = {
   activeDocument: Document;
   activePage: number;
   onUpdate: (action: string, data?: string, activePage?: number | string) => void;
   translationLanguage: string;
+  onDelete: () => void;
 };
 
-const scanDelayValues: number[] = Array.from({ length: 10 }, (_, i) => i + 1);
+const scanDelayValues: number[] = [0, 1, 3, 5, 10];
 
-const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, translationLanguage }) => {
+const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDelete, translationLanguage }) => {
   useLogMount('ViewPage');
   const { t } = useTranslation();
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [opened, setOpened] = useState<boolean>(false);
   const [scanDelay, setScanDelay] = useState<number>(DEFAULT_SCAN_DELAY);
   const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
+  const [uploadKey, setUploadKey] = useState<number>(0);
 
   const activePageRef = useRef(activePage);
   const activeDocumentRef = useRef(activeDocument);
+  const activeDocumentFile = activeDocument.pages[activePage].file;
 
   const items = scanDelayValues.map((item) => (
     <Menu.Item onClick={() => setScanDelay(item)} key={item}>
@@ -49,38 +51,52 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
   ));
 
   const fetchScannersList = async () => {
-    console.log("=>(ViewPage.tsx:53) fetchScannersList");
     setScannersList([]);
-    window.electronAPI.getScannersList();
     await window.electronAPI.addScannersListListener((scannersList) => {
-      const sanitizedScannerList = scannersList.filter(i => i);
+      const sanitizedScannerList = scannersList.filter((i) => i);
       setScannersList(sanitizedScannerList);
     });
+    window.electronAPI.getScannersList();
   };
-  const handleUploadFile = async () => {
-    const pathToUploadedFile = (uploadedFile as any).path;
-    window.electronAPI.log('debug', `User uploaded file ${pathToUploadedFile}.`);
-    window.electronAPI.processUploadedFile(
-      pathToUploadedFile,
-      activeDocument.documentID,
-      activeDocument.pages[activePage].pageID,
-      translationLanguage,
-    );
-    setUploadedFile(null);
+  const handleUploadFile = async (uploadedFile: File | null) => {
+    if (!uploadedFile) {
+      return;
+    }
+
+    try {
+      const arrayBuffer = await uploadedFile.arrayBuffer();
+      const fileBytes = new Uint8Array(arrayBuffer);
+
+      window.electronAPI.log('debug', `User uploaded file ${uploadedFile.name}.`);
+      window.electronAPI.processUploadedFile(
+        fileBytes,
+        uploadedFile.name,
+        activeDocument.documentID,
+        activeDocument.pages[activePage].pageID,
+        translationLanguage,
+      );
+
+      // Reset the key to allow the same file to be selected again
+      setUploadKey((prev) => prev + 1);
+    } catch (error) {
+      console.error('Error handling file upload:', error);
+      window.electronAPI.log('error', `Error uploading file: ${error}`);
+    }
   };
 
-  const handleContinuousScan = async () => {
+  const handleScanSingle = async () => {
     window.electronAPI.log('debug', `Scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
     await onUpdate('editFile', 'scanInProgress', activeDocument.pages[activePage].pageID);
     await window.electronAPI.scanFile(
       activeDocument.documentID,
       activeDocument.pages[activePage].pageID,
       selectedScanner,
+      'Glass',
       translationLanguage,
     );
   };
 
-  const handleScanWithBreak = async () => {
+  const handleScanAuto = async () => {
     //render stop button instead of other buttons
     window.electronAPI.log('debug', `Auto scan button clicked by user. Scanning with scanner: ${selectedScanner}.`);
     setAutoScanIsRunning(true);
@@ -89,6 +105,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
       activeDocument.documentID,
       activeDocument.pages[activePage].pageID,
       selectedScanner,
+      'Feeder',
       translationLanguage,
     );
   };
@@ -99,31 +116,18 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     window.electronAPI.log('debug', 'Auto scan stopped by user.');
   };
 
-  const handleClickRejectImage = async () => {
-    window.electronAPI.log('debug', 'Reject image button clicked by user.');
-    window.electronAPI.clearPage(
-      activeDocument.documentID,
-      activeDocument.pages[activePage].file,
-      activeDocument.pages[activePage].pageID,
-    );
-    await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
+  const handleDeletePage = () => {
+    window.electronAPI.log('debug', 'Delete page button clicked by user.');
     if (activeDocument.pages[activePage].brailleStatus === 'recognitionInProgress') {
       window.electronAPI.cancelRecognition();
     }
-    await onUpdate('editBrailleStatus', null, activeDocument.pages[activePage].pageID);
-    await onUpdate('editBrailleText', null, activeDocument.pages[activePage].pageID);
-    await onUpdate('editTranslatedTextStatus', null, activeDocument.pages[activePage].pageID);
-    await onUpdate('editTranslatedText', null, activeDocument.pages[activePage].pageID);
+    onDelete();
   };
 
   // run autoscan loop once the file of active page is available
 
   useEffect(() => {
-    if (
-      activeDocument.pages[activePage].file &&
-      activeDocument.pages[activePage].file !== 'scanInProgress' &&
-      autoScanIsRunning
-    ) {
+    if (activeDocumentFile && activeDocumentFile !== 'scanInProgress' && autoScanIsRunning) {
       onUpdate('addPage'); // during time delay new page is added and set to be active
       setTimeout(() => {
         const newActiveDocument = activeDocumentRef.current;
@@ -136,7 +140,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
         );
       }, scanDelay * 1000);
     }
-  }, [activeDocument.pages[activePage].file]);
+  }, [activeDocumentFile]);
 
   useEffect(() => {
     activePageRef.current = activePage;
@@ -148,7 +152,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
 
   // get list of available scanners
   useEffect(() => {
-    fetchScannersList();
+    void fetchScannersList();
     return () => {
       window.electronAPI.removeScannersListListener();
     };
@@ -169,7 +173,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
         setSelectedScanner(storedScanner);
       }
     };
-    checkStoredScannerAvailability();
+    void checkStoredScannerAvailability();
   }, [scannersList]);
 
   // stores value of selectedScanner
@@ -181,11 +185,11 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
 
   // checks if the stored scanDelay is available
   useEffect(() => {
-    const checkStoredScanDealay = async () => {
+    const checkStoredScanDelay = async () => {
       const storedScanDelay = await window.electronAPI.getStoreValue('scan-delay');
       if (storedScanDelay) setScanDelay(storedScanDelay);
     };
-    checkStoredScanDealay();
+    void checkStoredScanDelay();
   }, []);
 
   // stores value of scanDelay
@@ -193,101 +197,104 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, trans
     window.electronAPI.setStoreValue('scan-delay', scanDelay);
   }, [scanDelay]);
 
-  // updates the value of file in document after update of file
-  useEffect(() => {
-    if (uploadedFile) {
-      handleUploadFile();
-    }
-  }, [uploadedFile]);
-
-  return activeDocument.pages[activePage].file === 'scanInProgress' && !autoScanIsRunning ? (
-    <Container className={classes.docPreviewEmpty}>
-      <Loader color="blue" />
-      <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
-    </Container>
-  ) : autoScanIsRunning ? (
-    <Container className={classes.docPreviewEmpty}>
-      <Loader color="blue" />
-      <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
-      <Button size="xl" color="red" onClick={handleStopScanWithBreak}>
-        {t('view_document_view_page.stop_auto_scan')}
-      </Button>
-    </Container>
-  ) : activeDocument.pages[activePage].file === null ? (
-    <Container className={classes.docPreviewEmpty}>
-      <ScannerPicker
-        selectedScanner={selectedScanner}
-        setSelectedScanner={setSelectedScanner}
-        fetchScannersList={fetchScannersList}
-        scannersList={scannersList}
-      />
-      <div className={classes.scanGroup}>
-        <Tooltip label={t('view_document.view_page.scan_button_tooltip')}>
+  return (
+    <div className={classes.viewPage}>
+      {activeDocumentFile === 'scanInProgress' && !autoScanIsRunning ? (
+        <Container className={classes.docPreviewEmpty}>
+          <Loader color="blue" />
+          <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
+        </Container>
+      ) : autoScanIsRunning ? (
+        <Container className={classes.docPreviewEmpty}>
+          <Loader color="blue" />
+          <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
+          <Button size="xl" color="red" onClick={handleStopScanWithBreak}>
+            {t('view_document_view_page.stop_auto_scan')}
+          </Button>
+        </Container>
+      ) : activeDocumentFile === null ? (
+        <Container className={classes.docPreviewEmpty}>
+          <ScannerPicker
+            selectedScanner={selectedScanner}
+            setSelectedScanner={setSelectedScanner}
+            fetchScannersList={fetchScannersList}
+            scannersList={scannersList}
+          />
+          <div className={classes.scanGroup}>
+            <Tooltip label={t('view_document.view_page.scan_button_tooltip')}>
+              <Button
+                className={classes.scanButton}
+                onClick={handleScanSingle}
+                size="xl"
+                disabled={!scannersList.length}
+              >
+                <VisuallyHidden>{t('view_document.view_page.scan_button_tooltip')}</VisuallyHidden>
+                {t('view_document.view_page.scan_button')}
+              </Button>
+            </Tooltip>
+            <Tooltip label={t('view_document.view_page.scan_with_break_button_tooltip')}>
+              <Button
+                className={classes.autoScanButton}
+                onClick={handleScanAuto}
+                size="xl"
+                disabled={!scannersList.length}
+              >
+                <VisuallyHidden>{t('view_document.view_page.scan_with_break_button_tooltip')}</VisuallyHidden>
+                {t('view_document.view_page.auto_scan_button')}
+              </Button>
+            </Tooltip>
+            <VisuallyHidden>{t('view_document.view_page.delay_selection_description')}</VisuallyHidden>
+            <Menu
+              onOpen={() => setOpened(true)}
+              onClose={() => setOpened(false)}
+              radius="md"
+              width="target"
+              withinPortal
+            >
+              <Menu.Target>
+                <UnstyledButton h={60} className={classes.control} data-expanded={opened || undefined}>
+                  <span className={classes.label}>{scanDelay}s</span>
+                  <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
+                </UnstyledButton>
+              </Menu.Target>
+              <Menu.Dropdown>
+                <ScrollArea h={150}>{items}</ScrollArea>
+              </Menu.Dropdown>
+            </Menu>
+          </div>
+          <Text>{t('view_document.view_page.or')}</Text>
+          <FileButton onChange={handleUploadFile} accept="image/*,.pdf" key={uploadKey}>
+            {(props) => (
+              <Button size="xl" {...props}>
+                {t('view_document.view_page.upload_button')}
+              </Button>
+            )}
+          </FileButton>
+        </Container>
+      ) : (
+        <div className={classes.imageAndButtonDiv}>
+          <Image
+            src={activeDocumentFile}
+            alt={t('view_document.view_page.image_description')}
+            className={classes.imagePreview}
+            tabIndex={0}
+          />
+        </div>
+      )}
+      {!autoScanIsRunning && (
+        <Tooltip label={t('view_document.view_page.clear_button')}>
           <Button
-            className={classes.scanButton}
-            onClick={handleContinuousScan}
+            className={classes.rejectScannedDocument}
             size="xl"
-            disabled={!scannersList.length}
+            variant="transparent"
+            onClick={handleDeletePage}
+            color="red"
           >
-            <VisuallyHidden>{t('view_document.view_page.scan_button_tooltip')}</VisuallyHidden>
-            {t('view_document.view_page.scan_button')}
+            <IconX size={35}></IconX>
+            <VisuallyHidden>{t('view_document.view_page.clear_button')}</VisuallyHidden>
           </Button>
         </Tooltip>
-        <Tooltip label={t('view_document.view_page.scan_with_break_button_tooltip')}>
-          <Button
-            className={classes.autoScanButton}
-            onClick={handleScanWithBreak}
-            size="xl"
-            disabled={!scannersList.length}
-          >
-            <VisuallyHidden>{t('view_document.view_page.scan_with_break_button_tooltip')}</VisuallyHidden>
-            {t('view_document.view_page.auto_scan_button')}
-          </Button>
-        </Tooltip>
-        <VisuallyHidden>
-          {t('view_document.view_page.delay_selection_description', { scannersCount: scannersList.length })}
-        </VisuallyHidden>
-        <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>
-          <Menu.Target>
-            <UnstyledButton h={60} className={classes.control} data-expanded={opened || undefined}>
-              <span className={classes.label}>{scanDelay}s</span>
-              <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
-            </UnstyledButton>
-          </Menu.Target>
-          <Menu.Dropdown>
-            <ScrollArea h={150}>{items}</ScrollArea>
-          </Menu.Dropdown>
-        </Menu>
-      </div>
-      <Text>{t('view_document.view_page.or')}</Text>
-      <FileButton onChange={setUploadedFile} accept="image/*,.pdf">
-        {(props) => (
-          <Button size="xl" {...props}>
-            {t('view_document.view_page.upload_button')}
-          </Button>
-        )}
-      </FileButton>
-    </Container>
-  ) : (
-    <div className={classes.imageAndButtonDiv}>
-      <Image
-        src={activeDocument.pages[activePage].file}
-        alt={t('view_document.view_page.image_description')}
-        className={classes.imagePreview}
-        tabIndex={0}
-      />
-      <Tooltip label={t('view_document.view_page.clear_button')}>
-        <Button
-          className={classes.rejectScannedDocument}
-          size="xl"
-          variant="transparent"
-          onClick={handleClickRejectImage}
-          color="red"
-        >
-          <IconX size={35}></IconX>
-          <VisuallyHidden>{t('view_document.view_page.clear_button')}</VisuallyHidden>
-        </Button>
-      </Tooltip>
+      )}
     </div>
   );
 };
