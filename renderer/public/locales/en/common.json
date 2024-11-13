@@ -22,8 +22,28 @@
     "proceed_button": "Continue",
     "modal_text": "Are you sure you want to cancel the data download?"
   },
+  "login": {
+    "email_label": "Email",
+    "email_placeholder": "Enter your email",
+    "invalid_email": "Enter a valid email address",
+    "no_account": "Don't have an account? You can register on this",
+    "website": "site",
+    "submitting": "Signing in...",
+    "check_email": "Check your email",
+    "magic_link_sent": "We sent you a special link to",
+    "click_link_to_login": "Click the link in the email to log in.",
+    "submit": "Login"
+  },
+  "no_license": {
+    "title": "You do not have a valid license",
+    "description": "A valid license is required to use the application.",
+    "get_license": "A license can be purchased at this",
+    "website": "site",
+    "logout": "Logout"
+  },
   "common": {
-    "ok": "OK"
+    "ok": "OK",
+    "cancel": "Cancel"
   },
   "errors": {
     "title": "An error occurred",

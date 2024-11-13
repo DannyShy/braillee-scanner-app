@@ -1,0 +1,82 @@
+.loginPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    position: relative;
+    background-color: #3f5b73;
+    color: white;
+
+    h3 {
+        margin: 16px 0;
+    }
+
+    p {
+        margin: 4px 0;
+    }
+
+    .logoutButton {
+        margin-top: 32px;
+    }
+
+    .languageSelectorWrapper {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        color: var(--mantine-color-black);
+    }
+
+    .loginForm {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        .logo {
+            width: 280px;
+        }
+
+        .poweredBy {
+            display: flex;
+            align-items: center;
+            margin-top: 8px;
+
+            .poweredByText {
+                font-size: 14px;
+                line-height: 16px;
+                font-weight: 900;
+                text-transform: uppercase;
+                margin-bottom: 1px;
+            }
+
+            .hotovoLogo {
+                width: 90px;
+                margin-left: 8px;
+            }
+        }
+
+        .emailInput {
+            margin-top: 64px;
+            width: 400px;
+            max-width: 100%;
+        }
+
+        .loginButton {
+            margin-top: 32px;
+        }
+    }
+
+    .noAccountSection {
+        text-align: center;
+        max-width: 240px;
+        margin-top: 32px;
+        color: white;
+
+        a {
+            color: white;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+    }
+}

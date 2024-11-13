@@ -41,9 +41,9 @@ const LanguagePicker: React.FC<LanguagePickerProps> = ({ i18n }) => {
   ));
 
   useEffect(() => {
-    i18n.changeLanguage(selected.label);
+    void i18n.changeLanguage(selected.label);
     window.electronAPI.setStoreValue('language', selected.label);
-  }, [selected]);
+  }, [i18n, selected]);
 
   return (
     <Menu onOpen={() => setOpened(true)} onClose={() => setOpened(false)} radius="md" width="target" withinPortal>

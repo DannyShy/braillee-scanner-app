@@ -4,6 +4,7 @@ import { IconFolderOpen, IconLogout } from '@tabler/icons-react';
 import useLogMount from 'hooks/useLogMount';
 import { Trans, useTranslation } from 'react-i18next';
 import i18n from 'i18next';
+import { useAuthenticated, useUser } from 'hooks';
 import { ExternalLink } from './common/ExternalLink';
 import LanguagePicker from './LanguagePicker/LanguagePicker';
 import MyDocuments from './MyDocuments/MyDocuments';
@@ -22,6 +23,8 @@ interface HomeProps {
 const Home: React.FC<HomeProps> = ({ i18n }) => {
   useLogMount('Home');
   const { t } = useTranslation();
+
+  const { userLoaded, userLoading } = useAuthenticated();
 
   useEffect(() => {
     const handleError = (errorKey: string, errorMessage: string) => {
@@ -67,6 +70,10 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
     window.electronAPI.log('debug', 'User clicked on Exit/Logout button.');
     window.electronAPI.closeApp();
   };
+
+  if (userLoading || !userLoaded) {
+    return null;
+  }
 
   return (
     <div className={classes.parent}>

@@ -5,3 +5,4 @@ app
 dist
 tsconfig.tsbuildinfo
 .aider*
+.env

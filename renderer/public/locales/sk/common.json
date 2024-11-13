@@ -26,8 +26,28 @@
     "proceed_button": "Pokračovať",
     "modal_text": "Ste si istý, že chcete ukončiť sťahovanie dát?"
   },
+  "login": {
+    "email_label": "Email",
+    "email_placeholder": "Zadajte svoj email",
+    "invalid_email": "Zadajte platnú emailovú adresu",
+    "no_account": "Nemáte účet? Možete sa zaregistrovať na tejto",
+    "website": "stránke",
+    "submitting": "Prihlasujem sa...",
+    "check_email": "Skontrolujte svoju emailovú schránku",
+    "magic_link_sent": "Poslali sme Vám špeciálny link na",
+    "click_link_to_login": "Kliknite na link v emaili  pre prihlásenie.",
+    "submit": "Prihlásiť sa"
+  },
+  "no_license": {
+    "title": "Nemáte platnú licenciu",
+    "description": "Pre používanie aplikácie je potrebné vlastniť platnú licenciu.",
+    "get_license": "Licenciu je možné zakúpiť na tejto",
+    "website": "stránke",
+    "logout": "Odhlásiť sa"
+  },
   "common": {
-    "ok": "OK"
+    "ok": "OK",
+    "cancel": "Zrušiť"
   },
   "errors": {
     "title": "Vyskytla sa chyba",
