@@ -10,15 +10,15 @@ const myFormat = printf(({ level, message, timestamp }) => {
 });
 
 if (!fs.existsSync(APP_DATA_PATH)) {
-  mkdirSync(APP_DATA_PATH, {recursive: true});
+  mkdirSync(APP_DATA_PATH, { recursive: true });
 }
 
 if (!fs.existsSync(LOGS_PATH)) {
-  mkdirSync(LOGS_PATH, {recursive: true});
+  mkdirSync(LOGS_PATH, { recursive: true });
 }
 
 const logger = winston.createLogger({
-  level: 'info',
+  level: process.env.LOG_LEVEL || 'info',
   format: combine(format.timestamp(), myFormat),
   transports: [
     new winston.transports.File({

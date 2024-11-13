@@ -16,7 +16,8 @@ import { useRouter } from 'next/router';
 import React, { useState, useEffect } from 'react';
 import { useDisclosure } from '@mantine/hooks';
 import useLogMount from 'hooks/useLogMount';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
+import { ExternalLink } from '@renderer/components/common/ExternalLink';
 import classes from './Welcome.module.css';
 
 const Welcome: React.FC = () => {
@@ -175,7 +176,13 @@ const Welcome: React.FC = () => {
         {errorKey && (
           <Container>
             <Text size="lg" c="red" className={classes.description} tabIndex={0}>
-              {t(`welcome.errors.${errorKey}`)}
+              <Trans
+                i18nKey={`welcome.errors.${errorKey}`}
+                components={{
+                  ExternalLink: <ExternalLink />,
+                  strong: <strong />,
+                }}
+              />
             </Text>
             <Center>
               <Button className={classes.control} size="lg" color="gray" onClick={handleCloseApp}>

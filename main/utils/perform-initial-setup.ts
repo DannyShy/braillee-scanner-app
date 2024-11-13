@@ -1,5 +1,4 @@
 import fs from 'fs';
-import path from 'path';
 import { ChildProcess, exec, spawn } from 'child_process';
 import { mkdirSync } from 'original-fs';
 import axios from 'axios';
@@ -7,7 +6,7 @@ import { BrowserWindow } from 'electron';
 import treeKill from 'tree-kill';
 import { logger } from '../logger';
 import {
-  PYTHON_VENV_PATH,
+  ANGELINA_REQUIREMENTS_PATH,
   APP_DATA_PATH,
   CHUNK_SIZE,
   IS_DARWIN,
@@ -17,94 +16,186 @@ import {
   MODEL_URL,
   NAPS_DEB_PKG_64,
   NAPS_RPM_PKG_64,
-  NAPS_SCAN_PKG,
   PATH_TO_MODEL,
   PYTHON_EXE,
-  PYTHON_PKG,
-  ANGELINA_REQUIREMENTS_PATH,
+  PYTHON_VENV_PATH,
 } from './constants';
-import { getPythonPath, getLinuxPackaging, getLinuxArchitecture, DEBIAN, RPM, x_64, arm_64 } from './common';
+import { arm_64, DEBIAN, getLinuxArchitecture, getLinuxPackaging, getPythonPath, RPM, x_64 } from './common';
 
 let controller: AbortController;
-let pipUpgradeProcess: ChildProcess;
-let pythonVenvProcess: ChildProcess;
+let pythonInstallProcess: ChildProcess;
 let installRequirements: ChildProcess;
 
-const setupPython = async (mainWindow: BrowserWindow): Promise<[boolean, string | null]> => {
+const setupPackages = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  mainWindow.webContents.send('initial-setup-progress', 'packages', null, false);
+  if (IS_DARWIN) {
+    const checkBrewProcess = exec('which brew');
+    await waitUntilFinished(checkBrewProcess, 'checkBrew');
+
+    if (checkBrewProcess.exitCode !== 0) {
+      logger.error('Homebrew not found.');
+      mainWindow.webContents.send('initial-setup-progress', 'packages', null, false, 'missingBrew');
+      return false;
+    }
+  }
+  return true;
+};
+
+const setupPython = async (mainWindow: BrowserWindow) => {
   mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
   let pythonPath = null;
 
   if (IS_WIN32) {
     logger.debug('Setting up Python for Windows...');
-    pipUpgradeProcess = spawn(PYTHON_EXE, ['-m', 'pip', 'install', 'pip', '--upgrade'], {
+    pythonInstallProcess = spawn(PYTHON_EXE, ['-m', 'pip', 'install', 'pip', '--upgrade'], {
       detached: false,
     });
-    await waitUntilFinished(pipUpgradeProcess, 'pipUpgrade');
-    pipUpgradeProcess = null;
-    pythonPath = PYTHON_EXE;
+    await waitUntilFinished(pythonInstallProcess, 'pipUpgrade');
+    pythonInstallProcess = null;
+    return true;
   } else if (IS_LINUX) {
     try {
       pythonPath = await getPythonPath(false);
     } catch (e) {
       logger.info('Unable to locate python on local machine.');
       mainWindow.webContents.send('initial-setup-progress', 'python', null, false, 'missingPython');
-      return [false, null];
+      return false;
     }
 
     logger.info('Creating virtual environment...');
-    pythonVenvProcess = spawn(pythonPath, ['-m', 'venv', PYTHON_VENV_PATH], {
+    pythonInstallProcess = spawn(pythonPath, ['-m', 'venv', PYTHON_VENV_PATH], {
       detached: false,
     });
-    await waitUntilFinished(pythonVenvProcess, 'pythonVenvProcess');
-    pythonVenvProcess = null;
+    await waitUntilFinished(pythonInstallProcess, 'pythonVenvProcess');
+    pythonInstallProcess = null;
 
-    pythonPath = path.join(PYTHON_VENV_PATH, 'bin', 'python');
+    pythonPath = await getPythonPath();
   } else if (IS_DARWIN) {
     logger.debug('Setting up Python for macOS...');
-    const pythonInstallation = exec(`installer -pkg ${PYTHON_PKG} -target CurrentUserHomeDirectory`);
-    await waitUntilFinished(pythonInstallation, 'pythonInstallation');
 
     try {
+      pythonPath = await getPythonPath(false);
+    } catch (e) {
+      logger.info('Python 3.11 not found. Installing via Homebrew...');
+      const brewInstallPythonProcess = exec('brew install python@3.11');
+      await waitUntilFinished(brewInstallPythonProcess, 'brewInstallPython');
+    }
+
+    try {
+      logger.info('Creating virtual environment...');
+      pythonInstallProcess = spawn(pythonPath, ['-m', 'venv', PYTHON_VENV_PATH], {
+        detached: false,
+      });
+      await waitUntilFinished(pythonInstallProcess, 'pythonVenvProcess');
+      pythonInstallProcess = null;
+
       pythonPath = await getPythonPath();
     } catch (e) {
       logger.info('Unable to locate python on local machine.');
       mainWindow.webContents.send('initial-setup-progress', 'python', null, false, 'missingPython');
-      return [false, null];
+      return false;
     }
   }
 
-  return [true, pythonPath];
+  return !!pythonPath;
 };
 
-const setupAngelinaPipRequirements = async (pythonPath: string, mainWindow: BrowserWindow): Promise<boolean> => {
+const setupAngelinaPipRequirements = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  const pythonPath = await getPythonPath();
+
+  logger.info('Installing Python requirements...');
   mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
 
-  if (IS_WIN32) {
-    logger.info('Installing requirements for Windows...');
-    installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
-      detached: false,
-    });
+  installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
+    detached: false,
+  });
+  try {
     await waitUntilFinished(installRequirements, 'installRequirements');
     installRequirements = null;
+  } catch (e) {
+    logger.error('Failed to install requirements. Please install them manually.');
+    mainWindow.webContents.send(
+      'initial-setup-progress',
+      'requirements',
+      null,
+      false,
+      'requirementsInstallationFailed',
+    );
+    return false;
+  }
+  await waitUntilFinished(installRequirements, 'installRequirements');
+  installRequirements = null;
+
+  return true;
+};
+
+const setupNaps2 = async (mainWindow: BrowserWindow): Promise<boolean> => {
+  if (IS_WIN32) {
     return true;
   }
 
   if (IS_DARWIN) {
-    logger.info('Installing requirements for macOS...');
-    pipUpgradeProcess = exec('pip3 install --upgrade pip');
-    await waitUntilFinished(pipUpgradeProcess, 'pipInstallation');
-    pipUpgradeProcess = null;
+    // Check if NAPS2 is installed via Homebrew
+    const checkNaps2Process = exec('which naps2');
+    await waitUntilFinished(checkNaps2Process, 'checkNaps2');
+
+    if (checkNaps2Process.exitCode !== 0) {
+      logger.error('NAPS2 not found.');
+      mainWindow.webContents.send('initial-setup-progress', 'naps', null, false, 'missingNaps2Mac');
+      return false;
+    }
+
+    logger.info('NAPS2 installation found.');
+    return true;
   }
 
-  // Install requirements for Linux/macOS
-  if (IS_LINUX || IS_DARWIN) {
-    logger.info('Installing requirements...');
-    installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
-      detached: false,
+  if (IS_LINUX) {
+    // Linux-specific NAPS2 setup
+    let naps2Installed = false;
+
+    const linuxPackaging = await getLinuxPackaging();
+    logger.info(`Linux packaging system: ${linuxPackaging}`);
+
+    const linuxArch = await getLinuxArchitecture();
+    logger.info(`Linux architecture: ${linuxArch}`);
+
+    // Check existing installation
+    const checkNaps2Command = linuxPackaging === DEBIAN ? 'dpkg -l | grep -q "^ii.*naps2"' : 'rpm -q naps2';
+    const checkNaps2Process = exec(checkNaps2Command, (error) => {
+      naps2Installed = !error;
     });
-    mainWindow.webContents.send('initial-setup-progress', 'python', null, false);
-    await waitUntilFinished(installRequirements, 'installRequirements');
-    installRequirements = null;
+    await waitUntilFinished(checkNaps2Process, 'checkNaps2');
+
+    if (!naps2Installed) {
+      logger.info('NAPS2 is not installed. Installing...');
+      mainWindow.webContents.send('initial-setup-progress', 'naps2', null, false);
+
+      const command = `pkexec ${linuxPackaging === DEBIAN ? 'dpkg' : 'rpm'} -i ${determineLinusNaps2InstallationPackage(
+        linuxPackaging,
+        linuxArch,
+      )}`;
+      const napsInstallation = exec(command, (error, stdout, stderr) => {
+        if (error || stderr) {
+          logger.error(`Cannot install necessary packages: ${error?.message || stderr}`);
+        } else {
+          logger.info('Installation started');
+        }
+      });
+
+      try {
+        await waitUntilFinished(napsInstallation, 'napsInstallation');
+
+        if (napsInstallation.exitCode !== 0) {
+          logger.error('Installation of NAPS2 failed!');
+          mainWindow.webContents.send('initial-setup-progress', 'naps', null, false, 'naps2InstallationFailed');
+          return false;
+        }
+      } catch (e) {
+        logger.error('Failed to install NAPS2. Please install it manually.');
+        mainWindow.webContents.send('initial-setup-progress', 'naps', null, false, 'naps2InstallationFailed');
+        return false;
+      }
+    }
   }
 
   return true;
@@ -129,15 +220,22 @@ const setupLiblouis = async (mainWindow: BrowserWindow): Promise<boolean> => {
 
     if (checkLiblouisProcess.exitCode !== 0) {
       logger.info('Installing liblouis via homebrew...');
-      const installLiblouisProcess = exec('pkexec brew install liblouis', (error) => {
+      const installLiblouisProcess = exec('brew install liblouis', (error) => {
         if (error) {
           logger.error(`Failed to install liblouis: ${error.message}`);
           return false;
         }
       });
-      await waitUntilFinished(installLiblouisProcess, 'installLiblouis');
 
-      if (installLiblouisProcess.exitCode !== 0) {
+      try {
+        await waitUntilFinished(installLiblouisProcess, 'installLiblouis');
+
+        if (installLiblouisProcess.exitCode !== 0) {
+          mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false, 'liblouisInstallationFailed');
+          return false;
+        }
+      } catch (e) {
+        logger.error('Failed to install liblouis. Please install it manually.');
         mainWindow.webContents.send('initial-setup-progress', 'liblouis', null, false, 'liblouisInstallationFailed');
         return false;
       }
@@ -205,61 +303,6 @@ const setupLiblouis = async (mainWindow: BrowserWindow): Promise<boolean> => {
     return true;
   }
 
-  return true;
-};
-
-const setupNaps2 = async (mainWindow: BrowserWindow): Promise<boolean> => {
-  if (IS_WIN32) {
-    return true;
-  }
-
-  if (IS_DARWIN) {
-    let napsInstallation = exec(`installer -pkg ${NAPS_SCAN_PKG} -target CurrentUserHomeDirectory`);
-    await waitUntilFinished(napsInstallation, 'napsInstallation');
-    napsInstallation = null;
-    logger.info('NAPS2 installation for macOS finished.');
-    return true;
-  }
-
-  // Linux-specific NAPS2 setup
-  let naps2Installed = false;
-
-  const linuxPackaging = await getLinuxPackaging();
-  logger.info(`Linux packaging system: ${linuxPackaging}`);
-
-  const linuxArch = await getLinuxArchitecture();
-  logger.info(`Linux architecture: ${linuxArch}`);
-
-  // Check existing installation
-  const checkNaps2Command = linuxPackaging === DEBIAN ? 'dpkg -l | grep -q "^ii.*naps2"' : 'rpm -q naps2';
-  const checkNaps2Process = exec(checkNaps2Command, (error) => {
-    naps2Installed = !error;
-  });
-  await waitUntilFinished(checkNaps2Process, 'checkNaps2');
-
-  if (!naps2Installed) {
-    logger.info('NAPS2 is not installed. Installing...');
-    mainWindow.webContents.send('initial-setup-progress', 'naps2', null, false);
-
-    const command = `pkexec ${linuxPackaging === DEBIAN ? 'dpkg' : 'rpm'} -i ${determineLinusNaps2InstallationPackage(
-      linuxPackaging,
-      linuxArch,
-    )}`;
-    const napsInstallation = exec(command, (error, stdout, stderr) => {
-      if (error || stderr) {
-        logger.error(`Cannot install necessary packages: ${error?.message || stderr}`);
-      } else {
-        logger.info('Installation started');
-      }
-    });
-    await waitUntilFinished(napsInstallation, 'napsInstallation');
-
-    if (napsInstallation.exitCode !== 0) {
-      logger.error('Installation of NAPS2 failed!');
-      mainWindow.webContents.send('initial-setup-progress', 'naps', null, false, 'napsInstallationFailed');
-      return false;
-    }
-  }
   return true;
 };
 
@@ -358,19 +401,28 @@ const determineLinusNaps2InstallationPackage = (packaging: string, architecture:
 
 const performInitialSetup = async (mainWindow: BrowserWindow): Promise<boolean> => {
   logger.debug('Initial Setup started.');
+  logger.debug('OS:', process.platform);
+  logger.debug('Arch:', process.arch);
+  logger.debug('Node version:', process.version);
+  logger.debug('Electron version:', process.versions?.electron);
+  logger.debug(`App dir: ${APP_DATA_PATH}`);
+
+  // Setup Packages (Homebrew check for macOS)
+  const packagesSuccess = await setupPackages(mainWindow);
+  if (!packagesSuccess) {
+    return false;
+  }
 
   // Setup Python
-  const [pythonSuccess, pythonPath] = await setupPython(mainWindow);
-  if (!pythonSuccess || (IS_LINUX && !pythonPath)) {
+  const pythonSuccess = await setupPython(mainWindow);
+  if (!pythonSuccess) {
     return false;
   }
 
   // Setup Requirements
-  if (pythonPath) {
-    const requirementsSuccess = await setupAngelinaPipRequirements(pythonPath, mainWindow);
-    if (!requirementsSuccess) {
-      return false;
-    }
+  const requirementsSuccess = await setupAngelinaPipRequirements(mainWindow);
+  if (!requirementsSuccess) {
+    return false;
   }
 
   // Setup NAPS2
@@ -396,9 +448,9 @@ const performInitialSetup = async (mainWindow: BrowserWindow): Promise<boolean> 
 };
 
 const performCancelInitialSetup = async () => {
-  if (pipUpgradeProcess) {
+  if (pythonInstallProcess) {
     logger.info('Pip upgrade cancelled by user.');
-    treeKill(pipUpgradeProcess.pid, 9);
+    treeKill(pythonInstallProcess.pid, 9);
   } else if (installRequirements) {
     logger.info('Requirements installation cancelled by user.');
     treeKill(installRequirements.pid, 9);

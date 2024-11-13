@@ -5,6 +5,7 @@
     "welcome_text_2": "Ide o jednorazovú akciu. Chceš pokračovať?",
     "continue_button": "Pokračovať a stiahnuť",
     "progress": {
+      "packages": "Inštalujem potrebné balíky...",
       "python": "Inštalujem Python knižnicu (táto akcia môže trvať aj niekoľko minút v závislosti od rýchlosti pripojenia)...",
       "requirements": "Inštalujem požadované súbory...",
       "naps2": "Inštalujem NAPS2 - nástroj na skenovanie...",
@@ -13,8 +14,11 @@
       "percentage": "z braille modelu bolo stiahnutých."
     },
     "errors": {
-      "missingPython": "Python 3.11 nie je nainštalovaný alebo nie je možné najísť jeho umiestnenie. Nainštalujte Python 3.11 a skúste znovu.",
-      "napsInstallationFailed": "Nebolo možné nainštalovať NAPS2 - nástroj na skenovanie. Skúste nástroj nainštalovať manuálne alebo kontaktujte podporu, prosím.",
+      "missingBrew": "Pre pokračovanie je potrebné nainštalovať Homebrew. Stiahnite a nainstalujte si <ExternalLink href=\"https://github.com/Homebrew/brew/releases/download/4.4.4/Homebrew-4.4.4.pkg\">Hombrew</ExternalLink> a skúste znova.",
+      "missingPython": "Python 3.11 nie je nainštalovaný alebo nie je možné najsť jeho umiestnenie. Nainštalujte Python 3.11 a skúste znovu.",
+      "naps2InstallationFailed": "Nebolo možné nainštalovať NAPS2 - nástroj na skenovanie. Skúste nástroj nainštalovať manuálne alebo kontaktujte podporu, prosím.",
+      "missingNaps2Mac": "Pre pokračovanie je potrebné nainštalovať NAPS2 - nástroj na skenovanie. Stiahnite a nainštalujte si <ExternalLink href=\"https://github.com/cyanfish/naps2/releases/download/v7.5.2/naps2-7.5.2-mac-univ.pkg\">NAPS2</ExternalLink> a skúste znova.",
+      "requirementsInstallationFailed": "Nebolo možné nainštalovať potrebné balíky. Kontaktujte podporu, prosím.",
       "liblouisInstallationFailed": "Nebolo možné nainštalovať liblouis - nástroj na preklad. Skúste nástroj nainštalovať manuálne alebo kontaktujte podporu, prosím."
     },
     "cancel_button": "Zrušiť",
