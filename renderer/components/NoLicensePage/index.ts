@@ -1,1 +1,1 @@
-export {default} from './NoLicensePage';
+export { default } from './NoLicensePage';

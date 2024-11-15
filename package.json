@@ -1,17 +1,23 @@
 {
   "private": true,
-  "name": "DotSight",
+  "name": "dotsight",
   "homepage": "https://dotsight.hotovo.com",
   "description": "Application for converting documents to braille",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "author": "Hotovo s.r.o",
   "main": "app/background.js",
   "scripts": {
     "dev": "nextron",
     "build": "nextron build",
-    "build32": "nextron build --ia32",
+    "build:mac": "nextron build --mac",
+    "build:mac:universal": "nextron build --mac --universal",
+    "build:linux": "nextron build --linux",
+    "build:win32": "nextron build --win --ia32",
+    "build:win64": "nextron build --win --x64",
     "postinstall": "electron-builder install-app-deps",
-    "install32": "electron-builder install-app-deps --arch=ia32"
+    "install32": "electron-builder install-app-deps --arch=ia32",
+    "package": "ts-node scripts/package.mjs",
+    "release": "ts-node scripts/release.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -25,6 +31,7 @@
     "electron-is-dev": "^2.0.0",
     "electron-serve": "^1.2.0",
     "electron-store": "^8.1.0",
+    "electron-updater": "^6.3.9",
     "file-selector": "^0.6.0",
     "fs-finder": "^1.8.1",
     "gm": "^1.25.0",
@@ -45,6 +52,8 @@
     "winston": "^3.11.0"
   },
   "devDependencies": {
+    "@aws-sdk/client-sts": "^3.691.0",
+    "@electron/notarize": "^2.5.0",
     "@types/react": "18.0.21",
     "@types/tmp": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "^6.21.0",

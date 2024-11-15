@@ -20,6 +20,7 @@ import {
   performSaveFileAndPrepareForRecognition,
 } from './utils/perform-prepare-file-for-recognition';
 import { processError } from './error';
+import { init as initAutoUpdate } from './auto-update/auto-update';
 
 if (IS_PROD) {
   serve({ directory: 'app' });
@@ -122,6 +123,8 @@ if (IS_PROD) {
     mainWindow.webContents.openDevTools();
   }
 })();
+
+initAutoUpdate();
 
 app.on('window-all-closed', () => {
   app.quit();

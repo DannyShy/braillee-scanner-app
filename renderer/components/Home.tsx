@@ -4,7 +4,7 @@ import { IconFolderOpen, IconLogout } from '@tabler/icons-react';
 import useLogMount from 'hooks/useLogMount';
 import { Trans, useTranslation } from 'react-i18next';
 import i18n from 'i18next';
-import { useAuthenticated, useUser } from 'hooks';
+import { useAuthenticated } from 'hooks';
 import { ExternalLink } from './common/ExternalLink';
 import LanguagePicker from './LanguagePicker/LanguagePicker';
 import MyDocuments from './MyDocuments/MyDocuments';

@@ -6,3 +6,5 @@ dist
 tsconfig.tsbuildinfo
 .aider*
 .env
+.idea
+.vscode

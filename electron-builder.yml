@@ -30,7 +30,11 @@ extraResources:
     to: templates
     filter:
       - '**/*'
-publish: null
+publish:
+  provider: s3
+  region: eu-central-1
+  bucket: com.dotsight.dev.app.distribution
+  channel: latest
 
 mac:
   target:
