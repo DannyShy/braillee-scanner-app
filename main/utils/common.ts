@@ -10,12 +10,10 @@ export const x_64 = 'x64';
 export const arm_64 = 'arm64';
 
 const getPythonPath = async (useVirtualEnv = true): Promise<string> => {
-  if (useVirtualEnv) {
-    return path.join(PYTHON_VENV_PATH, 'bin', 'python');
-  }
-
   if (IS_WIN32) {
     return PYTHON_EXE;
+  } else if (useVirtualEnv) {
+    return path.join(PYTHON_VENV_PATH, 'bin', 'python');
   } else {
     return new Promise<string>((resolve, reject) => {
       exec('which python3.11', (error, stdout, stderr) => {

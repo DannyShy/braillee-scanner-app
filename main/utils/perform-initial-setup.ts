@@ -16,6 +16,7 @@ import {
   MODEL_URL,
   NAPS_DEB_PKG_64,
   NAPS_RPM_PKG_64,
+  OS_PLATFORM,
   PATH_TO_MODEL,
   PYTHON_EXE,
   PYTHON_VENV_PATH,
@@ -401,10 +402,10 @@ const determineLinusNaps2InstallationPackage = (packaging: string, architecture:
 
 const performInitialSetup = async (mainWindow: BrowserWindow): Promise<boolean> => {
   logger.debug('Initial Setup started.');
-  logger.debug('OS:', process.platform);
-  logger.debug('Arch:', process.arch);
-  logger.debug('Node version:', process.version);
-  logger.debug('Electron version:', process.versions?.electron);
+  logger.debug(`OS: ${process.platform}, ${OS_PLATFORM}`);
+  logger.debug(`Arch: ${process.arch}`);
+  logger.debug(`Node version: ${process.version}`);
+  logger.debug(`Electron version: ${process.versions?.electron}`);
   logger.debug(`App dir: ${APP_DATA_PATH}`);
 
   // Setup Packages (Homebrew check for macOS)

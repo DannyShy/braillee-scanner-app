@@ -33,7 +33,7 @@ extraResources:
 publish:
   provider: s3
   region: eu-central-1
-  bucket: com.dotsight.dev.app.distribution
+  bucket: com.dotsight.prod.app.distribution
   channel: latest
 
 mac:
@@ -77,3 +77,8 @@ win:
       to: os/win32
       filter:
         - '**/*'
+nsis:
+  artifactName: ${name}-${version}-setup.${ext}
+  shortcutName: ${productName}
+  uninstallDisplayName: ${productName}
+  createDesktopShortcut: always

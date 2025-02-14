@@ -3,7 +3,7 @@
   "name": "dotsight",
   "homepage": "https://dotsight.hotovo.com",
   "description": "Application for converting documents to braille",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "author": "Hotovo s.r.o",
   "main": "app/background.js",
   "scripts": {
@@ -83,5 +83,130 @@
     "typescript": "^5.2.2",
     "webpack": "^5.88.2",
     "webpack-cli": "^5.1.4"
+  },
+  "build": {
+    "appId": "com.hotovo.dotsight",
+    "productName": "DotSight",
+    "copyright": "Copyright © 2023 Hotovo",
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      {
+        "from": ".",
+        "filter": [
+          "package.json",
+          "app"
+        ]
+      }
+    ],
+    "extraResources": [
+      {
+        "from": "./resources/AngelinaReader",
+        "to": "AngelinaReader",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./resources/icons",
+        "to": "icons",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./resources/liblouis-python",
+        "to": "liblouis-python",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./resources/os",
+        "to": "os",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "./resources/templates",
+        "to": "templates",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "publish": {
+      "provider": "s3",
+      "region": "eu-central-1",
+      "bucket": "com.dotsight.prod.app.distribution",
+      "channel": "latest"
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "icon": "resources/icons/icon.png",
+      "extraResources": [
+        {
+          "from": "./resources/os/darwin",
+          "to": "os/darwin",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "category": "Office",
+      "target": [
+        "AppImage"
+      ],
+      "maintainer": "Hotovo <dotsight@hotovo.com>",
+      "synopsis": "Braille Document Scanner and Recognizer",
+      "executableName": "dotsight",
+      "desktop": {
+        "Name": "DotSight",
+        "Comment": "Braille Document Scanner and Recognizer",
+        "Terminal": "false",
+        "Type": "Application",
+        "Categories": "Office;",
+        "StartupWMClass": "dotsight"
+      },
+      "extraResources": [
+        {
+          "from": "./resources/os/linux",
+          "to": "os/linux",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "resources/icons/icon.png",
+      "publisherName": "Hotovo",
+      "legalTrademarks": "s.r.o.",
+      "extraResources": [
+        {
+          "from": "./resources/os/win32",
+          "to": "os/win32",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "artifactName": "${name}-${version}-setup.${ext}",
+      "shortcutName": "${productName}",
+      "uninstallDisplayName": "${productName}",
+      "createDesktopShortcut": "always"
+    }
   }
 }
