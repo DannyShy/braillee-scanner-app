@@ -51,7 +51,8 @@
   },
   "errors": {
     "title": "Vyskytla sa chyba",
-    "imageMagickNotInstalled": "Je potrebné nainštalovať knižnicu ImageMagick. Stiahnite si a nainštalujte knižnicu podľa <ExternalLink href=\"https://github.com/yakovmeister/pdf2image/blob/HEAD/docs/gm-installation.md\">inštrukcií</ExternalLink> a skúste znova."
+    "imageMagickNotInstalled": "Je potrebné nainštalovať knižnicu ImageMagick. Stiahnite si a nainštalujte knižnicu podľa <ExternalLink href=\"https://github.com/yakovmeister/pdf2image/blob/HEAD/docs/gm-installation.md\">inštrukcií</ExternalLink> a skúste znova.",
+    "brailleRecognitionFailed": "Vyskytla sa "
   },
   "logo": "Logo DotSight aplikácie. Zobrazenie oka obklopeného bodkami.",
   "my_documents": "Moje Dokumenty",

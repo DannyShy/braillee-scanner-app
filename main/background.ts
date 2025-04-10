@@ -81,7 +81,12 @@ if (IS_PROD) {
     }
   });
   ipcMain.handle('initial-setup', async () => {
-    await performInitialSetup(mainWindow);
+    try {
+      await performInitialSetup(mainWindow);
+    } catch (error) {
+      logger.error(`Error performing initial setup: ${error.message}`);
+      processError(mainWindow, error);
+    }
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, paperSource, translationLanguage) => {
     try {

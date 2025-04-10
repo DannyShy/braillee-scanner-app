@@ -68,7 +68,7 @@ const performPrepareFileForRecognition = async (
       }
       // If the file is a PDF, update the file path for each image
       if (extension === '.pdf') {
-        filePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', `scan-${i + 1}.png`);
+        filePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', `scan.${i + 1}.png`);
       }
       // Create a new directory for each page
       const pathToPageDirectory = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID);
@@ -116,7 +116,7 @@ const performConvertPdfToImages = async (filePath: string, documentID: number) =
       const filePaths = await pdfImage.convertFile();
 
       filePaths.forEach((filePath, index) => {
-        const newPath = path.join(outputDir, `scan-${index + 1}.png`);
+        const newPath = path.join(outputDir, `scan.${index + 1}.png`);
         fs.renameSync(filePath, newPath);
       });
 
@@ -127,7 +127,8 @@ const performConvertPdfToImages = async (filePath: string, documentID: number) =
       // Use pdf2pic for Windows and Mac
       const conversionOptions = {
         density: 300,
-        saveFileName: 'scan',
+        quality: 100,
+        saveFilename: 'scan',
         savePath: outputDir,
         format: 'png',
       };

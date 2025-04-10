@@ -1,12 +1,15 @@
 import { ChildProcessWithoutNullStreams } from 'child_process';
 import { logger } from '../logger';
 
-const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<number> => {
+const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promise<[number, string]> => {
+  const errors: string[] = [];
+
   process.stdout.on('data', (data) => {
-    logger.info(`stdout from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
+    logger.info(`stdout from waitUntilFinished: ${data}`);
   });
   process.stderr.on('data', (data) => {
-    logger.error(`stderr from waitUntilFinished which runs recognizeBraille spawn process: ${data}`);
+    logger.error(`stderr from waitUntilFinished: ${data}`);
+    errors.push(data);
   });
   process.on('exit', (code, signal) => {
     if (signal) {
@@ -16,14 +19,14 @@ const waitUntilFinished = async (process: ChildProcessWithoutNullStreams): Promi
   process.on('uncaughtException', (error) => {
     logger.error(`Uncaught exception in child process: ${error.message}`);
   });
-  return new Promise<number>((resolve, reject) => {
+  return new Promise<[number, string]>((resolve, reject) => {
     process.on('close', (code) => {
       if (code !== 0) {
         logger.error(
           `Child process in waitUntilFinished exited with non-zero status code: ${code}. This means spawn process failed`,
         );
       }
-      resolve(code);
+      resolve([code, errors.join('\n')]);
     });
 
     process.on('error', (error) => {

@@ -1,15 +1,15 @@
 import fs from 'fs';
 import path from 'path';
-import { spawn } from 'child_process';
-import { ChildProcessWithoutNullStreams } from 'child_process';
+import { ChildProcessWithoutNullStreams, spawn } from 'child_process';
 import treeKill from 'tree-kill';
 import { BrowserWindow } from 'electron';
+import { processError } from '../error';
 import { logger } from '../logger';
 import { getPythonPath } from '../utils/common';
 import { performUpdateDocument } from './perform-manage-document';
 import { waitUntilFinished } from './wait-until-finished';
 import { performBrailleTranslation } from './perform-braille-translation';
-import { ANGELINA_READER_CODE, PATH_TO_MODEL, MY_DOCUMENTS_PATH } from './constants';
+import { ANGELINA_READER_CODE, MY_DOCUMENTS_PATH, PATH_TO_MODEL } from './constants';
 
 const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
   const brailleInputFileName = path.basename(inputFileAbsolutePath);
@@ -46,19 +46,17 @@ const performRecognizeBraille = async (
       detached: false,
     },
   );
-  await waitUntilFinished(recognizeBraille);
-  logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
-
-  recognizeBraille.stdout.on('data', (data) => {
-    logger.info(`Python script response: ${data}`);
-  });
-
-  recognizeBraille.stderr.on('data', (data) => {
-    logger.error(`Python script error: ${data}`);
-    throw new Error(data.message);
-  });
 
   try {
+    const [code, errors] = await waitUntilFinished(recognizeBraille);
+    if (code !== 0) {
+      performUpdateDocument(mainWindow, 'editBrailleStatus', documentID, 'recognitionCanceled', pageID);
+      processError(mainWindow, new Error(errors || 'error.'));
+      return;
+    }
+
+    logger.info(`Ended braille recognition for document: ${documentID} page: ${pageID}`);
+
     let brailleOutput = await fs.promises.readFile(recognizedBrailleFilePath, 'utf8');
     brailleOutput = brailleOutput.replace(/\r/g, '');
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
@@ -114,6 +112,7 @@ const executeRecognizeBrailleQueue = async (mainWindow: BrowserWindow) => {
     logger.debug('Braille recognition util running.');
     await performRecognizeBraille(fileName, documentID, pageID, translationLanguage, mainWindow);
   } catch (error) {
+    processError(mainWindow, error);
     logger.error('Error during performRecognizeBraille execution:', error);
     throw error;
   }

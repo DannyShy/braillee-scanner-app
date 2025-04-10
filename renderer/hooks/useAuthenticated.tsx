@@ -8,7 +8,6 @@ const useAuthenticated = () => {
   const license = user?.licenses?.find((license) => license.product === 'dotsight');
 
   useEffect(() => {
-    console.log('useAuthenticated', user, userLoaded);
     if (userLoaded && !user) {
       router.push('/login');
     } else if (userLoaded && user && !license?.active) {

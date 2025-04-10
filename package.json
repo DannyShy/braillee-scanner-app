@@ -3,7 +3,7 @@
   "name": "dotsight",
   "homepage": "https://dotsight.hotovo.com",
   "description": "Application for converting documents to braille",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Hotovo s.r.o",
   "main": "app/background.js",
   "scripts": {
@@ -119,13 +119,6 @@
       {
         "from": "./resources/liblouis-python",
         "to": "liblouis-python",
-        "filter": [
-          "**/*"
-        ]
-      },
-      {
-        "from": "./resources/os",
-        "to": "os",
         "filter": [
           "**/*"
         ]

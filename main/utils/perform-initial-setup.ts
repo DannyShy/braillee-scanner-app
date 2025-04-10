@@ -19,6 +19,8 @@ import {
   OS_PLATFORM,
   PATH_TO_MODEL,
   PYTHON_EXE,
+  PYTHON_HOME,
+  PYTHON_RESOURCES_PATH,
   PYTHON_VENV_PATH,
 } from './constants';
 import { arm_64, DEBIAN, getLinuxArchitecture, getLinuxPackaging, getPythonPath, RPM, x_64 } from './common';
@@ -48,6 +50,10 @@ const setupPython = async (mainWindow: BrowserWindow) => {
 
   if (IS_WIN32) {
     logger.debug('Setting up Python for Windows...');
+
+    // Copy Python embeddable to APP_DATA_PATH
+    fs.cpSync(PYTHON_RESOURCES_PATH, PYTHON_HOME, { recursive: true });
+
     pythonInstallProcess = spawn(PYTHON_EXE, ['-m', 'pip', 'install', 'pip', '--upgrade'], {
       detached: false,
     });
@@ -124,8 +130,6 @@ const setupAngelinaPipRequirements = async (mainWindow: BrowserWindow): Promise<
     );
     return false;
   }
-  await waitUntilFinished(installRequirements, 'installRequirements');
-  installRequirements = null;
 
   return true;
 };

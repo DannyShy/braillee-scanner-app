@@ -1,6 +1,6 @@
 import { LoginToken, User } from 'types/auth';
 
-const BASE_URL = 'http://localhost:8090/api';
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8090/api';
 
 const fetchApi = async <ResponseType = unknown, BodyType = unknown>(
   endpoint: string,
