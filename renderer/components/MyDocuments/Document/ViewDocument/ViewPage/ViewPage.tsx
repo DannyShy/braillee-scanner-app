@@ -112,7 +112,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
     setAutoScanIsRunning(false);
     window.electronAPI.log('debug', JSON.stringify(activeDocument.pages[activePage]));
     // remove only empty page
-    if (!activeDocument.pages[activePage].file) {
+    if (!activeDocument.pages[activePage].brailleText) {
       await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
     }
     window.electronAPI.log('debug', 'Auto scan stopped by user.');
@@ -131,18 +131,25 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
   useEffect(() => {
     if (activeDocumentFile && activeDocumentFile !== 'scanInProgress' && autoScanIsRunning) {
       onUpdate('addPage'); // during time delay new page is added and set to be active
-      setTimeout(() => {
+      const timeout = setTimeout(() => {
         const newActiveDocument = activeDocumentRef.current;
         onUpdate('editFile', 'scanInProgress', newActiveDocument.pages[activePageRef.current].pageID);
         window.electronAPI.scanFile(
           activeDocument.documentID,
           newActiveDocument.pages[activePageRef.current].pageID,
           selectedScanner,
+          scanSource,
           translationLanguage,
         );
       }, scanDelay * 1000);
+
+      return () => {
+        clearTimeout(timeout);
+      };
     }
-  }, [activeDocumentFile]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDocumentFile, autoScanIsRunning]);
 
   useEffect(() => {
     activePageRef.current = activePage;
