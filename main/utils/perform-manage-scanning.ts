@@ -47,7 +47,7 @@ switch (process.platform) {
 }
 
 /**
- *
+ *  Executes the NAPS scan command to perform a scan and autocreates pages in case of batch scan
  * @param documentID
  * @param selectedScanner
  * @param paperSource
@@ -121,15 +121,14 @@ const updateScannerProfile = (scannerName: string) => {
   const profileDir = path.dirname(profilesPath);
   fs.mkdirSync(profileDir, { recursive: true });
 
-  fs.writeFile(profilesPath, profileContent, (err) => {
-    if (err) {
-      logger.error(`In performScan, error occurred when creating profile file: ${err.message}`);
-      return;
-    }
+  try {
+    fs.writeFileSync(profilesPath, profileContent);
     currentProfile.scannerName = scannerName;
     currentProfile.driver = driver;
     logger.info('Scanner profile file has been successfully created.');
-  });
+  } catch (err) {
+    logger.error(`In performScan, error occurred when creating profile file: ${err.message}`);
+  }
 };
 
 export { performScan, performDetectScanners };

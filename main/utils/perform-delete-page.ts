@@ -13,6 +13,7 @@ const performDeletePage = async (
   mainWindow: BrowserWindow,
 ) => {
   const documentDirectory = path.join(MY_DOCUMENTS_PATH, documentID.toString());
+  const pageDirectory = path.join(documentDirectory, 'images', pageID);
 
   if (file) {
     const imagePath = path.join(documentDirectory, 'images', pageID, path.basename(file));
@@ -22,6 +23,10 @@ const performDeletePage = async (
     } else {
       logger.warn(`Image not found at path: ${imagePath}`);
     }
+
+    fs.rmSync(pageDirectory, { recursive: true, force: true });
+    logger.info(`Successfully deleted page directory at path: ${pageDirectory}`);
+
     const nameWithoutExtension = path.basename(file, path.extname(file));
     const brlFileName = `${nameWithoutExtension}.marked.brl`;
     const brlFilePath = path.join(documentDirectory, 'recognized-files', brlFileName);
