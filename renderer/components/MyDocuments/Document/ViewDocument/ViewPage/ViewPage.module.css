@@ -50,7 +50,6 @@
 }
 
 .control {
-    width: 52px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -94,6 +93,24 @@
     margin-left: 60px;
     text-align: center;
     gap: 0px;
+}
+
+.sourceGroup {
+    display: flex;
+    align-items: start;
+    gap: 20px;
+    padding-top: 20px;
+}
+
+.sourceLabel {
+    font-weight: 500;
+    font-size: var(--mantine-font-size-md);
+    align-items: center;
+    gap: 0px;
+}
+
+.radioButton  {
+    font-size: var(--mantine-font-size-md);
 }
 
 .docPreviewEmpty > * {

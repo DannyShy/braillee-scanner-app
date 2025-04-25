@@ -2,9 +2,9 @@
   <ScanProfile>
     <Version>2</Version>
     <Device>
-      <Name>{{scannerName}}</Name>
+      <Name>EPSON-WF-C5790 (WF-C5790 Series)</Name>
     </Device>
-    <DriverName>{{driver}}</DriverName>
+    <DriverName>wia</DriverName>
     <DisplayName>braille-scanner</DisplayName>
     <IconID>0</IconID>
     <MaxQuality>false</MaxQuality>

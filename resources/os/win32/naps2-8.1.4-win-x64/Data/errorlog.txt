@@ -1,0 +1,12 @@
+2025-04-24 14:36:51.9525 21068 An error occurred with the scanning driver. NAPS2.Wia.WiaException: WIA error code 80004005
+   at void NAPS2.Wia.WiaException.Check(uint hresult)
+   at bool NAPS2.Wia.WiaTransfer.Download()
+   at void NAPS2.Scan.Internal.Wia.WiaScanDriver+WiaScanContext.DoTransfer(WiaDevice device, WiaItem item)
+   at async Task NAPS2.Scan.Internal.Wia.WiaScanDriver+WiaScanContext.Scan(WiaVersion wiaVersion)
+   at async Task NAPS2.Scan.Internal.Wia.WiaScanDriver.Scan(ScanOptions options, CancellationToken cancelToken, IScanEvents scanEvents, Action<IMemoryImage> callback)+(?) => { }
+2025-04-25 09:49:03.4442 23284 An error occurred with the scanning driver. NAPS2.Wia.WiaException: WIA error code 80004005
+   at void NAPS2.Wia.WiaException.Check(uint hresult)
+   at bool NAPS2.Wia.WiaTransfer.Download()
+   at void NAPS2.Scan.Internal.Wia.WiaScanDriver+WiaScanContext.DoTransfer(WiaDevice device, WiaItem item)
+   at async Task NAPS2.Scan.Internal.Wia.WiaScanDriver+WiaScanContext.Scan(WiaVersion wiaVersion)
+   at async Task NAPS2.Scan.Internal.Wia.WiaScanDriver.Scan(ScanOptions options, CancellationToken cancelToken, IScanEvents scanEvents, Action<IMemoryImage> callback)+(?) => { }

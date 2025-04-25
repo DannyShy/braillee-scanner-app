@@ -11,11 +11,13 @@ import {
   Menu,
   UnstyledButton,
   ScrollArea,
+  Radio,
+  Group,
 } from '@mantine/core';
 import { useTranslation } from 'react-i18next';
 import useLogMount from 'hooks/useLogMount';
 import { IconChevronDown, IconX } from '@tabler/icons-react';
-import { Document } from '../../../../types';
+import { Document, ScannerPaperSource } from '../../../../types';
 import classes from '../ViewPage/ViewPage.module.css';
 import { DEFAULT_SCAN_DELAY } from '../../../../../constants';
 import ScannerPicker from './ScannerPicker/ScannerPicker';
@@ -35,20 +37,16 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
   const { t } = useTranslation();
   const [selectedScanner, setSelectedScanner] = useState<string | null>(null);
   const [scannersList, setScannersList] = useState<string[]>([]);
-  const [opened, setOpened] = useState<boolean>(false);
+  const [delayMenuOpened, setDelayMenuOpened] = useState<boolean>(false);
   const [scanDelay, setScanDelay] = useState<number>(DEFAULT_SCAN_DELAY);
   const [autoScanIsRunning, setAutoScanIsRunning] = useState<boolean>(false);
   const [uploadKey, setUploadKey] = useState<number>(0);
+  const [scanSource, setScanSource] = useState<ScannerPaperSource>('Glass');
+  const [autoScanEnabled, setAutoScanEnabled] = useState<boolean>(true);
 
   const activePageRef = useRef(activePage);
   const activeDocumentRef = useRef(activeDocument);
   const activeDocumentFile = activeDocument.pages[activePage].file;
-
-  const items = scanDelayValues.map((item) => (
-    <Menu.Item onClick={() => setScanDelay(item)} key={item}>
-      {item}s
-    </Menu.Item>
-  ));
 
   const fetchScannersList = async () => {
     setScannersList([]);
@@ -91,7 +89,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
       activeDocument.documentID,
       activeDocument.pages[activePage].pageID,
       selectedScanner,
-      'Glass',
+      scanSource,
       translationLanguage,
     );
   };
@@ -105,14 +103,18 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
       activeDocument.documentID,
       activeDocument.pages[activePage].pageID,
       selectedScanner,
-      'Feeder',
+      scanSource,
       translationLanguage,
     );
   };
 
-  const handleStopScanWithBreak = async () => {
+  const handleStopScanAuto = async () => {
     setAutoScanIsRunning(false);
-    await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
+    window.electronAPI.log('debug', JSON.stringify(activeDocument.pages[activePage]));
+    // remove only empty page
+    if (!activeDocument.pages[activePage].file) {
+      await onUpdate('editFile', null, activeDocument.pages[activePage].pageID);
+    }
     window.electronAPI.log('debug', 'Auto scan stopped by user.');
   };
 
@@ -162,6 +164,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
   useEffect(() => {
     const checkStoredScannerAvailability = async () => {
       const storedScanner = await window.electronAPI.getStoreValue('scanner');
+      window.electronAPI.log('debug', `Available scanners: ${JSON.stringify(scannersList)}`);
       if (scannersList && !scannersList.includes(storedScanner)) {
         window.electronAPI.log(
           'debug',
@@ -208,8 +211,8 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
         <Container className={classes.docPreviewEmpty}>
           <Loader color="blue" />
           <Text tabIndex={0}>{t('view_document.view_page.scan_runs')}</Text>
-          <Button size="xl" color="red" onClick={handleStopScanWithBreak}>
-            {t('view_document_view_page.stop_auto_scan')}
+          <Button size="xl" color="red" onClick={handleStopScanAuto}>
+            {t('view_document.view_page.stop_auto_scan')}
           </Button>
         </Container>
       ) : activeDocumentFile === null ? (
@@ -220,6 +223,31 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
             fetchScannersList={fetchScannersList}
             scannersList={scannersList}
           />
+          <div className={classes.sourceGroup}>
+            <Text className={classes.sourceLabel}>{t('view_document.view_page.source_selection_description')}</Text>
+            <Group>
+              <Radio
+                label={t('view_document.view_page.source.Glass')}
+                value="Glass"
+                checked={scanSource === 'Glass'}
+                onChange={() => {
+                  setAutoScanEnabled(true);
+                  setScanSource('Glass');
+                }}
+                classNames={{ labelWrapper: classes.radioButton }}
+              />
+              <Radio
+                label={t('view_document.view_page.source.Feeder')}
+                value="Feeder"
+                checked={scanSource === 'Feeder'}
+                onChange={() => {
+                  setAutoScanEnabled(false);
+                  setScanSource('Feeder');
+                }}
+                classNames={{ labelWrapper: classes.radioButton }}
+              />
+            </Group>
+          </div>
           <div className={classes.scanGroup}>
             <Tooltip label={t('view_document.view_page.scan_button_tooltip')}>
               <Button
@@ -237,7 +265,7 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
                 className={classes.autoScanButton}
                 onClick={handleScanAuto}
                 size="xl"
-                disabled={!scannersList.length}
+                disabled={!scannersList.length || !autoScanEnabled}
               >
                 <VisuallyHidden>{t('view_document.view_page.scan_with_break_button_tooltip')}</VisuallyHidden>
                 {t('view_document.view_page.auto_scan_button')}
@@ -245,20 +273,33 @@ const ViewPage: React.FC<Props> = ({ activeDocument, activePage, onUpdate, onDel
             </Tooltip>
             <VisuallyHidden>{t('view_document.view_page.delay_selection_description')}</VisuallyHidden>
             <Menu
-              onOpen={() => setOpened(true)}
-              onClose={() => setOpened(false)}
+              onOpen={() => setDelayMenuOpened(true)}
+              onClose={() => setDelayMenuOpened(false)}
               radius="md"
               width="target"
               withinPortal
+              disabled={!autoScanEnabled}
             >
               <Menu.Target>
-                <UnstyledButton h={60} className={classes.control} data-expanded={opened || undefined}>
+                <UnstyledButton
+                  h={60}
+                  w={60}
+                  className={classes.control}
+                  data-expanded={delayMenuOpened || undefined}
+                  disabled={!autoScanEnabled}
+                >
                   <span className={classes.label}>{scanDelay}s</span>
                   <IconChevronDown size="1rem" className={classes.icon} stroke={1.5} />
                 </UnstyledButton>
               </Menu.Target>
               <Menu.Dropdown>
-                <ScrollArea h={150}>{items}</ScrollArea>
+                <ScrollArea h={150}>
+                  {scanDelayValues.map((item) => (
+                    <Menu.Item onClick={() => setScanDelay(item)} key={item}>
+                      {item}s
+                    </Menu.Item>
+                  ))}
+                </ScrollArea>
               </Menu.Dropdown>
             </Menu>
           </div>

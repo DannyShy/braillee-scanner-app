@@ -22,3 +22,5 @@ export type LanguagePickerData = {
   image: string;
   description: string;
 };
+
+export type ScannerPaperSource = 'Glass' | 'Feeder';

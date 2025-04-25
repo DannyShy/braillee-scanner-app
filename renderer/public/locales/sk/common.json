@@ -93,7 +93,12 @@
       "stop_auto_scan": "Ukončiť auto-skenovanie",
       "scan_button_tooltip": "Skenovať jednu stranu",
       "scan_with_break_button_tooltip": "Skenovať všetky strany s časovou prestávkou",
-      "delay_selection_description": "Vybrať časovú prestávku medzi skenovaním strán v sekundách."
+      "delay_selection_description": "Vybrať časovú prestávku medzi skenovaním strán v sekundách.",
+      "source_selection_description": "Vybrať zdroj papiera",
+      "source": {
+        "Glass": "Sklo",
+        "Feeder": "Podávač"
+      }
     }
   },
   "document_title": {

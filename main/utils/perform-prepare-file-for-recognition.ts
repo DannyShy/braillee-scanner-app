@@ -28,65 +28,64 @@ const performSaveFileAndPrepareForRecognition = async (
   fs.writeFileSync(filePath, fileBytes);
 
   // Process the saved file
-  await performPrepareFileForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
+  await performPrepareScanForRecognition(filePath, documentID, pageID, translationLanguage, mainWindow);
 };
 
 let numberOfFiles;
 const supportedExtensions = ['.pdf', '.jpeg', '.jpg', '.png', '.gif', '.bmp', '.tiff', '.ico', '.jfif', '.webp'];
 
-const performPrepareFileForRecognition = async (
-  filePath: string,
+const performPrepareScanForRecognition = async (
+  sourcePath: string,
   documentID: number,
   pageID: string,
   translationLanguage: string,
   mainWindow: BrowserWindow,
 ) => {
-  const extension = path.extname(filePath);
+  const extension = path.extname(sourcePath);
   try {
-    if (supportedExtensions.includes(extension)) {
+    const isDirectory = fs.lstatSync(sourcePath).isDirectory();
+
+    if (isDirectory) {
+      // If the file is a directory, process all files in the directory
+      const supportedFiles = fs.readdirSync(sourcePath).filter((file) => {
+        const fileExtension = path.extname(file).toLowerCase();
+        return supportedExtensions.includes(fileExtension);
+      });
+      numberOfFiles = supportedFiles.length;
+      logger.debug(`Found files: [${supportedFiles.join(', ')}] in the directory`);
+
+      for (let i = 0; i < numberOfFiles; i++) {
+        const filePath = path.join(sourcePath, supportedFiles[i]);
+
+        // Move the file to the page directory
+        await moveFileToPageDirectory(filePath, i, documentID, pageID, translationLanguage, mainWindow);
+      }
+    } else if (supportedExtensions.includes(extension)) {
       if (extension === '.pdf') {
-        numberOfFiles = await performConvertPdfToImages(filePath, documentID);
+        numberOfFiles = await performConvertPdfToImages(sourcePath, documentID);
+
         // remove pdf file if it comes from scanning
-        if (filePath === path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', path.basename(filePath))) {
-          fs.unlinkSync(filePath);
+        if (sourcePath === path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', path.basename(sourcePath))) {
+          fs.unlinkSync(sourcePath);
+        }
+
+        for (let i = 0; i < numberOfFiles; i++) {
+          const filePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', `scan.${i + 1}.png`);
+
+          // Move the file to the page directory
+          await moveFileToPageDirectory(filePath, i, documentID, pageID, translationLanguage, mainWindow);
         }
       } else {
-        // if the file is not a pdf, it is a single image which is uploaded by the user and should be copied to the images directory
+        // single file (uploaded), copy it to the images directory
+        const filePath = performCopyUploadedImage(sourcePath, documentID);
         numberOfFiles = 1;
-        filePath = performCopyUploadedImage(filePath, documentID);
+
+        // Move the file to the page directory
+        await moveFileToPageDirectory(filePath, 0, documentID, pageID, translationLanguage, mainWindow);
       }
     } else {
       logger.error(`Unsupported file extension: ${extension}`);
       return;
-    }
-
-    for (let i = 0; i < numberOfFiles; i++) {
-      // If there are multiple files, add a new page for each one
-      if (i > 0) {
-        const updatedDocument = performUpdateDocument(mainWindow, 'addPage', documentID);
-        pageID = updatedDocument.pages[updatedDocument.pages.length - 1].pageID;
-      }
-      // If the file is a PDF, update the file path for each image
-      if (extension === '.pdf') {
-        filePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', `scan.${i + 1}.png`);
-      }
-      // Create a new directory for each page
-      const pathToPageDirectory = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID);
-      if (!fs.existsSync(pathToPageDirectory)) {
-        fs.mkdirSync(pathToPageDirectory);
-      }
-
-      await performMoveImageToPageDirectory(filePath, pathToPageDirectory);
-      filePath = path.join(pathToPageDirectory, path.basename(filePath));
-
-      // Update the document with the new file path and status
-      const correctedPathToFile = 'file:///' + filePath.replace(/\\/g, '/');
-      performUpdateDocument(mainWindow, 'editFile', documentID, correctedPathToFile, pageID);
-      performUpdateDocument(mainWindow, 'editBrailleStatus', documentID, 'recognitionInProgress', pageID);
-
-      // Add the file to the queue for recognition
-      addFileToQueue(filePath, documentID, pageID, translationLanguage, mainWindow);
-      filePath = filePath.replace(pageID, '');
     }
 
     logger.info(`Prepared ${numberOfFiles} file(s) for recognition.`);
@@ -94,6 +93,38 @@ const performPrepareFileForRecognition = async (
     logger.error(`Error in prepareFileForRecognition: ${err}`);
     throw err;
   }
+};
+
+const moveFileToPageDirectory = async (
+  filePath: string,
+  index: number,
+  documentID: number,
+  pageID: string,
+  translationLanguage: string,
+  mainWindow: BrowserWindow,
+) => {
+  // If there are multiple files, add a new page for each one
+  if (index > 0) {
+    const updatedDocument = performUpdateDocument(mainWindow, 'addPage', documentID);
+    pageID = updatedDocument.pages[updatedDocument.pages.length - 1].pageID;
+  }
+
+  // Create a new directory for each page
+  const pathToPageDirectory = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', pageID);
+  if (!fs.existsSync(pathToPageDirectory)) {
+    fs.mkdirSync(pathToPageDirectory);
+  }
+
+  await performMoveImageToPageDirectory(filePath, pathToPageDirectory);
+  const updatedFilePath = path.join(pathToPageDirectory, path.basename(filePath));
+
+  // Update the document with the new file path and status
+  const correctedPathToFile = 'file:///' + updatedFilePath.replace(/\\/g, '/');
+  performUpdateDocument(mainWindow, 'editFile', documentID, correctedPathToFile, pageID);
+  performUpdateDocument(mainWindow, 'editBrailleStatus', documentID, 'recognitionInProgress', pageID);
+
+  // Add the file to the queue for recognition
+  addFileToQueue(updatedFilePath, documentID, pageID, translationLanguage, mainWindow);
 };
 
 const performConvertPdfToImages = async (filePath: string, documentID: number) => {
@@ -173,4 +204,7 @@ const performCopyUploadedImage = (imagePath: string, documentID: number): string
   }
 };
 
-export { performPrepareFileForRecognition, performSaveFileAndPrepareForRecognition };
+export {
+  performPrepareScanForRecognition as performPrepareFileForRecognition,
+  performSaveFileAndPrepareForRecognition,
+};

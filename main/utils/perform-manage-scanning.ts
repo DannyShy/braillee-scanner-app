@@ -23,9 +23,14 @@ let driver: string;
 let napsCliPath: string;
 let profilesPath: string;
 
+const currentProfile = {
+  scannerName: '',
+  driver: '',
+};
+
 switch (process.platform) {
   case 'win32':
-    driver = 'twain';
+    driver = 'wia';
     napsCliPath = NAPS_SCAN_CLI_PATH_WIN32;
     profilesPath = NAPS_SCAN_PROFILES_PATH_WIN32;
     break;
@@ -41,14 +46,23 @@ switch (process.platform) {
     break;
 }
 
+/**
+ *
+ * @param documentID
+ * @param selectedScanner
+ * @param paperSource
+ * @returns Path to a scanned image or folder containing scanned images in case of feeder
+ */
 const performScan = (documentID: number, selectedScanner: string, paperSource: ScannerPaperSource): Promise<string> => {
   selectedScanner = selectedScanner.trim();
-  const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', 'scan.pdf');
-  updateScannerProfile(selectedScanner, paperSource);
+  const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', 'scan.png');
+  const scanFolder = path.dirname(scannedImagePath);
+  const source = paperSource.toLowerCase();
+  updateScannerProfile(selectedScanner);
 
   return new Promise((resolve, reject) => {
     exec(
-      `${napsCliPath} -o "${scannedImagePath}" -p "braille-scanner" --device "${selectedScanner}" --driver ${driver} --force`,
+      `${napsCliPath} -o "${scannedImagePath}" -p "braille-scanner" --device "${selectedScanner}" --driver ${driver} --source ${source} -v --force`,
       (error, stdout, stderr) => {
         if (error) {
           logger.error(`In performScan, error occurred: ${error.message}`);
@@ -61,14 +75,22 @@ const performScan = (documentID: number, selectedScanner: string, paperSource: S
           return;
         }
         logger.info(`In performScan, stdout is: ${stdout}`);
-        if (!fs.existsSync(scannedImagePath)) {
-          reject(new Error('Scanned image not found'));
+
+        if (paperSource === 'Glass' && !fs.existsSync(scannedImagePath)) {
+          reject(new Error('Glass scanned image not found'));
           return;
+        } else if (paperSource === 'Feeder') {
+          const files = fs.readdirSync(scanFolder);
+
+          if (files.length === 0) {
+            reject(new Error('Feeder scanned images not found'));
+            return;
+          }
+          resolve(scanFolder);
         }
         resolve(scannedImagePath);
       },
     );
-    logger.info('Detected darwin/linux system');
   });
 };
 
@@ -88,8 +110,13 @@ const performDetectScanners = (mainWindow: BrowserWindow) => {
   });
 };
 
-const updateScannerProfile = (scannerName: string, paperSource: ScannerPaperSource) => {
-  const profileContent = template({ scannerName, driver, paperSource });
+const updateScannerProfile = (scannerName: string) => {
+  if (scannerName === currentProfile.scannerName && driver === currentProfile.driver) {
+    logger.info('Scanner profile is already up to date. No need to update.');
+    return;
+  }
+
+  const profileContent = template({ scannerName, driver });
   // Ensure directory exists
   const profileDir = path.dirname(profilesPath);
   fs.mkdirSync(profileDir, { recursive: true });
@@ -99,7 +126,9 @@ const updateScannerProfile = (scannerName: string, paperSource: ScannerPaperSour
       logger.error(`In performScan, error occurred when creating profile file: ${err.message}`);
       return;
     }
-    logger.info('Scanner profile file hase been successfully created.');
+    currentProfile.scannerName = scannerName;
+    currentProfile.driver = driver;
+    logger.info('Scanner profile file has been successfully created.');
   });
 };
 

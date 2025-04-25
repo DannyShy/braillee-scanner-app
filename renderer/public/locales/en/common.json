@@ -88,7 +88,12 @@
       "stop_auto_scan": "Stop auto-scan",
       "scan_button_tooltip": "Scan single page",
       "scan_with_break_button_tooltip": "Scan all pages with a break between them",
-      "delay_selection_description": "Select delay between scans in seconds"
+      "delay_selection_description": "Select delay between scans in seconds",
+      "source_selection_description": "Select paper source",
+      "source": {
+        "Glass": "Glass",
+        "Feeder": "Feeder"
+      }
     }
   },
   "document_title": {

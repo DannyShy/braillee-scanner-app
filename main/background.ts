@@ -90,8 +90,13 @@ if (IS_PROD) {
   });
   ipcMain.handle('scan-file', async (event, documentID, pageID, selectedScanner, paperSource, translationLanguage) => {
     try {
-      const pathToScannedFile = await performScan(documentID, selectedScanner, paperSource);
-      await performPrepareFileForRecognition(pathToScannedFile, documentID, pageID, translationLanguage, mainWindow);
+      const pathToScan = await performScan(documentID, selectedScanner, paperSource);
+      if (paperSource === 'Feeder') {
+        logger.debug(`Scan folder path: ${pathToScan}. Preparing for recognition...`);
+      } else {
+        logger.debug(`Scanned file path: ${pathToScan}. Preparing for recognition...`);
+      }
+      await performPrepareFileForRecognition(pathToScan, documentID, pageID, translationLanguage, mainWindow);
     } catch (err) {
       logger.error(`Error scanning file: ${err.message}`);
       performUpdateDocument(mainWindow, 'editFile', documentID, null, pageID);
