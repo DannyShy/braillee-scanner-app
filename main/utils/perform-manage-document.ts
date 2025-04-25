@@ -13,8 +13,8 @@ const getDocPathFromDocID = (documentID: number | string): string => {
 
 const getJsonFromFile = (documentID: number | string): Document => {
   const documentPath = getDocPathFromDocID(documentID);
-  const buffferData = fs.readFileSync(documentPath);
-  const stringData = buffferData.toString();
+  const bufferData = fs.readFileSync(documentPath);
+  const stringData = bufferData.toString();
   const jsonData = JSON.parse(stringData);
   return jsonData;
 };

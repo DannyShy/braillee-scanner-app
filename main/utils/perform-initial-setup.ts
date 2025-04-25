@@ -175,7 +175,7 @@ const setupNaps2 = async (mainWindow: BrowserWindow): Promise<boolean> => {
       logger.info('NAPS2 is not installed. Installing...');
       mainWindow.webContents.send('initial-setup-progress', 'naps2', null, false);
 
-      const command = `pkexec ${linuxPackaging === DEBIAN ? 'dpkg' : 'rpm'} -i ${determineLinusNaps2InstallationPackage(
+      const command = `pkexec ${linuxPackaging === DEBIAN ? 'dpkg' : 'rpm'} -i ${determineLinuxNaps2InstallationPackage(
         linuxPackaging,
         linuxArch,
       )}`;
@@ -382,7 +382,7 @@ const waitUntilFinished = async (process: ChildProcess, processName: string) => 
   });
 };
 
-const determineLinusNaps2InstallationPackage = (packaging: string, architecture: string) => {
+const determineLinuxNaps2InstallationPackage = (packaging: string, architecture: string) => {
   switch (architecture) {
     case x_64:
       switch (packaging) {

@@ -22,7 +22,7 @@ const getPythonPath = async (useVirtualEnv = true): Promise<string> => {
           reject(error);
         }
         if (stderr) {
-          logger.error(`Error occured : ${stderr}`);
+          logger.error(`Error occurred : ${stderr}`);
           reject(stderr);
         }
         if (stdout) {

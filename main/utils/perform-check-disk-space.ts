@@ -26,7 +26,7 @@ const performCheckDiskSpace = async (mainWindow) => {
     }
     mainWindow.webContents.send('disk-space-output', spaceToBeEmptied);
   } catch (error) {
-    logger.error(`Error occured during check of disk space: ${error}.`);
+    logger.error(`Error occurred during check of disk space: ${error}.`);
     throw error;
   }
 };

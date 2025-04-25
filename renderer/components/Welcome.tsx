@@ -227,7 +227,7 @@ const Welcome: React.FC = () => {
                   close();
                   window.electronAPI.log(
                     'debug',
-                    'Button for confirming cancellilng of initial setup clicked in modal.',
+                    'Button for confirming cancelling of initial setup clicked in modal.',
                   );
                 }}
               >
