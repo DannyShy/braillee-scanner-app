@@ -25,6 +25,7 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
   const { t } = useTranslation();
 
   const { userLoaded, userLoading } = useAuthenticated();
+  const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
     const handleError = (errorKey: string, errorMessage: string) => {
@@ -32,6 +33,9 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
     };
 
     window.electronAPI.addErrorListener(handleError);
+    window.electronAPI.getVersion().then((version) => {
+      setVersion(version);
+    });
 
     return () => {
       window.electronAPI.removeErrorListener();
@@ -82,11 +86,11 @@ const Home: React.FC<HomeProps> = ({ i18n }) => {
           <div className={classes.header}>
             <div className={classes.appLogoAndAppName}>
               <Image className={classes.appLogo} src="images/icon.png" alt={t('logo')} />
-              <Text className={classes.appName}>DotSight</Text>
+              <Text className={classes.appName}>
+                DotSight
+                <span className={classes.appVersion}>{version ? `v${version}` : ''}</span>
+              </Text>
             </div>
-            {/* <Code className={classes.appVersion} fw={700}>
-              v1.0.0
-            </Code> */}
             <LanguagePicker i18n={i18n} />
           </div>
           {links}

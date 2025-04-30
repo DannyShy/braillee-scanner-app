@@ -212,4 +212,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   ) => ipcRenderer.send('process-uploaded-file', fileBytes, fileName, documentID, pageID, translationLanguage),
   addErrorListener: addErrorListener,
   removeErrorListener: removeErrorListener,
+  getVersion: () => ipcRenderer.invoke('get-version'),
 });

@@ -3,7 +3,7 @@
   "name": "dotsight",
   "homepage": "https://dotsight.hotovo.com",
   "description": "Application for converting documents to braille",
-  "version": "0.2.5",
+  "version": "0.4.0",
   "author": "Hotovo s.r.o",
   "main": "app/background.js",
   "scripts": {
@@ -17,7 +17,8 @@
     "postinstall": "electron-builder install-app-deps",
     "install32": "electron-builder install-app-deps --arch=ia32",
     "package": "ts-node scripts/package.mjs",
-    "release": "ts-node scripts/release.mjs"
+    "release": "ts-node scripts/release.mjs",
+    "release:win": "set LOG_LEVEL=debug&& set NODE_ENV=production&& set BUILD_TARGETS=windows&& ts-node scripts/release_win.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -92,6 +93,7 @@
       "output": "dist",
       "buildResources": "resources"
     },
+    "npmRebuild": false,
     "files": [
       {
         "from": ".",
@@ -185,6 +187,7 @@
       "icon": "resources/icons/icon.png",
       "publisherName": "Hotovo",
       "legalTrademarks": "s.r.o.",
+      "verifyUpdateCodeSignature": false,
       "extraResources": [
         {
           "from": "./resources/os/win32",
@@ -199,6 +202,7 @@
       "artifactName": "${name}-${version}-setup.${ext}",
       "shortcutName": "${productName}",
       "uninstallDisplayName": "${productName}",
+      "deleteAppDataOnUninstall": false,
       "createDesktopShortcut": "always"
     }
   }

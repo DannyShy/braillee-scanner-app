@@ -53,12 +53,16 @@ switch (process.platform) {
  * @param paperSource
  * @returns Path to a scanned image or folder containing scanned images in case of feeder
  */
-const performScan = (documentID: number, selectedScanner: string, paperSource: ScannerPaperSource): Promise<string> => {
+const performScan = async (
+  documentID: number,
+  selectedScanner: string,
+  paperSource: ScannerPaperSource,
+): Promise<string> => {
   selectedScanner = selectedScanner.trim();
   const scannedImagePath = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images', 'scan.png');
   const scanFolder = path.dirname(scannedImagePath);
   const source = paperSource.toLowerCase();
-  updateScannerProfile(selectedScanner);
+  await updateScannerProfile(selectedScanner);
 
   return new Promise((resolve, reject) => {
     exec(
@@ -110,7 +114,7 @@ const performDetectScanners = (mainWindow: BrowserWindow) => {
   });
 };
 
-const updateScannerProfile = (scannerName: string) => {
+const updateScannerProfile = async (scannerName: string) => {
   if (scannerName === currentProfile.scannerName && driver === currentProfile.driver) {
     logger.info('Scanner profile is already up to date. No need to update.');
     return;

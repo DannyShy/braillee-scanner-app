@@ -96,10 +96,12 @@
 .appName {
   font-weight: 700;
   margin-top: 2px;
+  position: relative;
 }
 
 .appVersion {
-  margin-top: 5px;
-  box-sizing: initial;
-  height: 19px;
+  font-size: var(--mantine-font-size-xs);
+  position: absolute;
+  right: 0;
+  bottom: -12px
 }

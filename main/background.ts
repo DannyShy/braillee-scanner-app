@@ -124,6 +124,10 @@ if (IS_PROD) {
   ipcMain.handle('close-app', () => {
     app.quit();
   });
+  ipcMain.handle('get-version', () => {
+    const version = app.getVersion();
+    return version;
+  });
 
   if (IS_PROD) {
     await mainWindow.loadURL(`app://./${firstPageHtml}`);

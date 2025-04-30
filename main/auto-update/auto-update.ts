@@ -6,6 +6,8 @@ import { getTranslations } from './translations';
 const init = () => {
   let lng: string;
 
+  logger.info('Update init!');
+
   autoUpdater.on('checking-for-update', () => {
     logger.info('Checking for update...');
   });
@@ -29,7 +31,8 @@ const init = () => {
       type: 'info',
       buttons: [trans.restart, trans.later],
       title: trans.title,
-      message: process.platform === 'win32' ? event.releaseNotes.toString() : event.releaseName,
+      message:
+        process.platform === 'win32' ? event.releaseNotes?.toString() : event.releaseName ?? 'New version released',
       detail: trans.message,
     };
 
@@ -45,11 +48,14 @@ const init = () => {
     console.error(message);
   });
 
-  app.on('ready', () => {
+  app.on('ready', async () => {
     const locale = app.getLocale();
     lng = locale.length >= 2 ? locale.substring(0, 2) : locale;
 
-    void autoUpdater.checkForUpdatesAndNotify();
+    const update = await autoUpdater.checkForUpdatesAndNotify();
+
+    logger.info('Update check complete!');
+    logger.info('Update check result:', JSON.stringify(update));
   });
 };
 
