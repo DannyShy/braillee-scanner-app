@@ -86,7 +86,7 @@ pip install -r requirements.txt
 
 ### 2. Download neural net model
 ```
-wget -O weights/model.t7 http://ovdv.ru/files/retina_chars_eced60.clr.008
+wget -O weights/model.t7 https://huggingface.co/DropMoDO/shared-lib-bin/resolve/main/data_v1.bin
 ```
 Note that these solutions uses the most actual neural net model while the model for standalone installation available here is not always up to date.
 

@@ -24,8 +24,7 @@ export const APP_DATA_PATH = path.resolve(USER_DATA_PATH, '.dotsight');
 export const LOGS_PATH = path.resolve(APP_DATA_PATH, 'logs');
 export const MY_DOCUMENTS_PATH = path.resolve(APP_DATA_PATH, 'documents');
 export const PATH_TO_MODEL = path.resolve(APP_DATA_PATH, 'model.t7');
-// TODO: check if https also works
-export const MODEL_URL = 'http://ovdv.ru/files/retina_chars_eced60.clr.008';
+export const MODEL_URL = 'https://huggingface.co/DropMoDO/shared-lib-bin/resolve/main/data_v1.bin';
 export const CHUNK_SIZE = 1024 * 1414;
 export const MODEL_SIZE = 144771584;
 export const ANGELINA_READER_PATH = path.join(pathToResources, 'AngelinaReader');
