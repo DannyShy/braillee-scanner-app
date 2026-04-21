@@ -38,6 +38,7 @@ const LoginPage = () => {
       setLoginToken(await login(email, i18n.language));
       setWaitingForAuthorization(true);
     } catch (e) {
+      console.error(e)
       setError(e.message);
     } finally {
       setSubmitting(false);

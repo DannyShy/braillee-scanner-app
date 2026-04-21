@@ -5,6 +5,7 @@ import useUser from './useUser';
 const useAuthenticated = () => {
   const router = useRouter();
   const { user, userLoaded, userLoading, loadUser } = useUser();
+  console.error(user)
   const license = user?.licenses?.find((license) => license.product === 'dotsight');
 
   useEffect(() => {
