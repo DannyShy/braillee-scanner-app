@@ -126,7 +126,7 @@ const LoginPage = () => {
           <div className={styles.noAccountSection}>
             <Text size="sm">
               {t('login.no_account')}{' '}
-              <ExternalLink href="https://www.braillee.com/dotsight">{t('login.website')}.</ExternalLink>
+              <ExternalLink href="https://www.glitcher.sk/dotsight">{t('login.website')}.</ExternalLink>
             </Text>
           </div>
         </>

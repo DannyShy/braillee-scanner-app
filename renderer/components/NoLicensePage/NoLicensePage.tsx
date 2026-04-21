@@ -22,7 +22,7 @@ const NoLicensePage = () => {
       <Text size="md">{t('no_license.description')}</Text>
       <Text size="md" className={styles.getLicenseText}>
         {t('no_license.get_license')}{' '}
-        <ExternalLink href="https://braillee.com/dotsight">{t('no_license.website')}</ExternalLink>.
+        <ExternalLink href="https://www.glitcher.sk/dotsight">{t('no_license.website')}</ExternalLink>.
       </Text>
       <Button className={styles.logoutButton} color="red" onClick={onLogout}>
         {t('no_license.logout')}
