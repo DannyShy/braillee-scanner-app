@@ -35,6 +35,7 @@ export const PYTHON_HOME = path.join(APP_DATA_PATH, 'python-3.11.6-embed-amd64')
 export const ICON_PATH = path.join(pathToResources, 'icons/icon.png');
 export const PYTHON_MODULES = path.join(PYTHON_HOME, 'python311');
 export const PYTHON_EXE = path.join(PYTHON_HOME, 'python.exe');
+export const PYTHON_SITE_PACKAGES = path.join(PYTHON_HOME, 'Lib', 'site-packages');
 export const NAPS_RPM_PKG_64 = path.join(pathToX64Resources, 'naps2-7.5.1-linux-x64.rpm');
 export const NAPS_DEB_PKG_64 = path.join(pathToX64Resources, 'naps2-7.5.1-linux-x64.deb');
 export const ANGELINA_REQUIREMENTS_PATH = path.join(ANGELINA_READER_PATH, 'requirements.txt');

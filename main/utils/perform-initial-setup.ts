@@ -21,6 +21,7 @@ import {
   PYTHON_EXE,
   PYTHON_HOME,
   PYTHON_RESOURCES_PATH,
+  PYTHON_SITE_PACKAGES,
   PYTHON_VENV_PATH,
 } from './constants';
 import { arm_64, DEBIAN, getLinuxArchitecture, getLinuxPackaging, getPythonPath, RPM, x_64 } from './common';
@@ -54,11 +55,32 @@ const setupPython = async (mainWindow: BrowserWindow) => {
     // Copy Python embeddable to APP_DATA_PATH
     fs.cpSync(PYTHON_RESOURCES_PATH, PYTHON_HOME, { recursive: true });
 
-    pythonInstallProcess = spawn(PYTHON_EXE, ['-m', 'pip', 'install', 'pip', '--upgrade'], {
-      detached: false,
-    });
-    await waitUntilFinished(pythonInstallProcess, 'pipUpgrade');
+    // Upgrade pip, installing into the explicit site-packages target so embedded Python can find it
+    pythonInstallProcess = spawn(
+      PYTHON_EXE,
+      ['-m', 'pip', 'install', 'pip', '--upgrade', '--target', PYTHON_SITE_PACKAGES],
+      { detached: false },
+    );
+    let pipUpgradeExitCode = await waitUntilFinished(pythonInstallProcess, 'pipUpgrade');
     pythonInstallProcess = null;
+    if (pipUpgradeExitCode !== 0) {
+      logger.error(`pip upgrade failed with exit code ${pipUpgradeExitCode}`);
+    }
+
+    // Install setuptools and wheel first - required for building source distributions
+    // (e.g. flask_login==0.4.1) which need setuptools.build_meta as build backend.
+    // Without these, pip install fails with: BackendUnavailable: Cannot import 'setuptools.build_meta'
+    pythonInstallProcess = spawn(
+      PYTHON_EXE,
+      ['-m', 'pip', 'install', 'setuptools', 'wheel', '--target', PYTHON_SITE_PACKAGES],
+      { detached: false },
+    );
+    const setuptoolsExitCode = await waitUntilFinished(pythonInstallProcess, 'pipInstallSetuptools');
+    pythonInstallProcess = null;
+    if (setuptoolsExitCode !== 0) {
+      logger.error(`setuptools/wheel installation failed with exit code ${setuptoolsExitCode}`);
+    }
+
     return true;
   } else if (IS_LINUX) {
     try {
@@ -113,12 +135,33 @@ const setupAngelinaPipRequirements = async (mainWindow: BrowserWindow): Promise<
   logger.info('Installing Python requirements...');
   mainWindow.webContents.send('initial-setup-progress', 'requirements', null, false);
 
-  installRequirements = spawn(pythonPath, ['-m', 'pip', 'install', '-r', `${ANGELINA_REQUIREMENTS_PATH}`], {
+  // Use --target to explicitly install into PYTHON_HOME/Lib/site-packages
+  // This is required for Windows embedded Python where the default install location
+  // may not be on sys.path
+  // Use --no-build-isolation on Windows so pip uses the already-installed setuptools
+  // instead of trying to create an isolated build environment (which fails in embedded Python)
+  // Use --prefer-binary to avoid building from source when wheels are available
+  const pipArgs = IS_WIN32
+    ? ['-m', 'pip', 'install', '-r', ANGELINA_REQUIREMENTS_PATH, '--target', PYTHON_SITE_PACKAGES, '--no-build-isolation', '--prefer-binary']
+    : ['-m', 'pip', 'install', '-r', ANGELINA_REQUIREMENTS_PATH];
+
+  installRequirements = spawn(pythonPath, pipArgs, {
     detached: false,
   });
   try {
-    await waitUntilFinished(installRequirements, 'installRequirements');
+    const exitCode = await waitUntilFinished(installRequirements, 'installRequirements');
     installRequirements = null;
+    if (exitCode !== 0) {
+      logger.error(`Failed to install requirements (exit code ${exitCode}). Please install them manually.`);
+      mainWindow.webContents.send(
+        'initial-setup-progress',
+        'requirements',
+        null,
+        false,
+        'requirementsInstallationFailed',
+      );
+      return false;
+    }
   } catch (e) {
     logger.error('Failed to install requirements. Please install them manually.');
     mainWindow.webContents.send(

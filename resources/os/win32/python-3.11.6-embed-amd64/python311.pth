@@ -1,5 +1,6 @@
 .\python311
 .\Scripts
 .
+.\Lib\site-packages
 # importing site will run sitecustomize.py
 import site

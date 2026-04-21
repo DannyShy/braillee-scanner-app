@@ -1,10 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { BrowserWindow } from 'electron';
-import { fromPath } from 'pdf2pic';
-import { PDFImage } from 'pdf-image';
 import { logger } from '../logger';
-import { IS_LINUX, MY_DOCUMENTS_PATH } from './constants';
+import { IS_PROD, MY_DOCUMENTS_PATH } from './constants';
 import { addFileToQueue } from './perform-braille-recognition';
 import { performUpdateDocument } from './perform-manage-document';
 
@@ -96,55 +94,58 @@ const performPrepareFileForRecognition = async (
   }
 };
 
-const performConvertPdfToImages = async (filePath: string, documentID: number) => {
+const performConvertPdfToImages = async (filePath: string, documentID: number): Promise<number> => {
   try {
     const outputDir = path.join(MY_DOCUMENTS_PATH, documentID.toString(), 'images');
 
-    if (IS_LINUX) {
-      logger.info('Using pdf-image for Linux platform');
-      // Use pdf-image for Linux
-      const pdfImage = new PDFImage(filePath, {
-        convertOptions: {
-          '-density': '300',
-          '-quality': '100',
-        },
-        outputDirectory: outputDir,
-        combinedImage: false,
-      });
+    logger.info('Using mupdf for PDF to image conversion (no ImageMagick required)');
 
-      // Convert all pages
-      const filePaths = await pdfImage.convertFile();
+    // Dynamically import mupdf (ESM module) - works in both dev and production
+    // mupdf is pure WASM, no system-level ImageMagick/GraphicsMagick needed
+    // In production, mupdf is placed in extraResources/node_modules/mupdf by electron-builder
+    // In dev, it is loaded from node_modules directly
+    // On Windows, dynamic import() requires file:// URLs (not raw C:\ paths)
+    const mupdfAbsPath = IS_PROD
+      ? path.join(process.resourcesPath, 'node_modules', 'mupdf', 'dist', 'mupdf.js')
+      : path.join(__dirname, '..', '..', '..', 'node_modules', 'mupdf', 'dist', 'mupdf.js');
 
-      filePaths.forEach((filePath, index) => {
-        const newPath = path.join(outputDir, `scan.${index + 1}.png`);
-        fs.renameSync(filePath, newPath);
-      });
+    // Convert Windows path to file:// URL for ESM dynamic import compatibility
+    const mupdfFileUrl = 'file:///' + mupdfAbsPath.replace(/\\/g, '/');
 
-      logger.info(`Converted PDF to ${filePaths.length} PNG image(s) using pdf-image`);
-      return filePaths.length;
-    } else {
-      logger.info('Using pdf2pic for Windows/Mac platform');
-      // Use pdf2pic for Windows and Mac
-      const conversionOptions = {
-        density: 300,
-        quality: 100,
-        saveFilename: 'scan',
-        savePath: outputDir,
-        format: 'png',
-      };
+    // @ts-ignore - dynamic path import, types not resolvable statically
+    const mupdf = await import(/* webpackIgnore: true */ mupdfFileUrl);
 
-      const convert = fromPath(filePath, conversionOptions);
-      const pageToConvertAsImage = 1;
-      await convert(pageToConvertAsImage, { responseType: 'image' }).then((resolve) => {
-        return resolve;
-      });
+    // Read the PDF file as a buffer
+    const pdfBuffer = fs.readFileSync(filePath);
 
-      const files = fs.readdirSync(outputDir);
-      const pngFiles = files.filter((file) => path.extname(file).toLowerCase() === '.png');
-      logger.info(`Converted PDF to ${pngFiles.length} PNG image(s) using pdf2pic`);
+    // Open the PDF document using mupdf (pure WASM, no native dependencies)
+    const doc = mupdf.Document.openDocument(pdfBuffer, 'application/pdf');
+    const pageCount = doc.countPages();
 
-      return pngFiles.length;
+    logger.info(`PDF has ${pageCount} page(s)`);
+
+    // Render each page at 300 DPI (scale factor: 300/72 ≈ 4.167)
+    const scale = 300 / 72;
+    const matrix = mupdf.Matrix.scale(scale, scale);
+
+    for (let i = 0; i < pageCount; i++) {
+      const page = doc.loadPage(i);
+      const pixmap = page.toPixmap(matrix, mupdf.ColorSpace.DeviceRGB, false);
+      const pngData = pixmap.asPNG();
+
+      const outputPath = path.join(outputDir, `scan.${i + 1}.png`);
+      fs.writeFileSync(outputPath, pngData);
+
+      pixmap.destroy();
+      page.destroy();
+
+      logger.info(`Converted page ${i + 1} to ${outputPath}`);
     }
+
+    doc.destroy();
+
+    logger.info(`Converted PDF to ${pageCount} PNG image(s) using mupdf`);
+    return pageCount;
   } catch (err) {
     logger.error(`Error in performConvertPdfToImages: ${err}`);
     throw err;

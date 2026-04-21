@@ -34,14 +34,12 @@
     "electron-updater": "^6.3.9",
     "file-selector": "^0.6.0",
     "fs-finder": "^1.8.1",
-    "gm": "^1.25.0",
     "handlebars": "^4.7.8",
     "i18next": "^23.7.16",
     "i18next-fetch-backend": "^5.0.2",
     "liblouis": "^0.4.0",
     "liblouis-build": "^3.2.0-rc",
-    "pdf-image": "^2.0.0",
-    "pdf2pic": "^3.1.1",
+    "mupdf": "^1.27.0",
     "python-shell": "^5.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -104,6 +102,13 @@
       }
     ],
     "extraResources": [
+      {
+        "from": "./node_modules/mupdf",
+        "to": "node_modules/mupdf",
+        "filter": [
+          "**/*"
+        ]
+      },
       {
         "from": "./resources/AngelinaReader",
         "to": "AngelinaReader",
