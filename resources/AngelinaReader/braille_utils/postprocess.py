@@ -283,7 +283,7 @@ def interpret_line_RU_and_liblouis(line, lang, mode = None):
 interpret_line_funcs = {
     'RU': interpret_line_RU,
     'EN': interpret_line_RU, # TODO in can work with some errors for EN
-    'EN2': interpret_line_liblouis,
+    'EN2': interpret_line_RU_and_liblouis,  # Hybrid: char-by-char baseline + liblouis word-by-word overlay
     'DE': interpret_line_RU, # TODO in can work with some errors for DE
     'GR': interpret_line_RU,
     'LV': interpret_line_RU,

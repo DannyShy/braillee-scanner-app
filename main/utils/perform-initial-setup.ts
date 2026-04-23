@@ -177,6 +177,7 @@ const setupAngelinaPipRequirements = async (mainWindow: BrowserWindow): Promise<
   return true;
 };
 
+
 const setupNaps2 = async (mainWindow: BrowserWindow): Promise<boolean> => {
   if (IS_WIN32) {
     return true;

@@ -16,6 +16,11 @@ const getRecognizedBrailleFilePath = (inputFileAbsolutePath: string, recognizedB
   return path.join(recognizedBraillesDirectoryPath, brailleInputFileName.replace(/\.[^.]+$/, '.marked.brl'));
 };
 
+const getRecognizedTextFilePath = (inputFileAbsolutePath: string, recognizedBraillesDirectoryPath: string) => {
+  const brailleInputFileName = path.basename(inputFileAbsolutePath);
+  return path.join(recognizedBraillesDirectoryPath, brailleInputFileName.replace(/\.[^.]+$/, '.marked.txt'));
+};
+
 const fixFileFormat = (inputFileAbsolutePath: string): string => {
   const pathWithoutProtocol = inputFileAbsolutePath.replace('file:///', '');
   return path.normalize(pathWithoutProtocol);
@@ -39,9 +44,20 @@ const performRecognizeBraille = async (
   const fixedInput = fixFileFormat(inputFileAbsolutePath);
   const pythonPath = await getPythonPath();
 
+  // Map translation language codes to AngelinaReader language codes
+  // AngelinaReader supports: RU, EN, EN2, DE, GR, LV, PL, UZ, UZL
+  // EN2 uses the hybrid approach: char-by-char baseline + liblouis word-by-word overlay
+  let angelinaLang = 'RU'; // Default to Russian (model was trained on Russian)
+  if (translationLanguage === 'en') {
+    angelinaLang = 'EN2'; // Use hybrid char-by-char + liblouis approach for English
+  } else if (translationLanguage === 'sk') {
+    // Slovak is not directly supported, but we can try using RU as it's closest
+    angelinaLang = 'RU';
+  }
+
   recognizeBraille = spawn(
     pythonPath,
-    [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL],
+    [ANGELINA_READER_CODE, fixedInput, recognizedBraillesDirectoryPath, PATH_TO_MODEL, '-l', angelinaLang],
     {
       detached: false,
     },
@@ -61,7 +77,27 @@ const performRecognizeBraille = async (
     brailleOutput = brailleOutput.replace(/\r/g, '');
     await performUpdateDocument(mainWindow, 'editBrailleText', documentID, brailleOutput, pageID);
     logger.info(`File ${recognizedBrailleFilePath} read successfully.`);
-    await performBrailleTranslation(brailleOutput, documentID, pageID, translationLanguage, mainWindow);
+
+    if (translationLanguage === 'en') {
+      // For English, AngelinaReader with EN2 mode already produces interpreted text
+      // using the hybrid char-by-char + liblouis word-by-word approach.
+      // Read the .marked.txt file directly instead of running a separate liblouis step.
+      const recognizedTextFilePath = getRecognizedTextFilePath(inputFileAbsolutePath, recognizedBraillesDirectoryPath);
+      try {
+        let textOutput = await fs.promises.readFile(recognizedTextFilePath, 'utf8');
+        textOutput = textOutput.replace(/\r/g, '');
+        logger.info(`Read AngelinaReader text output from: ${recognizedTextFilePath} (${textOutput.length} chars)`);
+        await performUpdateDocument(mainWindow, 'editTranslatedText', documentID, textOutput, pageID);
+        await performUpdateDocument(mainWindow, 'editTranslatedTextStatus', documentID, 'translatedTextAvailable', pageID);
+      } catch (error) {
+        logger.error(`Error reading AngelinaReader text output: ${error.message}`);
+        // Fallback: run separate liblouis translation if .marked.txt is not available
+        await performBrailleTranslation(brailleOutput, documentID, pageID, translationLanguage, mainWindow);
+      }
+    } else {
+      // For Slovak and other languages, run the separate liblouis translation step
+      await performBrailleTranslation(brailleOutput, documentID, pageID, translationLanguage, mainWindow);
+    }
   } catch (error) {
     logger.error(`Error in reading Recognized Braille Output file: ${error.message}`);
     throw error;

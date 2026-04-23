@@ -1,0 +1,117 @@
+Testing braille translation with different tables:
+
+Braille input length: 440 chars
+First line: ⠕⠝⠩⠑⠀⠀⠪⠀⠀⠺⠜⠪⠸⠈⠳⠎⠫⠑⠈⠫⠀⠪⠹
+
+✓ en-us-g1.ctb:
+  First line: on%e  {  w>{_\s$e`$ {?
+  Full result:
+on%e  {  w>{_\s$e`$ {?
+{ |+?:  {w{~u:
+V men       z   `mw{?f{
+tabul*t         zernq   !`w~{
+aleb `      n  entee    r`h
+not rd          tvnr  i_e`w~
+nastav     le%i ier     { ih
+ovl                    e`w~
+ried
+stla%enie               j{!
+preeyskut
+pohybo!je    {           {|
++$i%   6+wj u$|{%~
+." posunutie~_oku nahnr"
+up",
+.( posunuti  ?n. fw e
+po                w|{?
+.s poszn
+smerom hore
+.( poson   ef
+sme  m            $t !
+"&wj
+6
+  Total length: 435 chars
+
+✓ ru-ru-g1.ctb:
+  First line: онмее  это  внакилолаюсявиелаяви этоко
+  Full result:
+онмее  это  внакилолаюсявиелаяви этоко
+это откаковсё  вакивкираувсё
+во моген       здесь   лаизмвкикомики
+табывшулнеист         зернч   солавраки
+алебыл `      он  енистее    рлаах
+ноист рд          твонр  илоелавра
+насиставо     лемеи иер     это иах
+овол                    елавра
+риед
+себистламеение               жкисо
+преетоскоторуист
+похотетобывшосоже    это           этою
+какявииему   покавж уявиюкимелавсё
+° посунуистиералоокотору нахотенрри
+упзаре
+только посунуисти  конны фев если
+по                вюкико
+S посзн
+себизмероизм хотеоре
+только посон   еами
+себизме  мог            явит со
+рийвж
+ваами
+  Total length: 609 chars
+
+✓ sk-g1.ctb:
+  First line: onče  ó  wéóľäťsňeäň óď
+  Full result:
+onče  ó  wéóľäťsňeäň óď
+ó ťúďš  ówóυš
+V men       z   ämwóďfó
+tabulát         zernq   žäwό
+aleb ä      n  entee    räh
+not rd          tvnr  iľeäw
+nastav     leči ier     ó ih
+ovl                    eäw
+ried
+stlačenie               jóž
+preeyskut
+pohybožje    ó           óť
+úňič   !úwj uňťóčäš
+ĺ) posunutieľοku nahnr
+up),
+ĺ" posunuti  ďnĺ fw e
+po                wťóď
+ĺs poszn
+smerom hore
+ĺ" poson   ef
+sme  m            ňt ž
+çwj
+6
+  Total length: 430 chars
+
+✓ cs-g1.ctb:
+  First line: onče  ó  řéó|'ťsňe'ň óď
+  Full result:
+onče  ó  řéó|'ťsňe'ň óď
+ó ťúďš  óřó\45/uš
+V men       z   µřóďfó
+tabulát         zernq   ž'ř\45/ó
+aleb '      n  entee    r'h
+not rd          tvnr  i|e'ř\45/
+nastav     leči ier     ó ih
+ovl                    e'ř\45/
+ried
+stlačenie               jóž
+preeyskut
+pohybožje    ó           óť
+úňič   !úřj uňťóč'š
+} posunutie\45/|oku nahnr
+up),
+Ω posunuti  ďn\46/ fř e
+po                řťóď
+Σ poszn
+smerom hore
+Ω poson   ef
+sme  m            ňt ž
+ýřj
+6
+  Total length: 448 chars
+

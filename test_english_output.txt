@@ -1,0 +1,34 @@
+Testing English braille translation with different tables:
+
+Braille input length: 595 chars
+
+✓ en-us-g1.ctb:
+  Full result:
+1 sapple wi?ei unotej (! n w  we b sigt vs$ ! ? i tj r i l l st at sap le iss .) prec$es r sigo to gelp %{ r posi;n ( ! dots, & is q "p ( ! sign x is l  !( . |r . s once ~v a      poor woodman liv$ t ! gife i t pid le r a  e . le "- - 5t | to clt d{n trees ! sold t timbw s e s   p j fe let wf r vioal q f{d a bi. old  al tree e we provida lots r wood. l t wl g       q  srl, ll   i   ba + pp n  o fell treew  he look$ d{n r  ! w s eat i t  iir 1eo t h do+. n! woodcutsg  s sorpris$ t fe d{n ) a&e r rromis$ tr si>e ! tree s r a6e ; !  . :  r $ :ree j % ih "! next ?ree ?+s y or yr wife wi% (
+  Total length: 592 chars
+
+================================================================================
+
+✓ en-us-g2.ctb:
+  Full result:
+1 sapple withei unotej ofthe not will  we but sigt vsed ! this I tj rather I like like st at sap le iss .with precedes rather sigo to gelp show rather position of the dots, and is quite part of the sign it is like  to ( . our . so once ~v a      poor woodman lived that ! gife I that pid le rather a  every . le "- - ent out to clt down trees the sold that timbw so every so   people just fe let wf rather vioal quite fowd a bi. old  also tree every we provida lots rather wood. like that wl go       quite  srl, little   I   ba + pp not  O fell treew  he looked down rather  the will so eat I that  iir 1eo that have doing. nthe woodcutsg  so sorprised that fe down with aande rather rromised tr siare the tree so rather affe be !  . :  rather ed whree just shall ih "The next three things you or your wife wish were
+  Total length: 817 chars
+
+================================================================================
+
+✓ en-ueb-g1.ctb:
+  Full result:
+1 sapple wi\1456/ei unotej ∫ n w  we b sigt vs¤ ! \1456/ i tj r i l l st at sap le iss \46/ prec¤es r sigo to gelp \246/ r posin  ∫ dots, \12346/ is q \5/p  ∫ sign x is l  !′ . \1256/r . s once \45/v a      poor woodman liv¤ t ! gife i t pid le r a  e . le − - \26/t \1256/ to clt d\246/n trees ∫ sold t timbw s e s   p j fe let wf r vioal q f\246/d a bi. old  al tree e we provida lots r wood. l t wl g       q  srl, ll   i   ba  pp n  o fell treew  he look¤ d\246/n r  ∫ w s eat i t  iir ,eo t h do. n∫ woodcutsg  s sorpris¤ t fe d\246/n  a\12346/e r rromis¤ tr si\345/e ∫ tree s r a!e ; !  . :  r ¤ \156/ree j  ih "∫ next \1456/ree \1456/s y or yr wife wi ′
+  Total length: 671 chars
+
+================================================================================
+
+✓ en-ueb-g2.ctb:
+  Full result:
+1 sapple withei unotej ofthe not will  we but sigt vsed ! this i tj rather i like like st at sap le iss \46/with precedes rather sigo to gelp show rather position of the dots, and is quite part of the sign it is like  !′ . our . so once \45/v a      poor woodman lived that ! gife i that pid le rather a  every . le − - ent out to clt down trees the sold that timbw so every so   people just fe let wf rather vioal quite fowd a bi. old  also tree every we provida lots rather wood. like that wl go       quite  srl, little   i   ba  pp not  o fell treew  he looked down rather  the will so eat i that  iir ,eo that have doing. nthe woodcutsg  so sorprised that fe down with aande rather rromised tr siare the tree so rather affe be !  . :  rather ed whree just shall ih "The next three things you or your wife wish were
+  Total length: 820 chars
+
+================================================================================
+
+❌ en-gb-g1.ctb: Table file not found
+

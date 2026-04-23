@@ -1,8 +1,14 @@
-# if __name__=="__main__":
-#     import sys
-#     sys.path.append(".")
+import sys
+import os
 from pathlib import Path
-# import louis
+
+# Add liblouis-python path so the louis module can be imported
+_current_dir = os.path.dirname(os.path.realpath(__file__))
+_liblouis_python_path = os.path.normpath(os.path.join(_current_dir, '..', '..', 'liblouis-python'))
+if _liblouis_python_path not in sys.path:
+    sys.path.insert(0, _liblouis_python_path)
+
+import louis
 import local_config
 from braille_utils import label_tools as lt
 
